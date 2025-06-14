@@ -1,5 +1,5 @@
 using System;
-using Base;
+using Stats;
 using UnityEngine;
 
 namespace Components

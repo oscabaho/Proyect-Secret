@@ -1,14 +1,14 @@
-using UnityEngine;
 using System;
+using UnityEngine;
+using Base;
 using Components;
 using Stats;
-using Base;
 
 /// <summary>
-/// Portador no jugable: solo emplea vida, destruido al morir. Implementa Base.IDamageable.
+/// Enemigo que puede recibir daño y morir. Implementa Base.IDamageable.
 /// </summary>
 [RequireComponent(typeof(Collider))]
-public class NonPlayableStatHolder : MonoBehaviour, Base.IDamageable
+public class Enemy : MonoBehaviour, Base.IDamageable
 {
     [Header("Stats")]
     [SerializeField] private HealthComponent health;
@@ -18,18 +18,9 @@ public class NonPlayableStatHolder : MonoBehaviour, Base.IDamageable
     private void Awake()
     {
         if (health == null)
-            Debug.LogWarning("NonPlayableStatHolder: HealthComponent no asignado.");
+            Debug.LogWarning("Enemy: HealthComponent no asignado.");
         if (GetComponent<Collider>() == null)
-            Debug.LogWarning("NonPlayableStatHolder: Falta Collider para detección de daño.");
-    }
-
-    private void Update()
-    {
-        if (health != null && health.CurrentValue <= 0)
-        {
-            OnDeath?.Invoke();
-            Destroy(gameObject);
-        }
+            Debug.LogWarning("Enemy: Falta Collider para detección de daño.");
     }
 
     public void TakeDamage(int amount)
@@ -39,8 +30,13 @@ public class NonPlayableStatHolder : MonoBehaviour, Base.IDamageable
         if (health.CurrentValue <= 0)
         {
             OnDeath?.Invoke();
-            Destroy(gameObject);
+            Death();
         }
+    }
+
+    private void Death()
+    {
+        Destroy(gameObject);
     }
 
     // Permite suscripción externa al evento de muerte

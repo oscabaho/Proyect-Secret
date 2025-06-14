@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Components;
+using Stats;
 
 namespace Base
 {

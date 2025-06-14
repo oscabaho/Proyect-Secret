@@ -1,18 +1,24 @@
 using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Base;
 
+/// <summary>
+/// Permite atacar a cualquier objeto que implemente IDamageable.
+/// </summary>
 public class Attack : MonoBehaviour
 {
+    [SerializeField] private float attackRange = 2f;
+    [SerializeField] private float damage = 10f;
     private InputAction attack;
     private Camera playerCamera;
-    [SerializeField]private float attackRange = 2f;
-    [SerializeField]private float damage = 10f;
 
     private void Awake()
     {
         playerCamera = GetComponentInChildren<Camera>();
         attack = InputSystem.actions.FindAction("Attack");
+        if (playerCamera == null)
+            Debug.LogWarning("Attack: No se encontró cámara en el jugador.");
     }
 
     void Update()
@@ -32,11 +38,10 @@ public class Attack : MonoBehaviour
         {
             Debug.Log(hit.transform.name);
 
-            Enemy enemy = hit.transform.GetComponent<Enemy>();
-
-            if (enemy != null)
+            var damageable = hit.transform.GetComponent<Base.IDamageable>();
+            if (damageable != null)
             {
-                enemy.RecieveDamage(damage);
+                damageable.TakeDamage((int)damage);
             }
         }
     }
