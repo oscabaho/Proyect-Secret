@@ -1,6 +1,5 @@
 using UnityEngine;
 using Components;
-using Base;
 
 public class AreaDamageTimer : MonoBehaviour
 {
@@ -18,13 +17,10 @@ public class AreaDamageTimer : MonoBehaviour
 
     private void Awake()
     {
-        healthComponent = null;
-        var statHolder = GetComponent<BaseStatHolder>();
-        if (statHolder != null)
-            healthComponent = statHolder.Health;
+        healthComponent = GetComponent<HealthComponent>();
         if (healthComponent == null)
         {
-            Debug.LogWarning("AreaDamageTimer: No se encontró HealthComponent en el objeto (vía BaseStatHolder).");
+            Debug.LogWarning("AreaDamageTimer: No se encontró HealthComponent en el objeto.");
             enabled = false;
         }
     }
