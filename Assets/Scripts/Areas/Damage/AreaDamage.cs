@@ -1,6 +1,5 @@
 using UnityEngine;
 using Components;
-using Base;
 
 public class AreaDamage : MonoBehaviour
 {
@@ -12,7 +11,7 @@ public class AreaDamage : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Debug.Log($"AreaDamage: OnTriggerEnter con {other.gameObject.name}");
-        var health = other.GetComponent<BaseStatHolder>().Health;
+        var health = other.GetComponent<HealthComponent>();
         if (health != null)
         {
             health.AffectValue(-damage); // Daño inmediato al entrar

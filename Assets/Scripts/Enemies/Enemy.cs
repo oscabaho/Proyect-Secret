@@ -1,51 +1,37 @@
 using System;
 using UnityEngine;
-using Base;
-using Components;
-using Stats;
+using Enemies;
 
 /// <summary>
-/// Enemigo que puede recibir daño y morir. Implementa Base.IDamageable.
+/// Controlador principal del enemigo. Orquesta IA, ataques y referencia a Enemies.EnemyHealthController.
 /// </summary>
-[RequireComponent(typeof(Collider))]
-public class Enemy : MonoBehaviour, Base.IDamageable
+[RequireComponent(typeof(Enemies.EnemyHealthController))]
+public class Enemy : MonoBehaviour
 {
-    [Header("Stats")]
-    [SerializeField] private HealthComponent health;
-    public event Action OnDeath;
-    public HealthComponent Health => health;
+    private Enemies.EnemyHealthController healthController;
 
     private void Awake()
     {
-        if (health == null)
-            Debug.LogWarning("Enemy: HealthComponent no asignado.");
-        if (GetComponent<Collider>() == null)
-            Debug.LogWarning("Enemy: Falta Collider para detección de daño.");
+        healthController = GetComponent<Enemies.EnemyHealthController>();
+        if (healthController == null)
+            Debug.LogError("Enemy: No se encontró EnemyHealthController.");
     }
 
     public void TakeDamage(int amount)
     {
-        if (health == null) return;
-        health.AffectValue(-amount);
-        if (health.CurrentValue <= 0)
-        {
-            OnDeath?.Invoke();
-            Death();
-        }
+        healthController?.TakeDamage(amount);
     }
 
-    private void Death()
-    {
-        Destroy(gameObject);
-    }
-
-    // Permite suscripción externa al evento de muerte
     public void SubscribeOnDeath(Action callback)
     {
-        OnDeath += callback;
+        if (healthController != null)
+            healthController.OnDeath += callback;
     }
     public void UnsubscribeOnDeath(Action callback)
     {
-        OnDeath -= callback;
+        if (healthController != null)
+            healthController.OnDeath -= callback;
     }
+
+    // Puedes agregar aquí la lógica de IA, ataques, percepción, etc.
 }
