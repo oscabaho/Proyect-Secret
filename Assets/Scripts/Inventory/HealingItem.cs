@@ -1,4 +1,5 @@
 using Characters;
+using Interfaces;
 using UnityEngine;
 
 public class HealingItem : IUsableItem

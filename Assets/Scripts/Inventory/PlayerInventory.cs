@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Interfaces;
 using UnityEngine;
 
 namespace Inventory
@@ -10,7 +11,8 @@ namespace Inventory
     /// </summary>
     public class PlayerInventory : MonoBehaviour, IInventory
     {
-        [SerializeField] private List<string> items = new List<string>();
+        [SerializeField] private int maxSlots = 5;
+        [SerializeField] private List<MysteryItem> items = new List<MysteryItem>();
         public event Action OnInventoryChanged;
 
         /// <summary>
@@ -19,25 +21,30 @@ namespace Inventory
         public bool HasItem(string itemId)
         {
             if (string.IsNullOrEmpty(itemId)) return false;
-            return items.Contains(itemId);
+            return items.Exists(i => i.Id == itemId);
         }
 
         /// <summary>
         /// Agrega un ítem al inventario si no existe y es válido.
         /// </summary>
-        public bool AddItem(string itemId)
+        public bool AddItem(MysteryItem item)
         {
-            if (string.IsNullOrEmpty(itemId))
+            if (item == null)
             {
-                Debug.LogWarning("PlayerInventory: itemId nulo o vacío.");
+                Debug.LogWarning("PlayerInventory: item nulo.");
                 return false;
             }
-            if (items.Contains(itemId))
+            if (items.Count >= maxSlots)
             {
-                Debug.LogWarning($"PlayerInventory: El ítem '{itemId}' ya está en el inventario.");
+                Debug.LogWarning("PlayerInventory: Inventario lleno.");
                 return false;
             }
-            items.Add(itemId);
+            if (items.Exists(i => i.Id == item.Id))
+            {
+                Debug.LogWarning($"PlayerInventory: El ítem '{item.Id}' ya está en el inventario.");
+                return false;
+            }
+            items.Add(item);
             OnInventoryChanged?.Invoke();
             return true;
         }
@@ -47,13 +54,13 @@ namespace Inventory
         /// </summary>
         public bool RemoveItem(string itemId)
         {
-            if (string.IsNullOrEmpty(itemId)) return false;
-            if (!items.Contains(itemId))
+            var item = items.Find(i => i.Id == itemId);
+            if (item == null)
             {
                 Debug.LogWarning($"PlayerInventory: El ítem '{itemId}' no está en el inventario.");
                 return false;
             }
-            items.Remove(itemId);
+            items.Remove(item);
             OnInventoryChanged?.Invoke();
             return true;
         }
@@ -61,7 +68,7 @@ namespace Inventory
         /// <summary>
         /// Devuelve una copia de la lista de ítems (solo lectura).
         /// </summary>
-        public IReadOnlyList<string> GetItems()
+        public IReadOnlyList<MysteryItem> GetItems()
         {
             return items.AsReadOnly();
         }
@@ -71,11 +78,12 @@ namespace Inventory
         /// </summary>
         public bool UseItem(string itemId, GameObject user)
         {
-            if (!HasItem(itemId)) return false;
-            var item = ItemDatabase.GetItem(itemId);
-            if (item != null)
+            var item = items.Find(i => i.Id == itemId);
+            if (item == null) return false;
+            var usable = ItemDatabase.GetItem(itemId);
+            if (usable != null)
             {
-                item.Use(user);
+                usable.Use(user);
                 RemoveItem(itemId);
                 return true;
             }

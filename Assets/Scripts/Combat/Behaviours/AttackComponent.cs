@@ -1,6 +1,6 @@
 using UnityEngine;
-using Base;
 using Components;
+using Interfaces;
 
 namespace Combat.Behaviours
 {
