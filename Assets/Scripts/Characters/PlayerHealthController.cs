@@ -9,11 +9,18 @@ namespace Characters
     /// <summary>
     /// Controlador de salud y muerte para el jugador. Hereda de HealthControllerBase.
     /// </summary>
-    [RequireComponent(typeof(Enemies.EnemyHealthController))]
+    [RequireComponent(typeof(HealthComponent))]
     public class PlayerHealthController : HealthControllerBase
     {
         [SerializeField] private StaminaComponent stamina;
         public StaminaComponent Stamina => stamina;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            if (stamina == null)
+                stamina = GetComponent<StaminaComponent>();
+        }
 
         protected override void Death()
         {

@@ -4,9 +4,9 @@ using Components;
 public class AreaDamage : MonoBehaviour
 {
     [Tooltip("Daño infligido al entrar en el área")]
-    public int damage = 10;
+    [SerializeField] private int damage = 10;
     [Tooltip("Intervalo en segundos para aplicar daño continuo")]
-    public float damageInterval = 1f;
+    [SerializeField] private float damageInterval = 1f;
 
     private void OnTriggerEnter(Collider other)
     {

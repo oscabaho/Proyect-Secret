@@ -14,7 +14,7 @@ public class GameServices : MonoBehaviour
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<GameServices>();
+                _instance = FindFirstObjectByType<GameServices>();
                 if (_instance == null)
                 {
                     var go = new GameObject("GameServices");
@@ -26,7 +26,7 @@ public class GameServices : MonoBehaviour
         }
     }
 
-    private Dictionary<Type, object> services = new Dictionary<Type, object>();
+    private readonly Dictionary<Type, object> services = new Dictionary<Type, object>();
 
     public void Register<T>(T service) where T : class
     {

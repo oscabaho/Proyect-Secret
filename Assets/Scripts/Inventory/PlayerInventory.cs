@@ -23,8 +23,10 @@ namespace Inventory
         {
             inventoryModel = new InventoryModel(maxSlots);
             foreach (var item in initialItems)
-                inventoryModel.AddItem(item);
-            inventoryModel.OnInventoryChanged += () => OnInventoryChanged?.Invoke();
+            {
+                if (item != null)
+                    inventoryModel.AddItem(item);
+            }
         }
 
         public bool HasItem(string itemId) => inventoryModel.HasItem(itemId);
@@ -39,13 +41,12 @@ namespace Inventory
         {
             var item = inventoryModel.GetItems().FirstOrDefault(i => i != null && i.Id == itemId);
             if (item == null) return false;
-            var usable = item as IUsableItem;
+            var usable = item as Interfaces.IUsableItem;
             if (usable != null)
             {
                 usable.Use(user);
                 RemoveItem(itemId);
-                GameEventBus.Instance.Publish(new InventoryChangedEvent(this));
-                GameEventBus.Instance.Publish(new ItemUsedEvent(itemId, user));
+                OnInventoryChanged?.Invoke();
                 return true;
             }
             return false;
@@ -58,13 +59,17 @@ namespace Inventory
         {
             var item = inventoryModel.GetItems().FirstOrDefault(i => i != null && i.Id == itemId);
             var equipable = item as Interfaces.IEquipable;
-            if (equipable == null || equipmentSlots == null) return false;
-            bool result = equipmentSlots.EquipItem(equipable, user);
-            if (result)
+            if (equipable != null && equipmentSlots != null)
             {
-                Debug.Log($"{item.DisplayName} equipado en slot {equipable.GetSlotType()} por {user.name}");
+                bool result = equipmentSlots.EquipItem(equipable, user);
+                if (result)
+                {
+                    RemoveItem(itemId);
+                    OnInventoryChanged?.Invoke();
+                }
+                return result;
             }
-            return result;
+            return false;
         }
     }
 }

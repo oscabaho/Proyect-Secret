@@ -9,9 +9,12 @@ namespace Combat.SceneManagement
     public class PlayerPersistentData : ScriptableObject
     {
         // Ejemplo: inventario, experiencia, salud, etc.
-        public int playerHealth;
-        public int playerExperience;
+        [SerializeField] private int playerHealth;
+        [SerializeField] private int playerExperience;
         // Puedes agregar más campos según lo que quieras persistir
+
+        public int PlayerHealth => playerHealth;
+        public int PlayerExperience => playerExperience;
 
         public void SaveFromPlayer(GameObject player)
         {

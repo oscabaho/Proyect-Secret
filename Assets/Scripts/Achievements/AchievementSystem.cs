@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
-using Interfaces;
 using UnityEngine;
+using Interfaces;
 using System.Linq;
 
 /// <summary>

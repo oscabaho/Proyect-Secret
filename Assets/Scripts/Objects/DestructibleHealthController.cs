@@ -1,7 +1,6 @@
 using UnityEngine;
 using Characters;
 
-
 namespace Objects
 {
     /// <summary>
