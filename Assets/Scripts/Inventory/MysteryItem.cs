@@ -5,8 +5,8 @@ namespace Inventory
     /// <summary>
     /// Representa un ítem misterioso en el inventario. Su tipo real se revela solo al usarlo.
     /// </summary>
-    [System.Serializable]
-    public class MysteryItem
+    [CreateAssetMenu(fileName = "MysteryItem", menuName = "Inventory/MysteryItem")]
+    public class MysteryItem : ScriptableObject
     {
         [SerializeField] private string id;
         [SerializeField] private string displayName;
@@ -18,13 +18,5 @@ namespace Inventory
         public string DisplayName => displayName;
         public string Description => description;
         public Sprite Icon => icon;
-
-        public MysteryItem(string id, string displayName, string description, Sprite icon = null)
-        {
-            this.id = id;
-            this.displayName = displayName;
-            this.description = description;
-            this.icon = icon;
-        }
     }
 }
