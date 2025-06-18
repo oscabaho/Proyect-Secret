@@ -38,6 +38,7 @@ namespace Characters
             if (health.CurrentValue <= 0)
             {
                 OnDeath?.Invoke();
+                GameEventBus.Instance.Publish(new CharacterDeathEvent(gameObject));
                 Death();
             }
         }
