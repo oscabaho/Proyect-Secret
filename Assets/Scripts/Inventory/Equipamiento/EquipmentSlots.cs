@@ -7,9 +7,9 @@ namespace Inventory.Equipamiento
     /// <summary>
     /// Gestiona los ítems equipados por el jugador en diferentes slots.
     /// </summary>
-    internal class EquipmentSlots : MonoBehaviour
+    public class EquipmentSlots : MonoBehaviour
     {
-        private Dictionary<EquipmentSlotType, IEquipable> equippedItems = new Dictionary<EquipmentSlotType, IEquipable>();
+        private readonly Dictionary<EquipmentSlotType, IEquipable> equippedItems = new Dictionary<EquipmentSlotType, IEquipable>();
 
         public IEquipable GetEquipped(EquipmentSlotType slotType)
         {

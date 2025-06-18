@@ -1,4 +1,5 @@
 using UnityEngine;
+using Interfaces;
 
 namespace Inventory
 {
@@ -18,5 +19,39 @@ namespace Inventory
         public string DisplayName => displayName;
         public string Description => description;
         public Sprite Icon => icon;
+    }
+
+    [CreateAssetMenu(fileName = "WeaponItem", menuName = "Inventory/WeaponItem")]
+    public class WeaponItem : MysteryItem, IUsableItem, IEquipable
+    {
+        [SerializeField] private int baseDamage;
+        [SerializeField] private float attackSpeed; // ataques por segundo
+        [SerializeField] private float maxDurability = 100f;
+        [SerializeField] private AnimationCurve durabilityCurve = AnimationCurve.Linear(0, 1, 1, 0);
+
+        public int BaseDamage => baseDamage;
+        public float AttackSpeed => attackSpeed;
+        public float DPS => baseDamage * attackSpeed;
+        public float MaxDurability => maxDurability;
+        public AnimationCurve DurabilityCurve => durabilityCurve;
+
+        // Implementación de IUsableItem
+        public void Use(GameObject user)
+        {
+            // Lógica placeholder: podrías equipar el arma, mostrar feedback, etc.
+        }
+
+        // Implementación de IEquipable
+        public EquipmentSlotType GetSlotType() => EquipmentSlotType.Weapon;
+        public void OnEquip(GameObject user)
+        {
+            // Aquí puedes agregar lógica de equipamiento (por ejemplo, modificar stats)
+        }
+        public void OnUnequip(GameObject user)
+        {
+            // Aquí puedes revertir efectos de equipamiento
+        }
+
+        public string GetId() => Id;
     }
 }

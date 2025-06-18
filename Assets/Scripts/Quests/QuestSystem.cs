@@ -8,7 +8,6 @@ public class QuestSystem : MonoBehaviour
 {
     private int enemiesDefeated = 0;
     private int itemsUsed = 0;
-    private bool combatWon = false;
 
     private void OnEnable()
     {
@@ -36,9 +35,7 @@ public class QuestSystem : MonoBehaviour
 
     private void OnCombatVictory(CombatVictoryEvent evt)
     {
-        combatWon = true;
         Debug.Log("Misión: ¡Victoria en combate!");
-        // Aquí puedes marcar la misión como completada
     }
 
     private void OnItemUsed(ItemUsedEvent evt)
