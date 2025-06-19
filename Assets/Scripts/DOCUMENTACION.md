@@ -5,7 +5,7 @@
 2. [Manual de Métodos](#manual-de-métodos)
 3. [Manual de Variables](#manual-de-variables)
 4. [Sistema de Inventario e Ítems Usables](#sistema-de-inventario-e-items-usables)
-5. [Sistema de Armas y Equipamiento](#sistema-de-armas-y-equipamiento)
+5. [Sistema de Armas, Durabilidad y Maestría](#sistema-de-armas-durabilidad-y-maestria)
 6. [Eventos, Extensibilidad y Arquitectura Global](#eventos-extensibilidad-y-arquitectura-global)
 7. [Buenas Prácticas y Seguridad](#buenas-practicas-y-seguridad)
 8. [Ejemplos de Uso](#ejemplos-de-uso)
@@ -21,20 +21,35 @@
 - Propiedades: `Id`, `DisplayName`, `Description`, `Icon`.
 
 ### Inventory.WeaponItem
-- Hereda de `ScriptableObject` e implementa `IUsableItem` e `IEquipable`.
-- Representa un arma con daño base y velocidad de ataque.
-- Propiedades: `BaseDamage`, `AttackSpeed`, `DPS`.
-- Métodos: `Use(GameObject user)`, `GetSlotType()`, `OnEquip(GameObject user)`, `OnUnequip(GameObject user)`.
+- Hereda de `MysteryItem` y de `ScriptableObject`. Implementa `IUsableItem` e `IEquipable`.
+- Define los datos base del arma: daño, velocidad, durabilidad máxima, curva de desgaste y curva de maestría.
+- Propiedades: `BaseDamage`, `AttackSpeed`, `MaxDurability`, `DurabilityCurve`, `MasteryCurve`.
+- Métodos: `Use(GameObject user)`, `OnEquip(GameObject user)`, `OnUnequip(GameObject user)`.
 
 ### Inventory.HealingItem
 - Ítem de curación que implementa `IUsableItem`.
 - Método: `Use(GameObject user)` (cura al jugador).
 
-### Inventory.PlayerInventory
+### InventoryModel
 - Inventario limitado a un número configurable de slots no stackeables (por defecto 5).
 - Todos los campos son privados y expuestos solo por métodos públicos.
 - Métodos: `AddItem(MysteryItem)`, `RemoveItem(string)`, `UseItem(string, GameObject)`, `EquipItem(string, GameObject)`, `GetItems()`.
 - Evento: `OnInventoryChanged`.
+
+### PlayerEquipmentController
+- Gestiona el equipamiento y cambio de armas del jugador.
+- Propiedad: `EquippedWeaponInstance` (arma equipada actual).
+- Métodos: `OnWeaponHitEnemy()`, `AutoEquipFirstWeaponInInventory()`.
+
+### WeaponInstance
+- Representa una instancia de un arma equipada, con durabilidad y progreso de maestría únicos.
+- Se crea dinámicamente al equipar un arma y se destruye al desequipar o romperse el arma. No se serializa en el inventario.
+- Propiedades: `WeaponItem weaponData`, `float currentDurability`, `int hits`, `float mastery`.
+- Métodos: `RegisterHit()`, `IsBroken()`, `IncreaseMastery()`.
+
+### WeaponMasteryComponent
+- Gestiona la progresión de maestría por tipo de arma para el jugador.
+- Métodos: `GetMastery(WeaponItem)`, `IncreaseMastery(WeaponItem)`.
 
 ### Inventory.Equipamiento.EquipmentSlots
 - Gestiona los ítems equipados por el jugador en diferentes slots.
@@ -44,111 +59,82 @@
 - Catálogo centralizado de ítems usables y armas.
 - Métodos: `GetItem(string id)`.
 
-### Characters.HealthControllerBase
-- Clase abstracta base para controladores de salud y muerte de entidades.
-- Gestiona vida, daño, debuffs y eventos de muerte.
-- Métodos: `TakeDamage(int)`, `Death()` (abstracto).
+### Characters.HealthComponent
+- Componente base para controladores de salud y muerte de entidades.
+- Métodos: `TakeDamage(int)`, `Death()` (virtual).
 - Propiedad: `Health` (solo lectura).
 
-### GameEventBus
+### GameEvents
 - Event Bus global para publicar y suscribirse a eventos de juego de forma desacoplada.
 - Métodos: `Subscribe<T>`, `Unsubscribe<T>`, `Publish<T>`.
-
-### GameServices
-- Service Locator global para registrar y obtener servicios del juego (inventario, eventos, etc).
-- Métodos: `Register<T>`, `Get<T>`.
+- Usado como singleton global.
 
 ---
 
 ## Manual de Métodos
 
-### PlayerInventory
-- **AddItem(MysteryItem item)**
-  - Agrega un ítem al inventario si hay espacio y no existe ya.
-  - **Parámetros:**
-    - `item`: Objeto de tipo `MysteryItem` a agregar.
-  - **Retorna:** `true` si se agregó correctamente, `false` si el inventario está lleno o el ítem ya existe.
-  - **Uso típico:** Cuando el jugador recoge un objeto del mundo.
-  - **Advertencia:** No permite ítems duplicados ni stackeables.
-
-- **RemoveItem(string itemId)**
-  - Quita un ítem del inventario por su ID.
-  - **Parámetros:**
-    - `itemId`: Identificador único del ítem a eliminar.
-  - **Retorna:** `true` si se eliminó, `false` si no estaba presente.
-  - **Uso típico:** Al consumir, usar o descartar un ítem.
-
-- **UseItem(string itemId, GameObject user)**
-  - Usa un ítem del inventario, ejecutando su efecto y eliminándolo.
-  - **Parámetros:**
-    - `itemId`: Identificador del ítem a usar.
-    - `user`: GameObject que usará el ítem (normalmente el jugador).
-  - **Retorna:** `true` si el ítem fue usado, `false` si no existe o no es usable.
-  - **Uso típico:** Al presionar un botón en la UI de inventario.
-  - **Advertencia:** Elimina el ítem tras su uso.
-
-- **EquipItem(string itemId, GameObject user)**
-  - Equipa un ítem del inventario si es equipable.
-  - **Parámetros:**
-    - `itemId`: Identificador del ítem a equipar.
-    - `user`: GameObject que equipa el ítem.
-  - **Retorna:** `true` si se equipó correctamente, `false` si no es equipable o no existe.
-
-- **GetItems()**
-  - Devuelve una lista de los ítems en el inventario.
-  - **Retorna:** `IReadOnlyList<MysteryItem>` para evitar modificaciones externas.
-  - **Uso típico:** Para poblar la UI de inventario.
+### InventoryModel
+- **AddItem(MysteryItem item)**: Agrega un ítem si hay espacio y no existe ya.
+- **RemoveItem(string itemId)**: Quita un ítem por su ID.
+- **UseItem(string itemId, GameObject user)**: Usa un ítem y lo elimina.
+- **EquipItem(string itemId, GameObject user)**: Equipa un ítem si es equipable.
+- **GetItems()**: Devuelve una lista de los ítems en el inventario.
 
 ### EquipmentSlots
-- **EquipItem(IEquipable item, GameObject user)**
-  - Equipa un ítem en el slot correspondiente, reemplazando el anterior si existe.
-- **UnequipItem(EquipmentSlotType slotType, GameObject user)**
-  - Desequipa el ítem del slot indicado.
-- **GetEquipped(EquipmentSlotType slotType)**
-  - Devuelve el ítem equipado en el slot indicado.
-- **GetAllEquipped()**
-  - Devuelve todos los ítems equipados.
+- **EquipItem(IEquipable item, GameObject user)**: Equipa un ítem en el slot correspondiente.
+- **UnequipItem(EquipmentSlotType slotType, GameObject user)**: Desequipa el ítem del slot indicado.
+- **GetEquipped(EquipmentSlotType slotType)**: Devuelve el ítem equipado en el slot indicado.
+- **GetAllEquipped()**: Devuelve todos los ítems equipados.
 
 ### WeaponItem
-- **Use(GameObject user)**
-  - Equipa el arma y muestra feedback en consola.
-- **OnEquip(GameObject user)**
-  - Aplica efectos de equipamiento (modificar stats, etc).
-- **OnUnequip(GameObject user)**
-  - Revierte efectos de equipamiento.
+- **Use(GameObject user)**: Equipa el arma y muestra feedback.
+- **OnEquip(GameObject user)**: Aplica efectos de equipamiento.
+- **OnUnequip(GameObject user)**: Revierte efectos de equipamiento.
+
+### WeaponInstance
+- **RegisterHit()**: Llama al golpear, actualiza la durabilidad usando la curva y aumenta la maestría.
+- **IsBroken()**: Indica si la durabilidad llegó a 0.
+- **IncreaseMastery()**: Incrementa la maestría usando la curva definida.
+
+### WeaponMasteryComponent
+- **GetMastery(WeaponItem weapon)**: Devuelve el nivel de maestría para el arma.
+- **IncreaseMastery(WeaponItem weapon)**: Incrementa la maestría al golpear.
 
 ### HealingItem
-- **Use(GameObject user)**
-  - Cura al jugador.
+- **Use(GameObject user)**: Cura al jugador.
 
 ### ItemDatabase
-- **GetItem(string id)**
-  - Devuelve el ítem usable registrado con ese ID.
+- **GetItem(string id)**: Devuelve el ítem registrado con ese ID.
 
-### HealthControllerBase
-- **TakeDamage(int amount)**
-  - Aplica daño a la entidad y dispara eventos si la salud llega a cero.
-- **Death()**
-  - Método abstracto para lógica personalizada de muerte.
+### HealthComponent
+- **TakeDamage(int amount)**: Aplica daño a la entidad y dispara eventos si la salud llega a cero.
+- **Death()**: Método virtual para lógica personalizada de muerte.
 
 ---
 
 ## Manual de Variables
 
-### PlayerInventory
-- **maxSlots** (`int`): Número máximo de slots en el inventario (por defecto 5). Modificable en el inspector.
-- **OnInventoryChanged** (`event Action`): Evento disparado al cambiar el inventario. Útil para actualizar la UI.
+### InventoryModel
+- **[SerializeField] private int maxSlots**: Número máximo de slots en el inventario (por defecto 5).
+- **public event Action OnInventoryChanged**: Evento disparado al cambiar el inventario.
 
 ### MysteryItem
-- **Id** (`string`): Identificador único del ítem. Usado para búsquedas y lógica.
-- **DisplayName** (`string`): Nombre visible del ítem.
-- **Description** (`string`): Texto para mostrar en tooltip o detalles.
-- **Icon** (`Sprite`): Imagen para mostrar en la UI.
+- **[SerializeField] private string Id**: Identificador único del ítem.
+- **[SerializeField] private string DisplayName**: Nombre visible del ítem.
+- **[SerializeField] private string Description**: Texto para mostrar en tooltip o detalles.
+- **[SerializeField] private Sprite Icon**: Imagen para mostrar en la UI.
 
 ### WeaponItem
-- **BaseDamage** (`int`): Daño base del arma.
-- **AttackSpeed** (`float`): Ataques por segundo.
-- **DPS** (`float`): Daño por segundo calculado automáticamente.
+- **[SerializeField] private int BaseDamage**: Daño base del arma.
+- **[SerializeField] private float AttackSpeed**: Ataques por segundo.
+- **[SerializeField] private float MaxDurability**: Durabilidad máxima del arma.
+- **[SerializeField] private AnimationCurve DurabilityCurve**: Curva de desgaste por golpe.
+- **[SerializeField] private AnimationCurve MasteryCurve**: Curva de progresión de maestría.
+
+### WeaponInstance
+- **private float currentDurability**: Durabilidad actual.
+- **private int hits**: Número de golpes realizados.
+- **private float mastery**: Progreso de maestría para el arma.
 
 ---
 
@@ -158,53 +144,42 @@
 - Los ítems pueden ser misteriosos (tipo oculto) y muestran su descripción en la UI al hacer hover.
 - Los ítems usables implementan la interfaz `IUsableItem` y se registran en `ItemDatabase`.
 - El equipamiento se gestiona mediante la clase `EquipmentSlots` y la interfaz `IEquipable`.
-- Ejemplo de uso:
 
 ```csharp
 // Recoger un arma
-yourItemDatabase.GetItem("espada");
-playerInventory.AddItem(espada as MysteryItem);
+var espada = itemDatabase.GetItem("espada");
+inventoryModel.AddItem(espada as MysteryItem);
 
 // Usar un ítem
-playerInventory.UseItem("espada", playerGameObject);
+inventoryModel.UseItem("espada", playerGameObject);
 ```
 
 ---
 
-## Sistema de Armas y Equipamiento
+## Sistema de Armas, Durabilidad y Maestría
 
-- Las armas (`WeaponItem`) tienen daño base, velocidad de ataque y calculan su DPS.
-- Al usar un arma desde el inventario, se equipa y muestra feedback.
-- El equipamiento se gestiona mediante `EquipmentSlots` y la interfaz `IEquipable`.
-- Ejemplo de registro en ItemDatabase:
-
-```csharp
-items["hacha"] = new WeaponItem("hacha", "Hacha", "Un hacha pesada y poderosa.", 30, 0.7f);
-```
-
----
-
-## Sistema de Durabilidad de Armas y Auto-equipamiento
-
-- El personaje solo puede equipar un arma a la vez.
-- Cada arma equipada tiene un valor de durabilidad máxima (`MaxDurability`) y una curva de desgaste (`DurabilityCurve`).
+- Las armas (`WeaponItem`) definen daño, velocidad, durabilidad máxima, curva de desgaste y curva de maestría.
+- Al usar un arma desde el inventario, se crea una instancia (`WeaponInstance`) que gestiona la durabilidad y la maestría de esa arma específica.
 - Cada golpe efectivo a un enemigo reduce la durabilidad del arma según la curva definida en el `WeaponItem`.
 - Cuando la durabilidad llega a 0, el arma se destruye automáticamente y se elimina del slot de equipamiento.
 - Si el arma equipada se rompe, el sistema busca automáticamente la primera arma disponible en el inventario y la equipa como arma de reserva.
+- El sistema de maestría incrementa el daño del arma según la curva de maestría y la cantidad de golpes realizados.
 - Si no hay armas en el inventario, el personaje queda sin arma equipada.
-- El sistema es flexible: puedes definir curvas de desgaste lineales, exponenciales, etc., desde el inspector de Unity.
+- El sistema es flexible: puedes definir curvas de desgaste y maestría desde el inspector de Unity.
 
 ### Clases y Métodos Clave
 
 - **WeaponItem** (hereda de `MysteryItem`)
   - `float MaxDurability`: Durabilidad máxima del arma.
-  - `AnimationCurve DurabilityCurve`: Curva que define cómo se reduce la durabilidad por golpe.
+  - `AnimationCurve DurabilityCurve`: Curva de desgaste.
+  - `AnimationCurve MasteryCurve`: Curva de progresión de maestría.
 
 - **WeaponInstance**
   - `WeaponItem weaponData`: Referencia al arma base.
   - `float currentDurability`: Durabilidad actual.
   - `int hits`: Número de golpes realizados.
-  - `void RegisterHit()`: Llama al golpear, actualiza la durabilidad usando la curva.
+  - `float mastery`: Progreso de maestría.
+  - `void RegisterHit()`: Actualiza durabilidad y maestría.
   - `bool IsBroken()`: Indica si la durabilidad llegó a 0.
 
 - **PlayerEquipmentController**
@@ -212,18 +187,35 @@ items["hacha"] = new WeaponItem("hacha", "Hacha", "Un hacha pesada y poderosa.",
   - `void OnWeaponHitEnemy()`: Llama a `RegisterHit()` y elimina el arma si se rompe. Si hay armas de reserva, equipa automáticamente la primera encontrada en el inventario.
   - `private void AutoEquipFirstWeaponInInventory()`: Busca y equipa la primera arma disponible en el inventario.
 
+- **WeaponMasteryComponent**
+  - Gestiona la progresión de maestría por tipo de arma.
+
 - **AttackComponent**
-  - Al golpear, usa el daño del arma equipada y reduce su durabilidad.
+  - Al golpear, usa el daño del arma equipada (incluyendo el bonus de maestría) y reduce su durabilidad.
   - Si el arma se rompe, se elimina automáticamente y se equipa una de reserva si existe.
 
-### Ejemplo de Uso
+#### Ejemplo de cálculo de daño con maestría
+
+```csharp
+// Cálculo del daño final al golpear:
+float masteryBonus = weaponInstance.weaponData.MasteryCurve.Evaluate(weaponInstance.mastery);
+float finalDamage = weaponInstance.weaponData.BaseDamage + masteryBonus;
+```
+
+#### Ejemplo de incremento de maestría
+
+```csharp
+// Al golpear a un enemigo:
+weaponInstance.RegisterHit();
+// Esto reduce la durabilidad y aumenta la maestría según la curva.
+```
 
 ```csharp
 // Al atacar y golpear a un enemigo:
 attackComponent.TryAttack();
 // Internamente:
 // - Se consume stamina
-// - Se aplica el daño del arma equipada
+// - Se aplica el daño del arma equipada (con bonus de maestría)
 // - Se reduce la durabilidad usando la AnimationCurve
 // - Si la durabilidad llega a 0, el arma se destruye y se equipa automáticamente una de reserva si existe
 ```
@@ -233,10 +225,10 @@ attackComponent.TryAttack();
 ## Eventos, Extensibilidad y Arquitectura Global
 
 - El sistema de inventario y otros sistemas clave exponen eventos para facilitar la integración con UI y otros sistemas.
-- El EventBus (`GameEventBus`) permite comunicación desacoplada entre sistemas (logros, misiones, UI, etc).
-- El Service Locator (`GameServices`) centraliza servicios globales.
+- El EventBus (`GameEvents`) permite comunicación desacoplada entre sistemas (logros, misiones, UI, etc). Se implementa como singleton global.
 - Puedes crear nuevos ítems usables implementando `IUsableItem` y registrándolos en `ItemDatabase`.
 - Los controladores de salud y daño siguen el patrón de herencia y composición, con lógica modular y desacoplada.
+- Los sistemas de UI pueden suscribirse a los eventos de inventario y equipamiento para actualizarse automáticamente.
 
 ---
 
@@ -259,14 +251,19 @@ attackComponent.TryAttack();
 ### Mostrar tooltip de un ítem en la UI
 ```csharp
 // Al hacer hover sobre un slot en la UI:
-var item = playerInventory.GetItems()[slotIndex];
+var item = inventoryModel.GetItems()[slotIndex];
 MostrarTooltip(item.Description);
 ```
 
 ### Equipar un arma
 ```csharp
-playerInventory.EquipItem("espada", playerGameObject);
+inventoryModel.EquipItem("espada", playerGameObject);
 // Feedback: "Espada equipada. Daño base: 20, Velocidad de ataque: 1.0"
+```
+
+### Consultar bonus de maestría de un arma equipada
+```csharp
+float masteryBonus = equippedWeaponInstance.weaponData.MasteryCurve.Evaluate(equippedWeaponInstance.mastery);
 ```
 
 ---
@@ -284,7 +281,9 @@ classDiagram
     class WeaponItem {
         +BaseDamage
         +AttackSpeed
-        +DPS
+        +MaxDurability
+        +DurabilityCurve
+        +MasteryCurve
         +Use(GameObject)
         +OnEquip(GameObject)
         +OnUnequip(GameObject)
@@ -292,7 +291,7 @@ classDiagram
     class HealingItem {
         +Use(GameObject)
     }
-    class PlayerInventory {
+    class InventoryModel {
         +AddItem(MysteryItem)
         +RemoveItem(string)
         +UseItem(string, GameObject)
@@ -306,20 +305,64 @@ classDiagram
         +GetEquipped(EquipmentSlotType)
         +GetAllEquipped()
     }
+    class WeaponInstance {
+        +weaponData
+        +currentDurability
+        +hits
+        +mastery
+        +RegisterHit()
+        +IsBroken()
+        +IncreaseMastery()
+    }
+    class WeaponMasteryComponent {
+        +GetMastery(WeaponItem)
+        +IncreaseMastery(WeaponItem)
+    }
     class ItemDatabase {
         +GetItem(string)
     }
     MysteryItem <|-- WeaponItem
     MysteryItem <|-- HealingItem
-    PlayerInventory o-- MysteryItem
-    PlayerInventory o-- EquipmentSlots
+    InventoryModel o-- MysteryItem
+    InventoryModel o-- EquipmentSlots
     EquipmentSlots o-- IEquipable
     ItemDatabase o-- IUsableItem
     WeaponItem ..|> IUsableItem
     WeaponItem ..|> IEquipable
     HealingItem ..|> IUsableItem
+    PlayerEquipmentController o-- WeaponInstance
+    WeaponInstance o-- WeaponItem
+    WeaponMasteryComponent o-- WeaponItem
+    // ...puedes agregar StaminaComponent, HealthComponent, etc. para mayor claridad...
 ```
 
 ---
 
-> Esta documentación refleja la arquitectura y funcionamiento actual del sistema de inventario, ítems, armas, equipamiento y eventos. Manténla actualizada ante cualquier cambio relevante.
+> Esta documentación refleja la arquitectura y funcionamiento actual del sistema de inventario, ítems, armas, equipamiento, durabilidad, maestría y eventos. Manténla actualizada ante cualquier cambio relevante.
+
+---
+
+## Movimiento en Tercera Persona
+
+- El personaje se controla en tercera persona, con movimiento relativo a la cámara.
+- El personaje rota suavemente hacia la dirección de movimiento.
+- La cámara sigue al personaje desde un offset configurable y siempre lo mira, permitiendo una vista clara del entorno y del personaje.
+- El salto y la física se mantienen usando Rigidbody.
+- El offset y la suavidad de la cámara pueden ajustarse desde el inspector.
+- El sistema es desacoplado: la cámara no es hija del personaje, lo que permite mayor flexibilidad y personalización.
+
+### Clases y Métodos Clave
+
+- **Movement**
+  - `PlayerMove()`: Calcula el movimiento relativo a la cámara y rota el personaje.
+  - `CameraFollow()`: Hace que la cámara siga y mire al personaje desde un offset.
+  - `Jump()`: Permite saltar usando física.
+
+### Ejemplo de Uso
+
+```csharp
+// El jugador mueve el stick o las teclas WASD:
+// - El personaje se mueve en la dirección relativa a la cámara.
+// - La cámara sigue al personaje y lo mira desde atrás.
+// - El personaje rota hacia donde se mueve.
+```

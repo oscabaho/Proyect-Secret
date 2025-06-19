@@ -1,25 +1,22 @@
-using System;
 using UnityEngine;
-using UnityEngine.Animations;
 using UnityEngine.InputSystem;
 
 public class Movement : MonoBehaviour
 {
-    [SerializeField]private InputActionAsset inputActions;
+    [SerializeField] private InputActionAsset inputActions;
+    [SerializeField] private Transform cameraTransform;
+    [SerializeField] private float walkSpeed = 5f;
+    [SerializeField] private float rotateSpeed = 10f;
+    [SerializeField] private float cameraFollowSpeed = 8f;
+    [SerializeField] private Vector3 cameraOffset = new Vector3(0, 5, -6);
 
     private InputAction move;
     private InputAction look;
     private InputAction jump;
-
     private Vector2 movement;
-    private Vector2 lookDirection;
-
-    [SerializeField]private Transform cameraTransform;
     private Rigidbody rb;
-    
-    [SerializeField]private float walkSpeed = 5;
-    [SerializeField]private float rotateSpeed = 5;
-    
+    private Vector3 velocity;
+
     private void OnEnable()
     {
         inputActions.FindActionMap("Player").Enable();
@@ -35,19 +32,15 @@ public class Movement : MonoBehaviour
         move = InputSystem.actions.FindAction("Move");
         look = InputSystem.actions.FindAction("Look");
         jump = InputSystem.actions.FindAction("Jump");
-        
         rb = GetComponent<Rigidbody>();
-
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update()
     {
         movement = move.ReadValue<Vector2>();
-        lookDirection = look.ReadValue<Vector2>();
-
         PlayerMove();
-
+        CameraFollow();
         if (jump.WasPressedThisFrame())
         {
             Jump();
@@ -56,25 +49,35 @@ public class Movement : MonoBehaviour
 
     private void PlayerMove()
     {
-        //Movimiento del personaje
-        rb.MovePosition(rb.position + transform.forward * movement.y * walkSpeed * Time.deltaTime);
-        rb.MovePosition(rb.position + transform.right * movement.x * walkSpeed * Time.deltaTime);
+        // Movimiento relativo a la cámara
+        Vector3 camForward = cameraTransform.forward;
+        Vector3 camRight = cameraTransform.right;
+        camForward.y = 0; camRight.y = 0;
+        camForward.Normalize(); camRight.Normalize();
+        Vector3 moveDir = camForward * movement.y + camRight * movement.x;
+        moveDir.Normalize();
+        Vector3 targetVelocity = moveDir * walkSpeed;
+        velocity = Vector3.Lerp(velocity, targetVelocity, Time.deltaTime * 10f);
+        rb.MovePosition(rb.position + velocity * Time.deltaTime);
 
-        //Rotacion del personaje
-        float rotationAmount = lookDirection.x * rotateSpeed * Time.deltaTime;
-        Quaternion deltaRotation = Quaternion.Euler(0, rotationAmount, 0);
-        rb.MoveRotation(rb.rotation * deltaRotation);
+        // Rotar personaje hacia la dirección de movimiento
+        if (moveDir.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(moveDir);
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRot, rotateSpeed * Time.deltaTime));
+        }
+    }
 
-        //Rotacion vertical de la camara
-        Vector3 cameraRotation = cameraTransform.eulerAngles;
-        cameraRotation.x = cameraRotation.x - lookDirection.y * rotateSpeed * Time.deltaTime;
-        if (cameraRotation.x > 80 && cameraRotation.x < 180)
-        {cameraRotation.x = 80;}else if (cameraRotation.x < 280 && cameraRotation.x > 180) { cameraRotation.x = 280; }
-        cameraTransform.eulerAngles = cameraRotation;
+    private void CameraFollow()
+    {
+        if (cameraTransform == null) return;
+        Vector3 targetPos = transform.position + cameraOffset;
+        cameraTransform.position = Vector3.Lerp(cameraTransform.position, targetPos, cameraFollowSpeed * Time.deltaTime);
+        cameraTransform.LookAt(transform.position + Vector3.up * 1.5f);
     }
 
     private void Jump()
     {
-        rb.AddForceAtPosition(new Vector3(0,0.5f,0), Vector3.up, ForceMode.Impulse);
+        rb.AddForce(Vector3.up * 5f, ForceMode.Impulse);
     }
 }

@@ -15,7 +15,7 @@ namespace Combat.Behaviours
         [SerializeField] private float attackCooldown = 1f;
         [SerializeField] private int staminaCost = 10;
         [SerializeField] private StaminaComponent staminaComponent;
-        [SerializeField] private Inventory.PlayerEquipmentController equipmentController;
+        [SerializeField] private PlayerEquipmentController equipmentController;
         private float lastAttackTime = -999f;
 
         private void Awake()
