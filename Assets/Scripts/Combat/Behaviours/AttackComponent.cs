@@ -11,11 +11,11 @@ namespace Combat.Behaviours
     public class AttackComponent : MonoBehaviour
     {
         [SerializeField] private float attackRange = 2f;
-        [SerializeField] private int damage = 10;
         [SerializeField] private float attackCooldown = 1f;
         [SerializeField] private int staminaCost = 10;
         [SerializeField] private StaminaComponent staminaComponent;
         private float lastAttackTime = -999f;
+        [SerializeField]private Weapons weapon;
 
         private void Awake()
         {
@@ -38,12 +38,7 @@ namespace Combat.Behaviours
                 RaycastHit hit;
                 if (Physics.Raycast(transform.position, transform.forward, out hit, attackRange))
                 {
-                    var damageable = hit.transform.GetComponent<IDamageable>();
-                    if (damageable != null)
-                    {
-                        damageable.TakeDamage(damage);
-                        Debug.Log($"{gameObject.name} atacó a {hit.transform.name} por {damage} de daño.");
-                    }
+                    weapon.Attack(hit);
                 }
             }
             else
