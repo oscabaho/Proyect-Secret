@@ -1,19 +1,31 @@
 using System.Collections.Generic;
+using Interfaces;
+using UnityEngine;
 
-public static class ItemDatabase
+namespace Inventory
 {
-    private static readonly Dictionary<string, IUsableItem> items = new Dictionary<string, IUsableItem>();
-
-    static ItemDatabase()
+    [CreateAssetMenu(fileName = "ItemDatabase", menuName = "Inventory/ItemDatabase")]
+    public class ItemDatabase : ScriptableObject
     {
-        // Registrar ítems aquí
-        items["pocion_salud"] = new HealingItem("pocion_salud", 25);
-        // Agrega más ítems según sea necesario
-    }
+        [SerializeField] private List<MysteryItem> itemsList = new List<MysteryItem>();
+        private Dictionary<string, MysteryItem> itemsDict;
 
-    public static IUsableItem GetItem(string id)
-    {
-        items.TryGetValue(id, out var item);
-        return item;
+        private void OnEnable()
+        {
+            itemsDict = new Dictionary<string, MysteryItem>();
+            foreach (var item in itemsList)
+            {
+                if (item != null && !itemsDict.ContainsKey(item.Id))
+                    itemsDict.Add(item.Id, item);
+            }
+        }
+
+        public MysteryItem GetItem(string id)
+        {
+            if (itemsDict == null)
+                OnEnable();
+            itemsDict.TryGetValue(id, out var item);
+            return item;
+        }
     }
 }

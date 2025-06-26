@@ -23,6 +23,7 @@ namespace Combat.SceneManagement
         {
             // Aquí puedes mostrar UI de victoria, animaciones, etc.
             Debug.Log("¡Enemigo derrotado! Regresando a exploración...");
+            GameEventBus.Instance.Publish(new CombatVictoryEvent(enemy != null ? enemy.gameObject : null));
             Invoke(nameof(ReturnToExploration), delayAfterVictory);
         }
 

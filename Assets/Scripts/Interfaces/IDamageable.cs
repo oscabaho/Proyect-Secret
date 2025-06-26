@@ -1,4 +1,4 @@
-namespace Base
+namespace Interfaces
 {
     /// <summary>
     /// Interfaz para objetos que pueden recibir daño y morir.
