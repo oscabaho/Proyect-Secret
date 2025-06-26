@@ -9,7 +9,7 @@ public class GameEventBus
     private static GameEventBus _instance;
     public static GameEventBus Instance => _instance ?? (_instance = new GameEventBus());
 
-    private Dictionary<Type, Delegate> eventTable = new Dictionary<Type, Delegate>();
+    private readonly Dictionary<Type, Delegate> eventTable = new Dictionary<Type, Delegate>();
 
     public void Subscribe<T>(Action<T> handler)
     {

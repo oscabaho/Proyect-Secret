@@ -3,7 +3,7 @@ using Components;
 
 public class AreaDamageTimer : MonoBehaviour
 {
-    private int damage; // Solo privado
+    private int damage;
     private float damageInterval;
     private float timer = 0f;
     private HealthComponent healthComponent;
