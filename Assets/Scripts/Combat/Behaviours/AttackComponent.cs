@@ -1,6 +1,7 @@
 using UnityEngine;
-using Base;
 using Components;
+using Interfaces;
+using Inventory;
 
 namespace Combat.Behaviours
 {
@@ -14,6 +15,7 @@ namespace Combat.Behaviours
         [SerializeField] private float attackCooldown = 1f;
         [SerializeField] private int staminaCost = 10;
         [SerializeField] private StaminaComponent staminaComponent;
+        [SerializeField] private PlayerEquipmentController equipmentController;
         private float lastAttackTime = -999f;
         [SerializeField]private Weapons weapon;
 
@@ -21,6 +23,8 @@ namespace Combat.Behaviours
         {
             if (staminaComponent == null)
                 staminaComponent = GetComponent<StaminaComponent>();
+            if (equipmentController == null)
+                equipmentController = GetComponent<Inventory.PlayerEquipmentController>();
         }
 
         /// <summary>
@@ -33,6 +37,13 @@ namespace Combat.Behaviours
 
             if (staminaComponent != null && staminaComponent.CurrentStamina >= staminaCost)
             {
+                // Verifica que haya un arma equipada
+                if (equipmentController == null || equipmentController.EquippedWeaponInstance == null)
+                {
+                    Debug.LogWarning("No hay arma equipada para atacar.");
+                    return;
+                }
+
                 staminaComponent.UseStamina(staminaCost);
                 lastAttackTime = Time.time;
                 RaycastHit hit;
