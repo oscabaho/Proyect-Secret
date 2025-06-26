@@ -17,6 +17,7 @@ namespace Combat.Behaviours
         [SerializeField] private StaminaComponent staminaComponent;
         [SerializeField] private PlayerEquipmentController equipmentController;
         private float lastAttackTime = -999f;
+        [SerializeField]private Weapons weapon;
 
         private void Awake()
         {
@@ -48,20 +49,7 @@ namespace Combat.Behaviours
                 RaycastHit hit;
                 if (Physics.Raycast(transform.position, transform.forward, out hit, attackRange))
                 {
-                    var damageable = hit.transform.GetComponent<IDamageable>();
-                    if (damageable != null)
-                    {
-                        // Aplica daño según el arma equipada
-                        int damage = equipmentController.EquippedWeaponInstance.weaponData.BaseDamage;
-                        damageable.TakeDamage(damage);
-                        Debug.Log($"{gameObject.name} atacó a {hit.transform.name} por {damage} de daño.");
-                        // Reduce durabilidad
-                        equipmentController.OnWeaponHitEnemy();
-                        if (equipmentController.EquippedWeaponInstance == null)
-                        {
-                            Debug.Log("El arma se rompió tras el golpe.");
-                        }
-                    }
+                    weapon.Attack(hit);
                 }
             }
             else
