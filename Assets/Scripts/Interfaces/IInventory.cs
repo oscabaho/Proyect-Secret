@@ -1,4 +1,4 @@
-namespace Inventory
+namespace Interfaces
 {
     /// <summary>
     /// Interfaz para inventarios que permite consultar si un objeto está presente.

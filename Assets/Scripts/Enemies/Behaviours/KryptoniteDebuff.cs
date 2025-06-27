@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using Inventory;
+using Interfaces;
 using Enemies;
 
 namespace Enemies.Behaviours

@@ -20,6 +20,8 @@ namespace Characters
         protected virtual void Awake()
         {
             if (health == null)
+                health = GetComponent<HealthComponent>();
+            if (health == null)
                 Debug.LogWarning($"{GetType().Name}: HealthComponent no asignado.");
         }
 
@@ -38,6 +40,7 @@ namespace Characters
             if (health.CurrentValue <= 0)
             {
                 OnDeath?.Invoke();
+                GameEventBus.Instance.Publish(new CharacterDeathEvent(gameObject));
                 Death();
             }
         }

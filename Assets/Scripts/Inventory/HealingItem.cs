@@ -1,30 +1,38 @@
 using Characters;
+using Interfaces;
 using UnityEngine;
 
-public class HealingItem : IUsableItem
+namespace Inventory
 {
-    private readonly string id;
-    private readonly int healAmount;
-
-    public HealingItem(string id, int healAmount)
+    [CreateAssetMenu(fileName = "HealingItem", menuName = "Inventory/HealingItem")]
+    public class HealingItem : ScriptableObject, IUsableItem
     {
-        this.id = id;
-        this.healAmount = healAmount;
-    }
+        [SerializeField] private string id;
+        [SerializeField] private string displayName;
+        [SerializeField] private string description;
+        [SerializeField] private Sprite icon;
+        [SerializeField] private int healAmount;
 
-    public void Use(GameObject user)
-    {
-        var health = user.GetComponent<PlayerHealthController>();
-        if (health != null && health.Health != null)
-        {
-            health.Health.AffectValue(healAmount);
-            Debug.Log($"Curado {healAmount} puntos de vida.");
-        }
-        else
-        {
-            Debug.LogWarning("No se pudo curar: PlayerHealthController o HealthComponent no encontrado.");
-        }
-    }
+        public string Id => id;
+        public string DisplayName => displayName;
+        public string Description => description;
+        public Sprite Icon => icon;
+        public int HealAmount => healAmount;
 
-    public string GetId() => id;
+        public void Use(GameObject user)
+        {
+            var health = user.GetComponent<PlayerHealthController>();
+            if (health != null && health.Health != null)
+            {
+                health.Health.AffectValue(healAmount);
+                Debug.Log($"Curado {healAmount} puntos de vida.");
+            }
+            else
+            {
+                Debug.LogWarning("No se pudo curar: PlayerHealthController o HealthComponent no encontrado.");
+            }
+        }
+
+        public string GetId() => Id;
+    }
 }

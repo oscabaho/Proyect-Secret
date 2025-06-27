@@ -10,8 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1700596872555478288}
   - component: {fileID: 6637304399760191303}
-  - component: {fileID: 6866515391590060570}
-  - component: {fileID: 8633619508823044953}
+  - component: {fileID: 1435487858782421782}
+  - component: {fileID: 8838170596047475796}
+  - component: {fileID: 6167003252424041759}
+  - component: {fileID: 7846783733487799559}
   m_Layer: 0
   m_Name: Player prototipo
   m_TagString: Untagged
@@ -61,9 +63,30 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &6866515391590060570
+--- !u!135 &1435487858782421782
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 785615103497992188}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8838170596047475796
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -72,14 +95,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 785615103497992188}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 708b52ea3f23575478cdf786fa4f08d9, type: 3}
+  m_Script: {fileID: 11500000, guid: 53cbf7a604f97d34ab913e3202446918, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   inputActions: {fileID: -944628639613478452, guid: fcbddd531342fbb4dbfb0a3e85be621f, type: 3}
   cameraTransform: {fileID: 881344665094344606}
   walkSpeed: 5
   rotateSpeed: 5
---- !u!114 &8633619508823044953
+--- !u!114 &6167003252424041759
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -88,11 +111,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 785615103497992188}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 342c997a85a713942b1bbe94965a168e, type: 3}
+  m_Script: {fileID: 11500000, guid: 46b39ff9b7781cb41a6c8f5b5360f023, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerCamera: {fileID: 744053728919713530}
+  attackActionName: Attack
+--- !u!114 &7846783733487799559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 785615103497992188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05aa2d040151a5e4984984101b67554f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 2
-  damage: 10
+  attackCooldown: 1
+  staminaCost: 10
+  staminaComponent:
+    maxValue: 0
+    currentValue: 0
+  weapon: {fileID: 11400000, guid: 6deda3bea1a6f1f4da873b40d1837061, type: 2}
 --- !u!1 &3774904794608789652
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,7 +283,6 @@ GameObject:
   - component: {fileID: 3419943122084018154}
   - component: {fileID: 7907010002570864901}
   - component: {fileID: 6483656041427634915}
-  - component: {fileID: 7795151253461419522}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -317,24 +358,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &7795151253461419522
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4908599911650343303}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
