@@ -7,13 +7,17 @@ Este documento sirve como guía rápida para la asignación manual de scripts y 
 ## Asignación Manual de Scripts
 
 ### 1. Player (Jugador)
-- **Movement**: Control de movimiento en tercera persona.
+- **PaperMarioPlayerMovement**: Movimiento lateral estilo Paper Mario (Nuevo Input System).
+- **PaperMarioCameraController**: Cámara lateral/fija que sigue al jugador.
+- **BillboardCharacter**: Hace que el personaje mire siempre a la cámara.
 - **PlayerInventory**: Gestión del inventario del jugador.
 - **PlayerEquipmentController**: Controla el equipamiento y auto-equipamiento de armas.
 - **StaminaComponent**: Gestión de la stamina del jugador.
 - **HealthComponent**: Gestión de la salud del jugador.
 - **WeaponMasteryComponent**: Guarda la destreza/maestría por tipo de arma.
-- **AttackComponent**: Lógica de ataque y consumo de stamina.
+- **AttackComponent**: Lógica de ataque y consumo de stamina. Ahora activa/desactiva el hitbox del arma durante la animación de ataque.
+
+> Asegúrate de tener un `InputActionAsset` configurado y asignado en los campos `InputActionReference` de los scripts de movimiento.
 
 ### 2. Enemigos
 - **Enemy**: Lógica principal del enemigo.
@@ -24,7 +28,8 @@ Este documento sirve como guía rápida para la asignación manual de scripts y 
 - **DestructibleHealthController**: Control de salud y destrucción de objetos o NPCs simples.
 
 ### 4. Armas (GameObject de arma en la escena, si aplica)
-- **(Generalmente no requieren scripts en el GameObject, ya que las armas son ScriptableObjects y se gestionan desde el inventario y equipamiento del jugador)**
+- **WeaponHitbox**: Solo si el arma tiene representación física en la escena. El prefab de hitbox se asigna en el ScriptableObject `WeaponItem` y se instancia automáticamente al equipar el arma.
+- **Nota:** Las armas se gestionan exclusivamente desde ScriptableObjects y el sistema de inventario/equipamiento. No asignes scripts de arma manualmente a GameObjects salvo que implementes comportamientos avanzados.
 
 ### 5. Áreas de Daño
 - **AreaDamage**: Aplica daño al entrar en el área.
@@ -46,6 +51,7 @@ Este documento sirve como guía rápida para la asignación manual de scripts y 
 
 ### Player (Jugador)
 - Controlado por el usuario. Tiene movimiento, inventario, equipamiento, stamina, salud, ataque y destreza de armas.
+- El movimiento y la cámara usan el Nuevo Input System de Unity.
 
 ### Enemigos
 - IA controlada por scripts. Tienen salud y pueden tener debuffs especiales.
@@ -53,18 +59,7 @@ Este documento sirve como guía rápida para la asignación manual de scripts y 
 ### Objetos Destruibles
 - Objetos o NPCs simples que pueden recibir daño y ser destruidos.
 
-### Armas
-- No son GameObjects en la escena, sino ScriptableObjects que definen daño, velocidad, durabilidad y curva de maestría. Se gestionan desde el inventario y equipamiento del jugador.
-
-### Áreas de Daño
-- Zonas en la escena que aplican daño a los objetos que entran en ellas.
-
-### UI y Subsistemas
-- Scripts que actualizan la interfaz de usuario y gestionan logros o misiones.
-
-### GameManager
-- GameObject vacío recomendado para centralizar lógica global, inicialización de sistemas, y persistencia entre escenas.
-
----
-
-> Recuerda: Asigna manualmente solo los scripts listados arriba. Los componentes auxiliares y singletons se gestionan automáticamente por el sistema.
+### Armas y Hitboxes
+- Las armas son ScriptableObjects (`WeaponItem`) y gestionan su propio prefab de hitbox.
+- El hitbox se instancia y activa/desactiva automáticamente durante el ataque.
+- No es necesario asignar scripts de arma manualmente a GameObjects.

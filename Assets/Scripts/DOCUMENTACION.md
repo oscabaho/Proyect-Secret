@@ -23,8 +23,10 @@
 ### Inventory.WeaponItem
 - Hereda de `MysteryItem` y de `ScriptableObject`. Implementa `IUsableItem` e `IEquipable`.
 - Define los datos base del arma: daño, velocidad, durabilidad máxima, curva de desgaste y curva de maestría.
-- Propiedades: `BaseDamage`, `AttackSpeed`, `MaxDurability`, `DurabilityCurve`, `MasteryCurve`.
-- Métodos: `Use(GameObject user)`, `OnEquip(GameObject user)`, `OnUnequip(GameObject user)`.
+- Incluye un prefab de hitbox (`weaponHitboxPrefab`) que se instancia y activa durante el ataque.
+- Propiedades: `WeaponDamage`, `AttackSpeed`, `MaxDurability`, `DurabilityCurve`, `MasteryCurve`, `MaxMasteryHits`, `WeaponHitboxPrefab`.
+- Métodos: `Use(GameObject user)`, `OnEquip(GameObject user)`, `OnUnequip(GameObject user)`, `GetWeaponHitboxInstance(Transform parent)`, `ApplyDamage(GameObject owner, GameObject target)`.
+- **Nota:** El sistema de ataque ahora es modular y basado en colisionadores (hitboxes), eliminando el uso de raycasts y campos obsoletos como `attackRange`.
 
 ### Inventory.HealingItem
 - Ítem de curación que implementa `IUsableItem`.
@@ -47,6 +49,11 @@
 - Propiedades: `WeaponItem weaponData`, `float currentDurability`, `int hits`, `float mastery`.
 - Métodos: `RegisterHit()`, `IsBroken()`, `IncreaseMastery()`.
 
+### WeaponHitbox
+- Componente que gestiona la colisión del arma durante el ataque.
+- Se instancia desde el prefab asignado en el `WeaponItem` y se activa/desactiva según la animación de ataque.
+- Llama a `ApplyDamage` del `WeaponItem` al detectar colisión con un objetivo válido.
+
 ### WeaponMasteryComponent
 - Gestiona la progresión de maestría por tipo de arma para el jugador.
 - Métodos: `GetMastery(WeaponItem)`, `IncreaseMastery(WeaponItem)`.
@@ -59,15 +66,13 @@
 - Catálogo centralizado de ítems usables y armas.
 - Métodos: `GetItem(string id)`.
 
-### Characters.HealthComponent
-- Componente base para controladores de salud y muerte de entidades.
-- Métodos: `TakeDamage(int)`, `Death()` (virtual).
-- Propiedad: `Health` (solo lectura).
+---
 
-### GameEvents
-- Event Bus global para publicar y suscribirse a eventos de juego de forma desacoplada.
-- Métodos: `Subscribe<T>`, `Unsubscribe<T>`, `Publish<T>`.
-- Usado como singleton global.
+## Cambios recientes y mejores prácticas
+- El sistema de ataque es completamente modular y basado en colisionadores (hitboxes), facilitando la integración con animaciones y efectos visuales.
+- Se eliminaron scripts y campos obsoletos (como `attackRange` y raycasts en ataques).
+- Toda la lógica de armas está centralizada en `WeaponItem` y sus instancias.
+- Documentación y manuales actualizados para principiantes y para reflejar la arquitectura moderna del proyecto.
 
 ---
 
@@ -125,11 +130,13 @@
 - **[SerializeField] private Sprite Icon**: Imagen para mostrar en la UI.
 
 ### WeaponItem
-- **[SerializeField] private int BaseDamage**: Daño base del arma.
+- **[SerializeField] private int WeaponDamage**: Daño base del arma.
 - **[SerializeField] private float AttackSpeed**: Ataques por segundo.
 - **[SerializeField] private float MaxDurability**: Durabilidad máxima del arma.
 - **[SerializeField] private AnimationCurve DurabilityCurve**: Curva de desgaste por golpe.
 - **[SerializeField] private AnimationCurve MasteryCurve**: Curva de progresión de maestría.
+- **[SerializeField] private int MaxMasteryHits**: Número máximo de golpes para alcanzar la maestría plena.
+- **[SerializeField] private GameObject WeaponHitboxPrefab**: Prefab de la hitbox del arma.
 
 ### WeaponInstance
 - **private float currentDurability**: Durabilidad actual.
@@ -279,14 +286,17 @@ classDiagram
         +Icon
     }
     class WeaponItem {
-        +BaseDamage
+        +WeaponDamage
         +AttackSpeed
         +MaxDurability
         +DurabilityCurve
         +MasteryCurve
+        +MaxMasteryHits
         +Use(GameObject)
         +OnEquip(GameObject)
         +OnUnequip(GameObject)
+        +GetWeaponHitboxInstance(Transform)
+        +ApplyDamage(GameObject, GameObject)
     }
     class HealingItem {
         +Use(GameObject)
