@@ -11,12 +11,12 @@ namespace Combat.Behaviours
     [RequireComponent(typeof(Collider))]
     public class AttackComponent : MonoBehaviour
     {
-        [SerializeField] private float attackRange = 2f;
         [SerializeField] private float attackCooldown = 1f;
         [SerializeField] private int staminaCost = 10;
         [SerializeField] private StaminaComponent staminaComponent;
         [SerializeField] private PlayerEquipmentController equipmentController;
         private float lastAttackTime = -999f;
+        [SerializeField]private WeaponItem weapon;
 
         private void Awake()
         {
@@ -27,7 +27,7 @@ namespace Combat.Behaviours
         }
 
         /// <summary>
-        /// Intenta atacar en la dirección del transform.forward, consumiendo stamina si es suficiente.
+        /// Inicia el ataque: activa el collider del arma equipada y consume stamina.
         /// </summary>
         public void TryAttack()
         {
@@ -36,38 +36,29 @@ namespace Combat.Behaviours
 
             if (staminaComponent != null && staminaComponent.CurrentStamina >= staminaCost)
             {
-                // Verifica que haya un arma equipada
                 if (equipmentController == null || equipmentController.EquippedWeaponInstance == null)
                 {
                     Debug.LogWarning("No hay arma equipada para atacar.");
                     return;
                 }
-
                 staminaComponent.UseStamina(staminaCost);
                 lastAttackTime = Time.time;
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position, transform.forward, out hit, attackRange))
+                // Activa el collider del arma equipada (debe estar desactivado por defecto)
+                var weaponInstance = equipmentController.EquippedWeaponInstance;
+                if (weaponInstance != null && weaponInstance.weaponData != null)
                 {
-                    var damageable = hit.transform.GetComponent<IDamageable>();
-                    if (damageable != null)
+                    var weaponHitbox = weaponInstance.weaponData.GetWeaponHitboxInstance();
+                    if (weaponHitbox != null)
                     {
-                        // Aplica daño según el arma equipada
-                        int damage = equipmentController.EquippedWeaponInstance.weaponData.BaseDamage;
-                        damageable.TakeDamage(damage);
-                        Debug.Log($"{gameObject.name} atacó a {hit.transform.name} por {damage} de daño.");
-                        // Reduce durabilidad
-                        equipmentController.OnWeaponHitEnemy();
-                        if (equipmentController.EquippedWeaponInstance == null)
-                        {
-                            Debug.Log("El arma se rompió tras el golpe.");
-                        }
+                        weaponHitbox.SetWeapon(weaponInstance.weaponData, gameObject);
+                        weaponHitbox.EnableDamage();
+                        // Opcional: desactivar después de un tiempo o por animación
                     }
                 }
             }
             else
             {
                 Debug.Log("No hay suficiente stamina para atacar.");
-                // Opcional: feedback visual/sonoro
             }
         }
     }
