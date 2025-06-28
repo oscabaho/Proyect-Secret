@@ -20,6 +20,4 @@ namespace Inventory
         public string Description => description;
         public Sprite Icon => icon;
     }
-
-    // Elimina la definición duplicada de WeaponItem aquí. Solo debe existir en WeaponItem.cs
 }

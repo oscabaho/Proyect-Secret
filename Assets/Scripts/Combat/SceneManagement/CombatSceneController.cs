@@ -12,6 +12,8 @@ namespace Combat.SceneManagement
         [SerializeField] private Enemy enemy;
         [SerializeField] private string explorationSceneName = "Exploracion";
         [SerializeField] private float delayAfterVictory = 2f;
+        [SerializeField] private GameObject playerInstance; // Asigna el jugador instanciado en combate
+        [SerializeField] private PlayerPersistentData playerPersistentData;
 
         private void Start()
         {
@@ -23,6 +25,9 @@ namespace Combat.SceneManagement
         {
             // Aquí puedes mostrar UI de victoria, animaciones, etc.
             Debug.Log("¡Enemigo derrotado! Regresando a exploración...");
+            // Guardar estado actualizado del jugador e inventario
+            if (playerPersistentData != null && playerInstance != null)
+                playerPersistentData.SaveFromPlayer(playerInstance);
             GameEventBus.Instance.Publish(new CombatVictoryEvent(enemy != null ? enemy.gameObject : null));
             Invoke(nameof(ReturnToExploration), delayAfterVictory);
         }

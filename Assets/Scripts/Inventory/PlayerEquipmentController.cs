@@ -16,6 +16,19 @@ namespace Inventory
 
         public WeaponInstance EquippedWeaponInstance { get; private set; }
 
+        /// <summary>
+        /// Permite equipar directamente una instancia de arma (usado para restaurar durabilidad y maestría).
+        /// </summary>
+        public void EquipWeaponInstance(WeaponInstance instance)
+        {
+            EquippedWeaponInstance = instance;
+            if (instance != null && instance.weaponData != null)
+            {
+                playerInventory.EquipItem(instance.weaponData.Id, playerObject);
+                Debug.Log($"Arma restaurada: {instance.weaponData.DisplayName} (Durabilidad: {instance.currentDurability}, Hits: {instance.hits})");
+            }
+        }
+
         private void Awake()
         {
             if (playerInventory == null)
