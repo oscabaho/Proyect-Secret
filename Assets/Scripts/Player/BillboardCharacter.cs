@@ -5,11 +5,19 @@ using UnityEngine;
 /// </summary>
 public class BillboardCharacter : MonoBehaviour
 {
-    void LateUpdate()
+    private Transform camTransform;
+
+    void Awake()
     {
         if (Camera.main != null)
+            camTransform = Camera.main.transform;
+    }
+
+    void LateUpdate()
+    {
+        if (camTransform != null)
         {
-            Vector3 camForward = Camera.main.transform.forward;
+            Vector3 camForward = camTransform.forward;
             camForward.y = 0; // Opcional: solo rota en el eje Y
             transform.forward = camForward;
         }
