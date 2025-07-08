@@ -1,30 +1,34 @@
 using System;
 using UnityEngine;
-using Interfaces;
+using ProyectSecret.Interfaces;
 using System.Linq;
+using ProyectSecret.Events;
 
-/// <summary>
-/// Ejemplo de suscriptor a eventos de muerte para logros.
-/// </summary>
-public class AchievementSystem : MonoBehaviour
+namespace ProyectSecret.Achievements
 {
-    private void OnEnable()
+    /// <summary>
+    /// Ejemplo de suscriptor a eventos de muerte para logros.
+    /// </summary>
+    public class AchievementSystem : MonoBehaviour
     {
-        GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
-    }
-
-    private void OnDisable()
-    {
-        GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
-    }
-
-    private void OnCharacterDeath(CharacterDeathEvent evt)
-    {
-        // Ejemplo: desbloquear logro si el enemigo derrotado es de cierto tipo
-        if (evt.Character.CompareTag("Enemy"))
+        private void OnEnable()
         {
-            Debug.Log("¡Logro desbloqueado: Derrotaste a un enemigo!");
-            // Aquí puedes marcar el logro como desbloqueado
+            GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
+        }
+
+        private void OnDisable()
+        {
+            GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
+        }
+
+        private void OnCharacterDeath(CharacterDeathEvent evt)
+        {
+            // Ejemplo: desbloquear logro si el enemigo derrotado es de cierto tipo
+            if (evt.Character.CompareTag("Enemy"))
+            {
+                Debug.Log("¡Logro desbloqueado: Derrotaste a un enemigo!");
+                // Aquí puedes marcar el logro como desbloqueado
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Components
+namespace ProyectSecret.Components
 {
     /// <summary>
     /// Componente MonoBehaviour para exponer y gestionar HealthComponent en un GameObject.

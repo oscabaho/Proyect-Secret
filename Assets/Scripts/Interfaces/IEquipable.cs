@@ -1,4 +1,4 @@
-namespace Interfaces
+namespace ProyectSecret.Interfaces
 {
     /// <summary>
     /// Interfaz para ítems que pueden ser equipados en un slot.

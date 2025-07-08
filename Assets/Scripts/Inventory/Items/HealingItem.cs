@@ -1,8 +1,8 @@
-using Characters;
-using Interfaces;
+using ProyectSecret.Characters;
+using ProyectSecret.Interfaces;
 using UnityEngine;
 
-namespace Inventory
+namespace ProyectSecret.Inventory.Items
 {
     [CreateAssetMenu(fileName = "HealingItem", menuName = "Inventory/HealingItem")]
     public class HealingItem : ScriptableObject, IUsableItem

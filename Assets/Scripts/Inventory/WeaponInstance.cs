@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Inventory
+namespace ProyectSecret.Inventory
 {
     [System.Serializable]
     public class WeaponInstance

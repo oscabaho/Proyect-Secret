@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Interfaces;
+using ProyectSecret.Interfaces;
 using UnityEngine;
 
-namespace Inventory.Equipamiento
+namespace ProyectSecret.Inventory.Equipamiento
 {
     /// <summary>
     /// Gestiona los ítems equipados por el jugador en diferentes slots.

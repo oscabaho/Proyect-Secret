@@ -1,4 +1,4 @@
-namespace Interfaces
+namespace ProyectSecret.Interfaces
 {
     public interface IUsableItem
     {

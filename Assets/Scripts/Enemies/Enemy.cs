@@ -1,37 +1,40 @@
 using System;
 using UnityEngine;
-using Enemies;
+using ProyectSecret.Enemies;
 
-/// <summary>
-/// Controlador principal del enemigo. Orquesta IA, ataques y referencia a Enemies.EnemyHealthController.
-/// </summary>
-[RequireComponent(typeof(Enemies.EnemyHealthController))]
-public class Enemy : MonoBehaviour
+namespace ProyectSecret.Enemies
 {
-    private Enemies.EnemyHealthController healthController;
-
-    private void Awake()
+    /// <summary>
+    /// Controlador principal del enemigo. Orquesta IA, ataques y referencia a Enemies.EnemyHealthController.
+    /// </summary>
+    [RequireComponent(typeof(EnemyHealthController))]
+    public class Enemy : MonoBehaviour
     {
-        healthController = GetComponent<Enemies.EnemyHealthController>();
-        if (healthController == null)
-            Debug.LogError("Enemy: No se encontró EnemyHealthController.");
-    }
+        private EnemyHealthController healthController;
 
-    public void TakeDamage(int amount)
-    {
-        healthController?.TakeDamage(amount);
-    }
+        private void Awake()
+        {
+            healthController = GetComponent<EnemyHealthController>();
+            if (healthController == null)
+                Debug.LogError("Enemy: No se encontró EnemyHealthController.");
+        }
 
-    public void SubscribeOnDeath(Action callback)
-    {
-        if (healthController != null)
-            healthController.OnDeath += callback;
-    }
-    public void UnsubscribeOnDeath(Action callback)
-    {
-        if (healthController != null)
-            healthController.OnDeath -= callback;
-    }
+        public void TakeDamage(int amount)
+        {
+            healthController?.TakeDamage(amount);
+        }
 
-    // Puedes agregar aquí la lógica de IA, ataques, percepción, etc.
+        public void SubscribeOnDeath(Action callback)
+        {
+            if (healthController != null)
+                healthController.OnDeath += callback;
+        }
+        public void UnsubscribeOnDeath(Action callback)
+        {
+            if (healthController != null)
+                healthController.OnDeath -= callback;
+        }
+
+        // Puedes agregar aquí la lógica de IA, ataques, percepción, etc.
+    }
 }

@@ -1,9 +1,9 @@
 using UnityEngine;
-using Components;
-using Interfaces;
-using Inventory;
+using ProyectSecret.Components;
+using ProyectSecret.Interfaces;
+using ProyectSecret.Inventory;
 
-namespace Combat.Behaviours
+namespace ProyectSecret.Combat.Behaviours
 {
     /// <summary>
     /// Componente modular para lógica de ataque. Puede ser añadido a cualquier entidad.
@@ -13,15 +13,15 @@ namespace Combat.Behaviours
     {
         [SerializeField] private float attackCooldown = 1f;
         [SerializeField] private int staminaCost = 10;
-        [SerializeField] private StaminaComponent staminaComponent;
+        [SerializeField] private StaminaComponentBehaviour staminaBehaviour;
         [SerializeField] private PlayerEquipmentController equipmentController;
         private float lastAttackTime = -999f;
         [SerializeField]private WeaponItem weapon;
 
         private void Awake()
         {
-            if (staminaComponent == null)
-                staminaComponent = GetComponent<StaminaComponent>();
+            if (staminaBehaviour == null)
+                staminaBehaviour = GetComponent<StaminaComponentBehaviour>();
             if (equipmentController == null)
                 equipmentController = GetComponent<Inventory.PlayerEquipmentController>();
         }
@@ -34,14 +34,14 @@ namespace Combat.Behaviours
             if (Time.time - lastAttackTime < attackCooldown)
                 return;
 
-            if (staminaComponent != null && staminaComponent.CurrentStamina >= staminaCost)
+            if (staminaBehaviour != null && staminaBehaviour.Stamina != null && staminaBehaviour.Stamina.CurrentStamina >= staminaCost)
             {
                 if (equipmentController == null || equipmentController.EquippedWeaponInstance == null)
                 {
                     Debug.LogWarning("No hay arma equipada para atacar.");
                     return;
                 }
-                staminaComponent.UseStamina(staminaCost);
+                staminaBehaviour.Stamina.UseStamina(staminaCost);
                 lastAttackTime = Time.time;
                 // Activa el collider del arma equipada (debe estar desactivado por defecto)
                 var weaponInstance = equipmentController.EquippedWeaponInstance;

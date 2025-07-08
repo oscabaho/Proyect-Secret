@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Stats
+namespace ProyectSecret.Stats
 {
     /// <summary>
     /// Componente base para estadísticas (vida, stamina, etc). Solo serializable si es necesario.

@@ -1,47 +1,50 @@
 using UnityEngine;
-using Components;
+using ProyectSecret.Components;
 
-public class AreaDamageTimer : MonoBehaviour
+namespace ProyectSecret.Areas.Damage
 {
-    private int damage;
-    private float damageInterval;
-    private float timer = 0f;
-    private HealthComponent healthComponent;
-
-    // Inicialización desde AreaDamage
-    public void Init(int damage, float interval)
+    public class AreaDamageTimer : MonoBehaviour
     {
-        this.damage = damage;
-        this.damageInterval = interval;
-    }
+        private int damage;
+        private float damageInterval;
+        private float timer = 0f;
+        private HealthComponentBehaviour healthBehaviour;
 
-    private void Awake()
-    {
-        healthComponent = GetComponent<HealthComponent>();
-        if (healthComponent == null)
+        // Inicialización desde AreaDamage
+        public void Init(int damage, float interval)
         {
-            Debug.LogWarning("AreaDamageTimer: No se encontró HealthComponent en el objeto.");
-            enabled = false;
+            this.damage = damage;
+            this.damageInterval = interval;
         }
-    }
 
-    private void Update()
-    {
-        timer += Time.deltaTime;
-
-        if (timer >= damageInterval)
+        private void Awake()
         {
-            ApplyDamage();
-            timer = 0f;
+            healthBehaviour = GetComponent<HealthComponentBehaviour>();
+            if (healthBehaviour == null || healthBehaviour.Health == null)
+            {
+                Debug.LogWarning("AreaDamageTimer: No se encontró HealthComponentBehaviour en el objeto.");
+                enabled = false;
+            }
         }
-    }
 
-    private void ApplyDamage()
-    {
-        if (healthComponent != null)
+        private void Update()
         {
-            healthComponent.AffectValue(-damage);
-            Debug.Log($"AreaDamageTimer: {gameObject.name} recibe {damage} de daño continuo por área.");
+            timer += Time.deltaTime;
+
+            if (timer >= damageInterval)
+            {
+                ApplyDamage();
+                timer = 0f;
+            }
+        }
+
+        private void ApplyDamage()
+        {
+            if (healthBehaviour != null && healthBehaviour.Health != null)
+            {
+                healthBehaviour.Health.AffectValue(-damage);
+                Debug.Log($"AreaDamageTimer: {gameObject.name} recibe {damage} de daño continuo por área.");
+            }
         }
     }
 }

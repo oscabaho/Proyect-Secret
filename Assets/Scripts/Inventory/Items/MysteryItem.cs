@@ -1,7 +1,7 @@
 using UnityEngine;
-using Interfaces;
+using ProyectSecret.Interfaces;
 
-namespace Inventory
+namespace ProyectSecret.Inventory.Items
 {
     /// <summary>
     /// Representa un ítem misterioso en el inventario. Su tipo real se revela solo al usarlo.

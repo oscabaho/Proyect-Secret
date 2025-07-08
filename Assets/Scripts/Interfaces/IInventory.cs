@@ -1,4 +1,4 @@
-namespace Interfaces
+namespace ProyectSecret.Interfaces
 {
     /// <summary>
     /// Interfaz para inventarios que permite consultar si un objeto está presente.

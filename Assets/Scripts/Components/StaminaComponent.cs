@@ -1,8 +1,8 @@
 using System;
-using Stats;
+using ProyectSecret.Stats;
 using UnityEngine;
 
-namespace Components
+namespace ProyectSecret.Components
 {
     [Serializable]
     public class StaminaComponent : StatComponent

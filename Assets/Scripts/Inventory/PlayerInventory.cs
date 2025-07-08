@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Interfaces;
+using ProyectSecret.Interfaces;
 using UnityEngine;
 using System.Linq;
-using Inventory.Equipamiento;
-using Combat.SceneManagement;
+using ProyectSecret.Inventory.Equipamiento;
+using ProyectSecret.Combat.SceneManagement;
 
-namespace Inventory
+namespace ProyectSecret.Inventory
 {
     /// <summary>
     /// Componente Unity que actúa como puente entre el motor y la lógica pura de inventario.

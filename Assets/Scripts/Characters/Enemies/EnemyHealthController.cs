@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
-using ProyectSecret.Characters;
-using ProyectSecret.Components;
-using ProyectSecret.Stats;
+using Characters;
+using Components;
+using Stats;
 
-namespace ProyectSecret.Enemies
+namespace Enemies
 {
     /// <summary>
     /// Controlador de salud y muerte para enemigos únicos. Hereda de HealthControllerBase.

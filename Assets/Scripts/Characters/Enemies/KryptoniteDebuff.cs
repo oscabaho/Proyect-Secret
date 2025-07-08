@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
-using ProyectSecret.Interfaces;
-using ProyectSecret.Enemies;
+using Interfaces;
+using Enemies;
 
-namespace ProyectSecret.Enemies.Behaviours
+namespace Enemies.Behaviours
 {
     /// <summary>
     /// Componente de kriptonita: debilita al enemigo si el jugador tiene el objeto indicado.
@@ -58,6 +58,12 @@ namespace ProyectSecret.Enemies.Behaviours
             if (isDebuffed)
                 return Mathf.RoundToInt(baseDamage * damageMultiplier);
             return baseDamage;
+        }
+
+        private void OnDestroy()
+        {
+            if (healthController != null)
+                healthController.OnPreTakeDamage -= OnPreTakeDamageHandler;
         }
     }
 }

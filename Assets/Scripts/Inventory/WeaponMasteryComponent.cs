@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Inventory
+namespace ProyectSecret.Inventory
 {
     /// <summary>
     /// Componente que gestiona la destreza (maestría) del jugador con cada tipo de arma.

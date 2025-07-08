@@ -1,8 +1,6 @@
 # Manual de Uso de ScriptableObjects Específicos
 
-> **¡IMPORTANTE!** Este manual está pensado para personas con poca o ninguna experiencia en Unity. Aquí aprenderás desde cero cómo crear, ubicar y asignar ScriptableObjects en tu proyecto, con ejemplos visuales y consejos para evitar errores comunes.
-
-> **NOTA:** Todos los sistemas de movimiento y cámara del proyecto usan el Nuevo Input System de Unity. Si creas ScriptableObjects que interactúan con el movimiento o input, asegúrate de usar `InputActionReference` y no el sistema clásico.
+> **IMPORTANTE:** Todos los ScriptableObjects de armas y objetos de curación interactúan exclusivamente con los componentes `HealthComponentBehaviour` y `StaminaComponentBehaviour` para modificar vida y stamina en el jugador o enemigos. Asegúrate de que estos behaviours estén presentes en los GameObjects correspondientes. Nunca accedas directamente a `HealthComponent` o `StaminaComponent` desde un ScriptableObject o cualquier otro sistema.
 
 ---
 
@@ -65,10 +63,11 @@ Este manual explica cómo crear, asignar y usar cada ScriptableObject de este pr
 - **Cómo usarlo:**
   - El arma se equipa desde el inventario y su hitbox se instancia automáticamente.
   - El hitbox solo se activa durante el ataque (controlado por el sistema de animación o el `AttackComponent`).
+  - El daño se aplica siempre a través de `HealthComponentBehaviour` en el objetivo.
 - **Ejemplo de flujo:**
   1. El jugador equipa el arma desde el inventario.
   2. Al atacar, el sistema activa el hitbox del arma.
-  3. Si el hitbox colisiona con un enemigo, se llama a `ApplyDamage` del `WeaponItem`.
+  3. Si el hitbox colisiona con un enemigo, se llama a `ApplyDamage` del `WeaponItem`, que modifica la vida usando el wrapper.
 - **Consejo:** No es necesario añadir scripts de arma manualmente a GameObjects. Todo se gestiona desde el ScriptableObject y el sistema de inventario/equipamiento.
 
 ---
@@ -82,7 +81,7 @@ Este manual explica cómo crear, asignar y usar cada ScriptableObject de este pr
 - **Dónde asignarlo:**
   - En `initialItems` de `PlayerInventory`.
   - En `ItemDatabase`.
-- **Función:** Al usarlo, ejecuta `Use` y cura al jugador.
+- **Función:** Al usarlo, ejecuta `Use` y cura al jugador a través de `HealthComponentBehaviour`.
 - **Errores frecuentes:**
   - No cura: asset no asignado o método `Use` no llamado.
   - No aparece en inventario: no fue agregado a la lista o no fue recogido.
@@ -116,108 +115,10 @@ Este manual explica cómo crear, asignar y usar cada ScriptableObject de este pr
 - **Función:** Permite transferir referencias de prefabs y datos entre escenas.
 - **Errores frecuentes:**
   - No transfiere datos: asset no asignado.
-  - Datos incorrectos: no se limpian después (`Clear()` no llamado).
 
 ---
 
-## 5. PlayerPersistentData
-- **¿Qué es?** ScriptableObject para guardar datos persistentes del jugador entre escenas.
-- **Cómo crearlo:**
-  1. Clic derecho en `Assets/ScriptableObjects/`.
-  2. Crear > Combat > PlayerPersistentData.
-  3. Nombra el asset (ej: `PlayerPersistentData`).
-- **Dónde asignarlo:**
-  - En sistemas de gestión de progreso o persistencia.
-- **Función:** Guarda y aplica datos del jugador al cambiar de escena o cargar partidas.
-- **Errores frecuentes:**
-  - No guarda datos: no se llama a `SaveFromPlayer` o `ApplyToPlayer`.
-  - Datos desactualizados: campos serializados no actualizados.
-
----
-
-## 6. ItemDatabase
-- **¿Qué es?** ScriptableObject que actúa como catálogo centralizado de ítems.
-- **Cómo crearlo:**
-  1. Clic derecho en `Assets/ScriptableObjects/`.
-  2. Crear > Inventory > ItemDatabase.
-  3. Nombra el asset (ej: `ItemDatabase`).
-- **Dónde asignarlo:**
-  - En sistemas de inventario, UI, etc.
-- **Función:** Permite buscar y obtener cualquier ítem por su ID.
-- **Errores frecuentes:**
-  - No encuentra ítems: asset no asignado o lista incompleta.
-  - IDs duplicados: dos ítems con el mismo ID.
-
----
-
-# Ejemplos Paso a Paso para Cada ScriptableObject
-
-## WeaponItem (Arma)
-**Ejemplo: Crear y asignar una espada básica**
-1. Ve al panel `Project` y navega a `Assets/ScriptableObjects/Weapons/`.
-2. Haz clic derecho en la carpeta y selecciona `Crear > Inventory > WeaponItem`.
-3. Nombra el asset: `EspadaBasica`.
-4. Haz clic en el asset `EspadaBasica` y, en el Inspector, completa los campos: Daño = 10, Velocidad = 1.2, etc.
-5. Selecciona el GameObject del jugador en la jerarquía.
-6. En el componente `PlayerInventory`, busca la lista `initialItems` y haz clic en el símbolo `+` para agregar un nuevo elemento.
-7. Arrastra el asset `EspadaBasica` desde el panel `Project` al nuevo campo de la lista en el Inspector.
-8. Ejecuta el juego y verifica que el jugador pueda equipar y usar la espada.
-
----
-
-## HealingItem (Poción de curación)
-**Ejemplo: Crear y usar una poción**
-1. Ve a `Assets/ScriptableObjects/Items/`.
-2. Haz clic derecho y selecciona `Crear > Inventory > HealingItem`.
-3. Nombra el asset: `PocionPequena`.
-4. Haz clic en el asset y completa los campos: Cantidad de curación = 25, Nombre = "Poción Pequeña".
-5. Asigna la poción al inventario inicial del jugador igual que con el arma.
-6. Ejecuta el juego, abre el inventario y usa la poción. Observa si la vida del jugador aumenta.
-
----
-
-## MysteryItem (Ítem misterioso)
-**Ejemplo: Crear y usar un ítem misterioso**
-1. Ve a `Assets/ScriptableObjects/Items/`.
-2. Haz clic derecho y selecciona `Crear > Inventory > MysteryItem`.
-3. Nombra el asset: `CajaSorpresa`.
-4. Completa los campos: Nombre = "Caja Sorpresa", Descripción = "¿Qué contendrá?".
-5. Asígnalo al inventario inicial del jugador o como recompensa en el juego.
-6. Ejecuta el juego, usa el ítem y observa si revela su tipo o efecto.
-
----
-
-## CombatTransferData (Transferencia de datos de combate)
-**Ejemplo: Configurar transferencia de datos entre escenas**
-1. Ve a `Assets/ScriptableObjects/`.
-2. Haz clic derecho y selecciona `Crear > Combat > CombatTransferData`.
-3. Nombra el asset: `CombatTransferData`.
-4. Selecciona el GameObject que tenga el componente `CombatSceneLoader`.
-5. Arrastra el asset `CombatTransferData` al campo correspondiente en el Inspector.
-6. Haz lo mismo en el componente `CombatSceneInitializer`.
-7. Ejecuta el juego y verifica que los datos se transfieran correctamente entre escenas.
-
----
-
-## PlayerPersistentData (Datos persistentes del jugador)
-**Ejemplo: Guardar y restaurar vida y experiencia**
-1. Ve a `Assets/ScriptableObjects/`.
-2. Haz clic derecho y selecciona `Crear > Combat > PlayerPersistentData`.
-3. Nombra el asset: `PlayerPersistentData`.
-4. Asigna el asset a los sistemas de guardado/carga de datos del jugador.
-5. Ejecuta el juego, haz que el jugador gane experiencia o pierda vida, cambia de escena y verifica que los datos se mantienen.
-
----
-
-## ItemDatabase (Catálogo de ítems)
-**Ejemplo: Crear y usar una base de datos de ítems**
-1. Ve a `Assets/ScriptableObjects/`.
-2. Haz clic derecho y selecciona `Crear > Inventory > ItemDatabase`.
-3. Nombra el asset: `ItemDatabase`.
-4. Haz clic en el asset y, en el Inspector, agrega todos los ítems que quieras registrar (arrastra cada ScriptableObject a la lista).
-5. Asigna el asset `ItemDatabase` a los sistemas de inventario o UI que lo requieran.
-6. Ejecuta el juego y verifica que los ítems pueden buscarse y usarse correctamente.
-
----
-
-¿Dudas? Consulta este archivo o pregunta a un compañero. ¡Feliz desarrollo!
+## Buenas prácticas para ScriptableObjects
+- Siempre interactúa con la vida y stamina a través de los wrappers `HealthComponentBehaviour` y `StaminaComponentBehaviour`.
+- No accedas ni modifiques directamente `HealthComponent` o `StaminaComponent` desde ningún ScriptableObject.
+- Si necesitas modificar la vida o stamina de un GameObject, primero obtén el wrapper correspondiente y luego accede a la propiedad pública.

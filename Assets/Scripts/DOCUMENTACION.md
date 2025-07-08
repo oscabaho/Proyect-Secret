@@ -15,56 +15,38 @@
 
 ## Clases Principales
 
-### Inventory.MysteryItem
-- Ítem misterioso. Su tipo real y descripción se revelan solo al usarlo o al mostrar el tooltip en el inventario.
-- Todos los campos son privados y expuestos solo por propiedades públicas de solo lectura.
-- Propiedades: `Id`, `DisplayName`, `Description`, `Icon`.
+### ProyectSecret.Components.HealthComponentBehaviour y ProyectSecret.Components.StaminaComponentBehaviour
+- **HealthComponentBehaviour**: Componente MonoBehaviour que gestiona la vida de cualquier entidad (jugador, enemigo, objeto destruible). Debe ser añadido al GameObject y expone la estadística de vida editable desde el Inspector.
+- **StaminaComponentBehaviour**: Igual que el anterior, pero para la stamina (usualmente solo en el jugador).
+- **Acceso universal:** Todos los sistemas deben acceder a la vida y stamina exclusivamente a través de estos wrappers:
+  - `GetComponent<HealthComponentBehaviour>().Health`
+  - `GetComponent<StaminaComponentBehaviour>().Stamina`
+- **No accedas nunca directamente a HealthComponent o StaminaComponent desde otros scripts.**
 
-### Inventory.WeaponItem
-- Hereda de `MysteryItem` y de `ScriptableObject`. Implementa `IUsableItem` e `IEquipable`.
-- Define los datos base del arma: daño, velocidad, durabilidad máxima, curva de desgaste y curva de maestría.
-- Incluye un prefab de hitbox (`weaponHitboxPrefab`) que se instancia y activa durante el ataque.
-- Propiedades: `WeaponDamage`, `AttackSpeed`, `MaxDurability`, `DurabilityCurve`, `MasteryCurve`, `MaxMasteryHits`, `WeaponHitboxPrefab`.
-- Métodos: `Use(GameObject user)`, `OnEquip(GameObject user)`, `OnUnequip(GameObject user)`, `GetWeaponHitboxInstance(Transform parent)`, `ApplyDamage(GameObject owner, GameObject target)`.
-- **Nota:** El sistema de ataque ahora es modular y basado en colisionadores (hitboxes), eliminando el uso de raycasts y campos obsoletos como `attackRange`.
+### ProyectSecret.Characters.HealthControllerBase
+- Clase base para controladores de salud (jugador, enemigos, objetos destruibles).
+- Accede a la vida a través de `HealthComponentBehaviour`.
+- Cualquier entidad que herede de esta clase debe tener el componente `HealthComponentBehaviour`.
 
-### Inventory.HealingItem
-- Ítem de curación que implementa `IUsableItem`.
-- Método: `Use(GameObject user)` (cura al jugador).
+### ProyectSecret.Combat.Behaviours.AttackComponent
+- Usa `StaminaComponentBehaviour` para consumir stamina al atacar.
+- Ejemplo de uso:
+```csharp
+var staminaBehaviour = GetComponent<StaminaComponentBehaviour>();
+if (staminaBehaviour != null && staminaBehaviour.Stamina.CurrentStamina >= staminaCost) {
+    staminaBehaviour.Stamina.UseStamina(staminaCost);
+}
+```
 
-### InventoryModel
-- Inventario limitado a un número configurable de slots no stackeables (por defecto 5).
-- Todos los campos son privados y expuestos solo por métodos públicos.
-- Métodos: `AddItem(MysteryItem)`, `RemoveItem(string)`, `UseItem(string, GameObject)`, `EquipItem(string, GameObject)`, `GetItems()`.
-- Evento: `OnInventoryChanged`.
-
-### PlayerEquipmentController
-- Gestiona el equipamiento y cambio de armas del jugador.
-- Propiedad: `EquippedWeaponInstance` (arma equipada actual).
-- Métodos: `OnWeaponHitEnemy()`, `AutoEquipFirstWeaponInInventory()`.
-
-### WeaponInstance
-- Representa una instancia de un arma equipada, con durabilidad y progreso de maestría únicos.
-- Se crea dinámicamente al equipar un arma y se destruye al desequipar o romperse el arma. No se serializa en el inventario.
-- Propiedades: `WeaponItem weaponData`, `float currentDurability`, `int hits`, `float mastery`.
-- Métodos: `RegisterHit()`, `IsBroken()`, `IncreaseMastery()`.
-
-### WeaponHitbox
-- Componente que gestiona la colisión del arma durante el ataque.
-- Se instancia desde el prefab asignado en el `WeaponItem` y se activa/desactiva según la animación de ataque.
-- Llama a `ApplyDamage` del `WeaponItem` al detectar colisión con un objetivo válido.
-
-### WeaponMasteryComponent
-- Gestiona la progresión de maestría por tipo de arma para el jugador.
-- Métodos: `GetMastery(WeaponItem)`, `IncreaseMastery(WeaponItem)`.
-
-### Inventory.Equipamiento.EquipmentSlots
-- Gestiona los ítems equipados por el jugador en diferentes slots.
-- Métodos: `EquipItem(IEquipable, GameObject)`, `UnequipItem(EquipmentSlotType, GameObject)`, `GetEquipped(EquipmentSlotType)`, `GetAllEquipped()`.
-
-### Inventory.ItemDatabase
-- Catálogo centralizado de ítems usables y armas.
-- Métodos: `GetItem(string id)`.
+### ProyectSecret.Areas.Damage.AreaDamage y AreaDamageTimer
+- Usan `HealthComponentBehaviour` para aplicar daño a cualquier objeto que entre en el área.
+- Ejemplo de uso:
+```csharp
+var healthBehaviour = other.GetComponent<HealthComponentBehaviour>();
+if (healthBehaviour != null) {
+    healthBehaviour.Health.AffectValue(-damage);
+}
+```
 
 ---
 
@@ -254,6 +236,21 @@ attackComponent.TryAttack();
 ---
 
 ## Ejemplos de Uso
+
+### Acceso correcto a vida y stamina
+```csharp
+// Daño a un enemigo:
+var healthBehaviour = enemy.GetComponent<HealthComponentBehaviour>();
+if (healthBehaviour != null) {
+    healthBehaviour.Health.AffectValue(-10);
+}
+
+// Consumir stamina al atacar:
+var staminaBehaviour = player.GetComponent<StaminaComponentBehaviour>();
+if (staminaBehaviour != null && staminaBehaviour.Stamina.CurrentStamina >= 5) {
+    staminaBehaviour.Stamina.UseStamina(5);
+}
+```
 
 ### Mostrar tooltip de un ítem en la UI
 ```csharp

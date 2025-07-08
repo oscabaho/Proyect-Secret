@@ -1,7 +1,7 @@
 using UnityEngine;
-using Interfaces;
+using ProyectSecret.Interfaces;
 
-namespace Inventory
+namespace ProyectSecret.Inventory.Items
 {
     /// <summary>
     /// ScriptableObject base para armas. Permite instanciar el hitbox, aplicar daño y ser usado/equipado.

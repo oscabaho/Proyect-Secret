@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Interfaces;
+using ProyectSecret.Interfaces;
 
-namespace Inventory
+namespace ProyectSecret.Inventory
 {
     /// <summary>
     /// Lógica pura de inventario, desacoplada de Unity.

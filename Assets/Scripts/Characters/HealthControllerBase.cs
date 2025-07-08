@@ -12,22 +12,21 @@ namespace Characters
     public abstract class HealthControllerBase : MonoBehaviour
     {
         [Header("Stats")]
-        [SerializeField] protected HealthComponent health;
+        [SerializeField] protected Components.HealthComponentBehaviour healthBehaviour;
         public event Action OnDeath;
         public event Func<int, int> OnPreTakeDamage;
-        public HealthComponent Health => health;
+        public HealthComponent Health => healthBehaviour != null ? healthBehaviour.Health : null;
 
         protected virtual void Awake()
         {
-            if (health == null)
-                health = GetComponent<HealthComponent>();
-            if (health == null)
-                Debug.LogWarning($"{GetType().Name}: HealthComponent no asignado.");
+            if (healthBehaviour == null)
+                healthBehaviour = GetComponent<Components.HealthComponentBehaviour>();
+            if (healthBehaviour == null)
+                Debug.LogWarning($"{GetType().Name}: HealthComponentBehaviour no asignado.");
         }
-
         public virtual void TakeDamage(int amount)
         {
-            if (health == null) return;
+            if (Health == null) return;
             int finalAmount = amount;
             if (OnPreTakeDamage != null)
             {
@@ -36,8 +35,8 @@ namespace Characters
                     finalAmount = handler(finalAmount);
                 }
             }
-            health.AffectValue(-finalAmount);
-            if (health.CurrentValue <= 0)
+            Health.AffectValue(-finalAmount);
+            if (Health.CurrentValue <= 0)
             {
                 OnDeath?.Invoke();
                 GameEventBus.Instance.Publish(new CharacterDeathEvent(gameObject));
