@@ -4,6 +4,7 @@ using Interfaces;
 using UnityEngine;
 using System.Linq;
 using Inventory.Equipamiento;
+using Combat.SceneManagement;
 
 namespace Inventory
 {
@@ -70,6 +71,80 @@ namespace Inventory
                 return result;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Exporta el inventario completo (ítems y armas con estado) para persistencia entre escenas.
+        /// </summary>
+        public SerializableInventoryData ExportInventoryData()
+        {
+            var data = new SerializableInventoryData();
+            foreach (var item in inventoryModel.GetItems())
+            {
+                if (item is WeaponItem weaponItem)
+                {
+                    // Buscar instancia equipada para obtener durabilidad y hits
+                    var equipmentController = GetComponent<PlayerEquipmentController>();
+                    if (equipmentController != null && equipmentController.EquippedWeaponInstance != null && equipmentController.EquippedWeaponInstance.weaponData == weaponItem)
+                    {
+                        data.weapons.Add(new SerializableWeaponData
+                        {
+                            weaponId = weaponItem.Id,
+                            durability = equipmentController.EquippedWeaponInstance.currentDurability,
+                            hits = equipmentController.EquippedWeaponInstance.hits
+                        });
+                    }
+                    else
+                    {
+                        data.weapons.Add(new SerializableWeaponData
+                        {
+                            weaponId = weaponItem.Id,
+                            durability = weaponItem.MaxDurability,
+                            hits = 0
+                        });
+                    }
+                }
+                else if (item != null)
+                {
+                    data.itemIds.Add(item.Id);
+                }
+            }
+            return data;
+        }
+
+        /// <summary>
+        /// Importa el inventario completo desde datos serializados.
+        /// </summary>
+        public void ImportInventoryData(SerializableInventoryData data, ItemDatabase itemDatabase)
+        {
+            // Limpiar inventario actual
+            var itemsToRemove = inventoryModel.GetItems().ToArray();
+            foreach (var item in itemsToRemove)
+                inventoryModel.RemoveItem(item.Id);
+
+            // Restaurar ítems normales
+            foreach (var id in data.itemIds)
+            {
+                var item = itemDatabase.GetItem(id);
+                if (item != null)
+                    inventoryModel.AddItem(item);
+            }
+            // Restaurar armas con estado
+            foreach (var w in data.weapons)
+            {
+                var weaponItem = itemDatabase.GetItem(w.weaponId) as WeaponItem;
+                if (weaponItem != null)
+                {
+                    inventoryModel.AddItem(weaponItem);
+                    var equipmentController = GetComponent<PlayerEquipmentController>();
+                    if (equipmentController != null && equipmentController.EquippedWeaponInstance != null && equipmentController.EquippedWeaponInstance.weaponData == weaponItem)
+                    {
+                        equipmentController.EquippedWeaponInstance.currentDurability = w.durability;
+                        equipmentController.EquippedWeaponInstance.hits = w.hits;
+                    }
+                }
+            }
+            OnInventoryChanged?.Invoke();
         }
     }
 }
