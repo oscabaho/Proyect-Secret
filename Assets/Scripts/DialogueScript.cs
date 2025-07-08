@@ -7,9 +7,9 @@ public class DialogueScript : MonoBehaviour
 {
     public TextMeshProUGUI dialogueText;
 
-    [SerializeField]private string[] dialogueLines;
+    public string[] dialogueLines;
     [SerializeField]private float textSpeed = 0.1f;
-    private int index;
+    public int index;
     private InputAction interactAction;
     void Awake()
     {
@@ -66,14 +66,5 @@ public class DialogueScript : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider collider)
-    {
-        // Check if the player collides with the dialogue trigger
-        if (collider.gameObject.CompareTag("NPC"))
-        {
-            gameObject.SetActive(true);
-            index = 0;// Activate the dialogue UI
-            StartDialogue();
-        }
-    }
+    
 }
