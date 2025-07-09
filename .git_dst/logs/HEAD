@@ -1,0 +1,45 @@
+0000000000000000000000000000000000000000 01c6694a0aad9af9a6319d08b31cc2eda57c435d Oscar Barbosa <osbaho@hotmail.com> 1749312328 -0500	commit (initial): Initial commit
+01c6694a0aad9af9a6319d08b31cc2eda57c435d a0c7ee470917b0e93a64a4e9c6daf0cc9209d7e6 Oscar Barbosa <osbaho@hotmail.com> 1749573875 -0500	commit: Creacion de proyecto en unity
+a0c7ee470917b0e93a64a4e9c6daf0cc9209d7e6 9814d9f96b4c8c7752b909e727cdb88ea728b594 Oscar Barbosa <osbaho@hotmail.com> 1749573894 -0500	pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+9814d9f96b4c8c7752b909e727cdb88ea728b594 44e2806c782285cfdd20d0dbf0d75bb9cc874923 Oscar Barbosa <osbaho@hotmail.com> 1749910408 -0500	pull --ff --recurse-submodules --progress origin: Fast-forward
+44e2806c782285cfdd20d0dbf0d75bb9cc874923 44e2806c782285cfdd20d0dbf0d75bb9cc874923 Oscar Barbosa <osbaho@hotmail.com> 1749910421 -0500	checkout: moving from main to Oscar
+44e2806c782285cfdd20d0dbf0d75bb9cc874923 3a5849ce87a4218f800a27f1ef25cac9d885ea4e Oscar Barbosa <osbaho@hotmail.com> 1749910997 -0500	commit: Sistema de salud
+3a5849ce87a4218f800a27f1ef25cac9d885ea4e 853e000dd2dc123bab790c40da325ca5ac8a16d2 Oscar Barbosa <osbaho@hotmail.com> 1749918396 -0500	commit: Mejoras en organización
+853e000dd2dc123bab790c40da325ca5ac8a16d2 8ec4558dd7124c1571a3223e8ec869b0f9a1a72d Oscar Barbosa <osbaho@hotmail.com> 1750029072 -0500	commit: Actualizacion de la organizacion de scripts
+8ec4558dd7124c1571a3223e8ec869b0f9a1a72d 8ec4558dd7124c1571a3223e8ec869b0f9a1a72d Oscar Barbosa <osbaho@hotmail.com> 1750118064 -0500	reset: moving to HEAD
+8ec4558dd7124c1571a3223e8ec869b0f9a1a72d cda17e41fbbf718a010a27c92643268a0f1cda0f Oscar Barbosa <osbaho@hotmail.com> 1750118064 -0500	checkout: moving from Oscar to main
+cda17e41fbbf718a010a27c92643268a0f1cda0f cda17e41fbbf718a010a27c92643268a0f1cda0f Oscar Barbosa <osbaho@hotmail.com> 1750118228 -0500	checkout: moving from main to Oscar
+cda17e41fbbf718a010a27c92643268a0f1cda0f f509c710330891b20cd89e938babf18229c85a48 Oscar Barbosa <osbaho@hotmail.com> 1750131037 -0500	commit: Refactor: inventario modular, armas, documentación detallada y organización de interfaces
+f509c710330891b20cd89e938babf18229c85a48 f509c710330891b20cd89e938babf18229c85a48 Oscar Barbosa <osbaho86@gmail.com> 1750208481 -0500	reset: moving to HEAD
+f509c710330891b20cd89e938babf18229c85a48 cda17e41fbbf718a010a27c92643268a0f1cda0f Oscar Barbosa <osbaho86@gmail.com> 1750208481 -0500	checkout: moving from Oscar to main
+cda17e41fbbf718a010a27c92643268a0f1cda0f f509c710330891b20cd89e938babf18229c85a48 Oscar Barbosa <osbaho86@gmail.com> 1750208859 -0500	checkout: moving from main to Oscar
+f509c710330891b20cd89e938babf18229c85a48 be55669f5d9cf3ae6af3f5f3a5b5a895b0753694 Oscar Barbosa <osbaho86@gmail.com> 1750208944 -0500	commit: Modificaciones de prueba
+be55669f5d9cf3ae6af3f5f3a5b5a895b0753694 ab5b337db3b351b761be013a8416710a17197895 Oscar Barbosa <osbaho86@gmail.com> 1750209100 -0500	pull --ff --recurse-submodules --progress origin: Fast-forward
+ab5b337db3b351b761be013a8416710a17197895 b572a7514d9215ddf9d80a3f02168ff812917e9a Oscar Barbosa <osbaho86@gmail.com> 1750213831 -0500	commit: Actualizacion de scripts
+b572a7514d9215ddf9d80a3f02168ff812917e9a 974f2392db72b9898374b4e8e2c811590a3dd914 Oscar Barbosa <osbaho86@gmail.com> 1750305925 -0500	commit: Revisiones
+974f2392db72b9898374b4e8e2c811590a3dd914 974f2392db72b9898374b4e8e2c811590a3dd914 Oscar Barbosa <osbaho86@gmail.com> 1750971998 -0500	reset: moving to HEAD
+974f2392db72b9898374b4e8e2c811590a3dd914 950ad64a51a9f84ab61fb8536613931dc45639a1 Oscar Barbosa <osbaho86@gmail.com> 1750971998 -0500	checkout: moving from Oscar to David
+950ad64a51a9f84ab61fb8536613931dc45639a1 dc49fab2dfe248b5da69939a73e9a0a01999d692 Oscar Barbosa <osbaho86@gmail.com> 1750972524 -0500	commit (merge): Merge remote-tracking branch 'origin/Devolepment' into David
+dc49fab2dfe248b5da69939a73e9a0a01999d692 974f2392db72b9898374b4e8e2c811590a3dd914 Oscar Barbosa <osbaho86@gmail.com> 1750972647 -0500	checkout: moving from David to Oscar
+974f2392db72b9898374b4e8e2c811590a3dd914 d1d8aeb035f19767a766de11cbdbd1668040d5de Oscar Barbosa <osbaho86@gmail.com> 1750973121 -0500	pull --ff --recurse-submodules --progress origin: Fast-forward
+d1d8aeb035f19767a766de11cbdbd1668040d5de fa398a296c9d19e91b0bf6cdaddc19688ca43743 Oscar Barbosa <osbaho86@gmail.com> 1750984729 -0500	commit: Refactor weapon system to modular ScriptableObjects
+fa398a296c9d19e91b0bf6cdaddc19688ca43743 e8dcfb2206d3bf5bb97a9d53f9b5661ef53ee63c Oscar Barbosa <osbaho86@gmail.com> 1751117705 -0500	commit: Add persistent player state across combat scenes
+e8dcfb2206d3bf5bb97a9d53f9b5661ef53ee63c a943bbc50edb3f56255cefe52732c7e81e407a93 Oscar Barbosa <osbaho86@gmail.com> 1751117716 -0500	pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+a943bbc50edb3f56255cefe52732c7e81e407a93 dc49fab2dfe248b5da69939a73e9a0a01999d692 Oscar Barbosa <osbaho86@gmail.com> 1751119039 -0500	checkout: moving from Oscar to David
+dc49fab2dfe248b5da69939a73e9a0a01999d692 b8f8e75834ea3cac8723167267167313915bc0b8 Oscar Barbosa <osbaho86@gmail.com> 1751119109 -0500	commit (merge): Merge branch 'David' of https://github.com/oscabaho/Proyect-Secret into David
+b8f8e75834ea3cac8723167267167313915bc0b8 d0162156eba38fe6b52e43b8481b39c2d60590f5 Oscar Barbosa <osbaho86@gmail.com> 1751119534 -0500	checkout: moving from David to Felipe
+d0162156eba38fe6b52e43b8481b39c2d60590f5 db58c853370401311164000cb2d9fdd03df740ea Oscar Barbosa <osbaho86@gmail.com> 1751119589 -0500	checkout: moving from Felipe to main
+db58c853370401311164000cb2d9fdd03df740ea d0162156eba38fe6b52e43b8481b39c2d60590f5 Oscar Barbosa <osbaho86@gmail.com> 1751119593 -0500	checkout: moving from main to Felipe
+d0162156eba38fe6b52e43b8481b39c2d60590f5 db58c853370401311164000cb2d9fdd03df740ea Oscar Barbosa <osbaho86@gmail.com> 1751119732 -0500	checkout: moving from Felipe to main
+db58c853370401311164000cb2d9fdd03df740ea d0162156eba38fe6b52e43b8481b39c2d60590f5 Oscar Barbosa <osbaho86@gmail.com> 1751119752 -0500	checkout: moving from main to Felipe
+d0162156eba38fe6b52e43b8481b39c2d60590f5 b8f8e75834ea3cac8723167267167313915bc0b8 Oscar Barbosa <osbaho86@gmail.com> 1751119994 -0500	checkout: moving from Felipe to David
+b8f8e75834ea3cac8723167267167313915bc0b8 f4bbf53080672af7d89945dcaa4fada08ff28f5f Oscar Barbosa <osbaho86@gmail.com> 1751120003 -0500	checkout: moving from David to Devolepment
+f4bbf53080672af7d89945dcaa4fada08ff28f5f d0162156eba38fe6b52e43b8481b39c2d60590f5 Oscar Barbosa <osbaho86@gmail.com> 1751120027 -0500	checkout: moving from Devolepment to Felipe
+d0162156eba38fe6b52e43b8481b39c2d60590f5 db58c853370401311164000cb2d9fdd03df740ea Oscar Barbosa <osbaho86@gmail.com> 1751120033 -0500	checkout: moving from Felipe to main
+db58c853370401311164000cb2d9fdd03df740ea d0162156eba38fe6b52e43b8481b39c2d60590f5 Oscar Barbosa <osbaho86@gmail.com> 1751120038 -0500	checkout: moving from main to Felipe
+d0162156eba38fe6b52e43b8481b39c2d60590f5 17b16b3b694c9b1eead075072831b7c5a91839c8 Oscar Barbosa <osbaho86@gmail.com> 1751120518 -0500	commit: Add weapon script stubs
+17b16b3b694c9b1eead075072831b7c5a91839c8 a943bbc50edb3f56255cefe52732c7e81e407a93 Oscar Barbosa <osbaho86@gmail.com> 1751122650 -0500	checkout: moving from Felipe to Oscar
+a943bbc50edb3f56255cefe52732c7e81e407a93 f4bbf53080672af7d89945dcaa4fada08ff28f5f Oscar Barbosa <osbaho86@gmail.com> 1751122656 -0500	checkout: moving from Oscar to Devolepment
+f4bbf53080672af7d89945dcaa4fada08ff28f5f 17b16b3b694c9b1eead075072831b7c5a91839c8 Oscar Barbosa <osbaho86@gmail.com> 1751123029 -0500	checkout: moving from Devolepment to Felipe
+17b16b3b694c9b1eead075072831b7c5a91839c8 596c39489cbb5ce3f63c7eb63b2acf94b84e98d0 Oscar Barbosa <osbaho86@gmail.com> 1751123340 -0500	commit (merge): Merge branch 'Devolepment' into Felipe
+596c39489cbb5ce3f63c7eb63b2acf94b84e98d0 ee04f9d9759d5510deafea17a742f710b02f7c95 Oscar Barbosa <osbaho86@gmail.com> 1752060642 -0500	checkout: moving from Felipe to Dev01
