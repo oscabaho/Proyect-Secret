@@ -3,6 +3,10 @@ using UnityEngine;
 using ProyectSecret.Interfaces;
 using System.Linq;
 using ProyectSecret.Events;
+// Si el namespace correcto es diferente, usa la ruta real:
+// using ProyectSecret.Events;
+// Si el archivo CharacterDeathEvent está en otro namespace, ajusta aquí:
+// using ProyectSecret.Characters.Events;
 
 namespace ProyectSecret.Achievements
 {
