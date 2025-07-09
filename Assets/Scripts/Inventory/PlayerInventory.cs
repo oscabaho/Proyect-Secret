@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using ProyectSecret.Interfaces;
 using UnityEngine;
 using System.Linq;
+<<<<<<< Updated upstream
 using ProyectSecret.Inventory.Equipamiento;
 using ProyectSecret.Combat.SceneManagement;
+=======
+using Inventory.Items;
+using Inventory.Equipment; 
+>>>>>>> Stashed changes
 
 namespace ProyectSecret.Inventory
 {
