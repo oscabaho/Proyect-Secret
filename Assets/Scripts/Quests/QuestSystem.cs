@@ -14,16 +14,16 @@ namespace ProyectSecret.Quests
 
         private void OnEnable()
         {
-            GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
-            GameEventBus.Instance.Subscribe<CombatVictoryEvent>(OnCombatVictory);
-            GameEventBus.Instance.Subscribe<ItemUsedEvent>(OnItemUsed);
+            ProyectSecret.Events.GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
+            ProyectSecret.Events.GameEventBus.Instance.Subscribe<CombatVictoryEvent>(OnCombatVictory);
+            ProyectSecret.Events.GameEventBus.Instance.Subscribe<ItemUsedEvent>(OnItemUsed);
         }
 
         private void OnDisable()
         {
-            GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
-            GameEventBus.Instance.Unsubscribe<CombatVictoryEvent>(OnCombatVictory);
-            GameEventBus.Instance.Unsubscribe<ItemUsedEvent>(OnItemUsed);
+            ProyectSecret.Events.GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
+            ProyectSecret.Events.GameEventBus.Instance.Unsubscribe<CombatVictoryEvent>(OnCombatVictory);
+            ProyectSecret.Events.GameEventBus.Instance.Unsubscribe<ItemUsedEvent>(OnItemUsed);
         }
 
         private void OnCharacterDeath(CharacterDeathEvent evt)

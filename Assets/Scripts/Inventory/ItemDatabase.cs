@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Interfaces;
+using ProyectSecret.Inventory.Items;
 using UnityEngine;
 
-namespace Inventory
+namespace ProyectSecret.Inventory
 {
     [CreateAssetMenu(fileName = "ItemDatabase", menuName = "Inventory/ItemDatabase")]
     public class ItemDatabase : ScriptableObject

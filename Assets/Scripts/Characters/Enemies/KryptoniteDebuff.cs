@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
-using Interfaces;
+using ProyectSecret.Interfaces;
 using Enemies;
+using ProyectSecret.Characters.Enemies;
 
 namespace Enemies.Behaviours
 {

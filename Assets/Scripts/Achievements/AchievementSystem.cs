@@ -3,10 +3,7 @@ using UnityEngine;
 using ProyectSecret.Interfaces;
 using System.Linq;
 using ProyectSecret.Events;
-// Si el namespace correcto es diferente, usa la ruta real:
-// using ProyectSecret.Events;
-// Si el archivo CharacterDeathEvent está en otro namespace, ajusta aquí:
-// using ProyectSecret.Characters.Events;
+
 
 namespace ProyectSecret.Achievements
 {
@@ -17,12 +14,12 @@ namespace ProyectSecret.Achievements
     {
         private void OnEnable()
         {
-            GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
+            ProyectSecret.Events.GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
         }
 
         private void OnDisable()
         {
-            GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
+            ProyectSecret.Events.GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
         }
 
         private void OnCharacterDeath(CharacterDeathEvent evt)

@@ -1,9 +1,7 @@
-
 using UnityEngine;
-using ProyectSecret.Characters;
 using Characters;
 
-namespace ProyectSecret.Components
+namespace Objects
 {
     /// <summary>
     /// Controlador de salud y muerte para objetos destruibles o NPCs simples. Hereda de HealthControllerBase.

@@ -15,7 +15,7 @@ namespace ProyectSecret.Core
         {
             if (directionalLight == null)
             {
-                directionalLight = FindObjectOfType<Light>();
+                directionalLight = FindFirstObjectByType<Light>();
             }
             SetDay();
         }

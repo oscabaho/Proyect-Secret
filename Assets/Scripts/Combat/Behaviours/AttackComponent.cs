@@ -1,6 +1,8 @@
 using UnityEngine;
 using ProyectSecret.Components;
 using ProyectSecret.Interfaces;
+
+using ProyectSecret.Inventory.Items;
 using ProyectSecret.Inventory;
 
 namespace ProyectSecret.Combat.Behaviours

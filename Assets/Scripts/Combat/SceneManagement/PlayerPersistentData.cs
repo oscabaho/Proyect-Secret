@@ -1,8 +1,11 @@
+
 using UnityEngine;
 using System.Collections.Generic;
-using Inventory;
+using ProyectSecret.Inventory;
+using ProyectSecret.Inventory.Items;
+using ProyectSecret.Components;
 
-namespace Combat.SceneManagement
+namespace ProyectSecret.Combat.SceneManagement
 {
     [System.Serializable]
     public class SerializableWeaponData
@@ -39,11 +42,11 @@ namespace Combat.SceneManagement
 
         public void SaveFromPlayer(GameObject player)
         {
-            var health = player.GetComponent<Components.HealthComponent>();
+            var health = player.GetComponent<ProyectSecret.Components.HealthComponent>();
             if (health != null)
                 playerHealth = health.CurrentValue;
 
-            var equipment = player.GetComponent<Inventory.PlayerEquipmentController>();
+            var equipment = player.GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
             if (equipment != null && equipment.EquippedWeaponInstance != null)
             {
                 equippedWeaponId = equipment.EquippedWeaponInstance.weaponData != null ? equipment.EquippedWeaponInstance.weaponData.Id : null;
@@ -57,7 +60,7 @@ namespace Combat.SceneManagement
                 equippedWeaponHits = 0;
             }
             // Guardar inventario
-            var playerInventory = player.GetComponent<Inventory.PlayerInventory>();
+            var playerInventory = player.GetComponent<ProyectSecret.Inventory.PlayerInventory>();
             if (playerInventory != null)
                 inventoryData = playerInventory.ExportInventoryData();
         }
@@ -68,7 +71,7 @@ namespace Combat.SceneManagement
             if (health != null)
                 health.AffectValue(playerHealth - health.CurrentValue);
 
-            var equipment = player.GetComponent<Inventory.PlayerEquipmentController>();
+            var equipment = player.GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
             if (equipment != null && !string.IsNullOrEmpty(equippedWeaponId))
             {
                 var weaponItem = itemDatabase.GetItem(equippedWeaponId) as WeaponItem;
@@ -81,7 +84,7 @@ namespace Combat.SceneManagement
                 }
             }
             // Restaurar inventario
-            var playerInventory = player.GetComponent<Inventory.PlayerInventory>();
+            var playerInventory = player.GetComponent<ProyectSecret.Inventory.PlayerInventory>();
             if (playerInventory != null)
                 playerInventory.ImportInventoryData(inventoryData, itemDatabase);
         }

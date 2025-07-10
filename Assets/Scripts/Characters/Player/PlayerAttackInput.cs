@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Combat.Behaviours;
+using ProyectSecret.Combat.Behaviours;
 
 /// <summary>
 /// Controlador de input de ataque para el jugador. Traduce el input y la dirección de la cámara en ataques usando AttackComponent.

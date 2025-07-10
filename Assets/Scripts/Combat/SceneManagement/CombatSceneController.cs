@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Enemies;
+using ProyectSecret.Characters.Enemies;
+using ProyectSecret.Events;
 
-namespace Combat.SceneManagement
+namespace ProyectSecret.Combat.SceneManagement
 {
     /// <summary>
     /// Controla el flujo post-combate: victoria, recompensas y regreso a exploración.

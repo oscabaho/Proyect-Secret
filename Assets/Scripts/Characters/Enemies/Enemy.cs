@@ -1,18 +1,21 @@
+
 using System;
 using UnityEngine;
-using Enemies;
+using ProyectSecret.Characters.Enemies;
 
 /// <summary>
-/// Controlador principal del enemigo. Orquesta IA, ataques y referencia a Enemies.EnemyHealthController.
+
+/// Controlador principal del enemigo. Orquesta IA, ataques y referencia a EnemyHealthController.
 /// </summary>
-[RequireComponent(typeof(Enemies.EnemyHealthController))]
+[RequireComponent(typeof(EnemyHealthController))]
 public class Enemy : MonoBehaviour
 {
-    private Enemies.EnemyHealthController healthController;
+    private EnemyHealthController healthController;
+
 
     private void Awake()
     {
-        healthController = GetComponent<Enemies.EnemyHealthController>();
+        healthController = GetComponent<EnemyHealthController>();
         if (healthController == null)
             Debug.LogError("Enemy: No se encontró EnemyHealthController.");
     }

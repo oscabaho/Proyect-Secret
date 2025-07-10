@@ -1,5 +1,6 @@
 using UnityEngine;
 using ProyectSecret.Interfaces;
+using ProyectSecret.Combat.Behaviours;
 
 namespace ProyectSecret.Inventory.Items
 {
@@ -61,7 +62,7 @@ namespace ProyectSecret.Inventory.Items
             var equipmentController = user.GetComponent<PlayerEquipmentController>();
             if (equipmentController != null)
             {
-                equipmentController.EquipItemById(this.Id);
+                equipmentController.EquipItemById(((MysteryItem)this).Id);
                 Debug.Log($"{DisplayName} equipada.");
             }
             else

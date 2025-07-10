@@ -1,9 +1,9 @@
 using UnityEngine;
-using Combat.SceneManagement;
-using Inventory;
+using ProyectSecret.Combat.SceneManagement;
+using ProyectSecret.Inventory;
 using Enemies.Behaviours;
 
-namespace Combat.SceneManagement
+namespace ProyectSecret.Combat.SceneManagement
 {
     /// <summary>
     /// Inicializa la escena de combate instanciando jugador y enemigo, y aplica la lógica de kriptonita.

@@ -1,22 +1,22 @@
 using System;
 using UnityEngine;
+using ProyectSecret.Components;
+using ProyectSecret.Stats;
 using Characters;
-using Components;
-using Stats;
 
-namespace Characters
+namespace ProyectSecret.Characters
 {
     /// <summary>
     /// Controlador de salud y muerte para el jugador. Hereda de HealthControllerBase.
     /// </summary>
-    [RequireComponent(typeof(Components.HealthComponentBehaviour))]
-    [RequireComponent(typeof(Components.StaminaComponentBehaviour))]
+    [RequireComponent(typeof(HealthComponentBehaviour))]
+    [RequireComponent(typeof(StaminaComponentBehaviour))]
     public class PlayerHealthController : HealthControllerBase
     {
         private StaminaComponentBehaviour staminaBehaviour;
-        private HealthComponentBehaviour healthBehaviour;
+        private new HealthComponentBehaviour healthBehaviour;
         public StaminaComponent Stamina => staminaBehaviour != null ? staminaBehaviour.Stamina : null;
-        public HealthComponent Health => healthBehaviour != null ? healthBehaviour.Health : null;
+        public new HealthComponent Health => healthBehaviour != null ? healthBehaviour.Health : null;
 
         protected override void Awake()
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ProyectSecret.Interfaces;
 using UnityEngine;
 using System.Linq;
-using ProyectSecret.Inventory.Equipamiento;
+using ProyectSecret.Inventory.Items;
 using ProyectSecret.Combat.SceneManagement;
 
 namespace ProyectSecret.Inventory
@@ -59,16 +59,17 @@ namespace ProyectSecret.Inventory
         public bool EquipItem(string itemId, GameObject user)
         {
             var item = inventoryModel.GetItems().FirstOrDefault(i => i != null && i.Id == itemId);
-            var equipable = item as Interfaces.IEquipable;
+            var equipable = item as IEquipable;
             if (equipable != null && equipmentSlots != null)
             {
-                bool result = equipmentSlots.EquipItem(equipable, user);
-                if (result)
+                // Equipar solo armas por ahora (puedes expandir para otros tipos)
+                if (equipable.GetSlotType() == EquipmentSlotType.Weapon)
                 {
+                    equipmentSlots.EquipWeapon(item as WeaponItem);
                     RemoveItem(itemId);
                     OnInventoryChanged?.Invoke();
+                    return true;
                 }
-                return result;
             }
             return false;
         }

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
-using Components;
-using Stats;
+using ProyectSecret.Components;
+using ProyectSecret.Events; // Add this line or the correct namespace for GameEventBus
 
 namespace Characters
 {
@@ -12,7 +12,7 @@ namespace Characters
     public abstract class HealthControllerBase : MonoBehaviour
     {
         [Header("Stats")]
-        [SerializeField] protected Components.HealthComponentBehaviour healthBehaviour;
+        [SerializeField] protected HealthComponentBehaviour healthBehaviour;
         public event Action OnDeath;
         public event Func<int, int> OnPreTakeDamage;
         public HealthComponent Health => healthBehaviour != null ? healthBehaviour.Health : null;
@@ -20,7 +20,7 @@ namespace Characters
         protected virtual void Awake()
         {
             if (healthBehaviour == null)
-                healthBehaviour = GetComponent<Components.HealthComponentBehaviour>();
+                healthBehaviour = GetComponent<HealthComponentBehaviour>();
             if (healthBehaviour == null)
                 Debug.LogWarning($"{GetType().Name}: HealthComponentBehaviour no asignado.");
         }

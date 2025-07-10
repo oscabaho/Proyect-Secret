@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Combat.SceneManagement;
+using ProyectSecret.Combat.SceneManagement;
 
-namespace Combat.SceneManagement
+namespace ProyectSecret.Combat.SceneManagement
 {
     /// <summary>
     /// Carga la escena de combate y transfiere los datos necesarios.

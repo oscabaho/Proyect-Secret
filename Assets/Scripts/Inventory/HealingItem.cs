@@ -1,7 +1,8 @@
-using UnityEngine;
+using Characters;
 using ProyectSecret.Interfaces;
+using UnityEngine;
 
-namespace ProyectSecret.Inventory.Items
+namespace Inventory
 {
     [CreateAssetMenu(fileName = "HealingItem", menuName = "Inventory/HealingItem")]
     public class HealingItem : ScriptableObject, IUsableItem
@@ -20,7 +21,7 @@ namespace ProyectSecret.Inventory.Items
 
         public void Use(GameObject user)
         {
-            var health = user.GetComponent<ProyectSecret.Characters.PlayerHealthController>();
+            var health = user.GetComponent<Characters.PlayerHealthController>();
             if (health != null && health.Health != null)
             {
                 health.Health.AffectValue(healAmount);

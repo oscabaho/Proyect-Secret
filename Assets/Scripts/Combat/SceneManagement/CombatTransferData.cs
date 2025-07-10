@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Combat.SceneManagement
+namespace ProyectSecret.Combat.SceneManagement
 {
     /// <summary>
     /// ScriptableObject para transferir datos de combate entre escenas.

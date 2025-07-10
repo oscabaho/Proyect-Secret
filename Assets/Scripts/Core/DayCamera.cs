@@ -1,6 +1,8 @@
+
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ProyectSecret.UI.Dialogue;
 
 namespace ProyectSecret.Core
 {
