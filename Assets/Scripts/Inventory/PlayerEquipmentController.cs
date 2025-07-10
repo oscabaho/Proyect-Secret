@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using ProyectSecret.Inventory.Items;
 
@@ -7,7 +6,8 @@ namespace ProyectSecret.Inventory
     /// <summary>
     /// Controlador de equipamiento del jugador. Gestiona el equipamiento y auto-equipamiento de armas y otros ítems.
     /// </summary>
-    public class PlayerEquipmentController : MonoBehaviour
+    [RequireComponent(typeof(EquipmentSlots))]
+public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces.IPlayerEquipmentController
     {
         [SerializeField] private EquipmentSlots equipmentSlots;
 
@@ -16,21 +16,58 @@ namespace ProyectSecret.Inventory
 
         public EquipmentSlots EquipmentSlots => equipmentSlots;
 
+        private void Awake()
+        {
+            // Inyección de dependencias y cacheo de referencias
+            if (equipmentSlots == null)
+                equipmentSlots = GetComponent<EquipmentSlots>();
+        }
+
+        /// <summary>
+        /// Permite restaurar directamente una instancia de arma equipada (para persistencia).
+        /// </summary>
+        public void EquipWeaponInstance(WeaponInstance instance)
+        {
+            if (equipmentSlots == null)
+            {
+                Debug.LogError("[PlayerEquipmentController] EquipmentSlots no asignado.");
+                return;
+            }
+            if (instance != null)
+            {
+                equipmentSlots.EquipWeapon(instance.weaponData);
+                EquippedWeaponInstance = instance;
+            }
+            else
+            {
+                UnequipWeapon();
+            }
+        }
+
         public void EquipWeapon(WeaponItem weaponItem)
         {
+            if (equipmentSlots == null)
+            {
+                Debug.LogError("[PlayerEquipmentController] EquipmentSlots no asignado.");
+                return;
+            }
             equipmentSlots.EquipWeapon(weaponItem);
             EquippedWeaponInstance = new WeaponInstance(weaponItem);
         }
 
         public void EquipItemById(string itemId)
         {
-            // Lógica para equipar un ítem por su ID (ejemplo: buscar en inventario y asignar al slot correspondiente)
             Debug.Log($"Equipando ítem con ID: {itemId}");
             // Implementa la lógica real según tu inventario
         }
 
         public void UnequipWeapon()
         {
+            if (equipmentSlots == null)
+            {
+                Debug.LogError("[PlayerEquipmentController] EquipmentSlots no asignado.");
+                return;
+            }
             equipmentSlots?.UnequipWeapon();
             EquippedWeaponInstance = null;
         }

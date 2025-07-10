@@ -25,7 +25,7 @@ namespace ProyectSecret.Achievements
         private void OnCharacterDeath(CharacterDeathEvent evt)
         {
             // Ejemplo: desbloquear logro si el enemigo derrotado es de cierto tipo
-            if (evt.Character.CompareTag("Enemy"))
+            if (evt.Entity != null && evt.Entity.CompareTag("Enemy"))
             {
                 Debug.Log("¡Logro desbloqueado: Derrotaste a un enemigo!");
                 // Aquí puedes marcar el logro como desbloqueado

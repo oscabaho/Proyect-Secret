@@ -28,7 +28,7 @@ namespace ProyectSecret.Quests
 
         private void OnCharacterDeath(CharacterDeathEvent evt)
         {
-            if (evt.Character.CompareTag("Enemy"))
+            if (evt.Entity != null && evt.Entity.CompareTag("Enemy"))
             {
                 enemiesDefeated++;
                 Debug.Log($"Misión: Enemigos derrotados = {enemiesDefeated}");

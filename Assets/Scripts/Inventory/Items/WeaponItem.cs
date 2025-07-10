@@ -8,7 +8,7 @@ namespace ProyectSecret.Inventory.Items
     /// ScriptableObject base para armas. Permite instanciar el hitbox, aplicar daño y ser usado/equipado.
     /// </summary>
     [CreateAssetMenu(fileName = "WeaponItem", menuName = "Inventory/WeaponItem")]
-    public class WeaponItem : MysteryItem, IUsableItem, IEquipable
+public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, ProyectSecret.Interfaces.IEquipable
     {
         [Header("Datos del arma")]
         [SerializeField] private int weaponDamage = 10;

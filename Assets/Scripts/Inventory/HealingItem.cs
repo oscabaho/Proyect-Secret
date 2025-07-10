@@ -21,7 +21,7 @@ namespace Inventory
 
         public void Use(GameObject user)
         {
-            var health = user.GetComponent<Characters.PlayerHealthController>();
+            var health = user.GetComponent<ProyectSecret.Characters.PlayerHealthController>();
             if (health != null && health.Health != null)
             {
                 health.Health.AffectValue(healAmount);

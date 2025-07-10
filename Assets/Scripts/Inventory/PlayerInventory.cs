@@ -59,7 +59,7 @@ namespace ProyectSecret.Inventory
         public bool EquipItem(string itemId, GameObject user)
         {
             var item = inventoryModel.GetItems().FirstOrDefault(i => i != null && i.Id == itemId);
-            var equipable = item as IEquipable;
+            var equipable = item as ProyectSecret.Interfaces.IEquipable;
             if (equipable != null && equipmentSlots != null)
             {
                 // Equipar solo armas por ahora (puedes expandir para otros tipos)
