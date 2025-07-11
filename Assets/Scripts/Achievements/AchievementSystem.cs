@@ -1,7 +1,4 @@
-using System;
 using UnityEngine;
-using ProyectSecret.Interfaces;
-using System.Linq;
 using ProyectSecret.Events;
 
 
@@ -14,12 +11,12 @@ namespace ProyectSecret.Achievements
     {
         private void OnEnable()
         {
-            ProyectSecret.Events.GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
+            GameEventBus.Instance.Subscribe<CharacterDeathEvent>(OnCharacterDeath);
         }
 
         private void OnDisable()
         {
-            ProyectSecret.Events.GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
+            GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(OnCharacterDeath);
         }
 
         private void OnCharacterDeath(CharacterDeathEvent evt)
