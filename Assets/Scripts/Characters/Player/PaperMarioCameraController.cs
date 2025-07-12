@@ -16,6 +16,12 @@ public class PaperMarioCameraController : MonoBehaviour
     [SerializeField] private Vector3 invertedOffset = new Vector3(0, 5, 10);
     [SerializeField] private float invertThreshold = 2f;
 
+    // Permite consultar si la cámara está invertida
+    public bool IsCameraInverted()
+    {
+        return isCameraInverted;
+    }
+
     void Start()
     {
         if (target != null)

@@ -159,63 +159,74 @@ using UnityEngine.InputSystem;
         if (moveAction != null)
         {
             Vector2 input = moveAction.ReadValue<Vector2>();
-            // Detectar si el jugador está presionando hacia abajo (para la cámara)
             IsMovingDown = input.y < -0.1f;
 
-            // Invertir el eje Z si la cámara está invertida
-            float z = isCameraInverted ? -input.y : input.y;
-            Vector3 move = new Vector3(input.x, 0, z); // Permite movimiento horizontal, vertical y diagonal
-            rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
-
-            // Cambiar sprite según dirección (ajustar lógica si la cámara está invertida)
-            if (spriteRenderer != null)
+            // Obtener la referencia a la cámara principal
+            Camera cam = Camera.main;
+            if (cam != null)
             {
-                // Si la cámara está invertida, invertir la lógica de arriba/abajo
-                float yDir = isCameraInverted ? -input.y : input.y;
-                // Derecha
-                if (input.x > 0.1f && Mathf.Abs(yDir) < 0.1f)
-                {
-                    spriteRenderer.sprite = spriteDerecha;
-                    spriteRenderer.flipX = false;
-                }
-                // Izquierda
-                else if (input.x < -0.1f && Mathf.Abs(yDir) < 0.1f)
-                {
-                    spriteRenderer.sprite = spriteDerecha;
-                    spriteRenderer.flipX = true;
-                }
-                // Oblicuo arriba-derecha
-                else if (input.x > 0.1f && yDir > 0.1f)
-                {
-                    spriteRenderer.sprite = spriteArribaDerecha;
-                    spriteRenderer.flipX = false;
-                }
-                // Oblicuo arriba-izquierda
-                else if (input.x < -0.1f && yDir > 0.1f)
-                {
-                    spriteRenderer.sprite = spriteArribaDerecha;
-                    spriteRenderer.flipX = true;
-                }
-                // Arriba
-                else if (Mathf.Abs(input.x) < 0.1f && yDir > 0.1f)
-                {
-                    spriteRenderer.sprite = spriteArriba;
-                    spriteRenderer.flipX = false;
-                }
-                // Abajo
-                else if (Mathf.Abs(input.x) < 0.1f && yDir < -0.1f)
-                {
-                    spriteRenderer.sprite = spriteAbajo;
-                    spriteRenderer.flipX = false;
-                }
-            }
+                // Calcular la dirección de movimiento en el espacio de la cámara
+                Vector3 camForward = cam.transform.forward;
+                Vector3 camRight = cam.transform.right;
+                camForward.y = 0f; // Solo movimiento en plano XZ
+                camRight.y = 0f;
+                camForward.Normalize();
+                camRight.Normalize();
+                Vector3 moveDir = (camForward * input.y + camRight * input.x).normalized;
+                rb.linearVelocity = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
 
-            // Restaurar input a valores iniciales al soltar el input de atrás tras invertir la cámara
-            if (isCameraInverted && Mathf.Abs(input.x) < 0.1f && Mathf.Abs(input.y) < 0.1f)
-            {
-                // Cuando el jugador suelta el input después de invertir la cámara, restaurar la lógica de input
-                // Esto solo afecta la lógica interna, la cámara permanece invertida
-                isCameraInverted = false;
+                // Cambiar sprite según dirección relativa a la cámara
+                if (spriteRenderer != null)
+                {
+                    // Proyectar el movimiento en el espacio de la cámara para decidir el sprite
+                    float forwardDot = Vector3.Dot(moveDir, camForward);
+                    float rightDot = Vector3.Dot(moveDir, camRight);
+                    // Si la cámara está invertida, invertir la lógica de derecha/izquierda
+                    bool camInverted = false;
+                    if (Camera.main != null)
+                    {
+                        // Detectar si la cámara está invertida por el offset
+                        var camController = Camera.main.GetComponent<PaperMarioCameraController>();
+                        if (camController != null)
+                            camInverted = camController.IsCameraInverted();
+                    }
+                    // Derecha
+                    if ((rightDot > 0.1f && Mathf.Abs(forwardDot) < 0.1f && !camInverted) || (rightDot < -0.1f && Mathf.Abs(forwardDot) < 0.1f && camInverted))
+                    {
+                        spriteRenderer.sprite = spriteDerecha;
+                        spriteRenderer.flipX = false;
+                    }
+                    // Izquierda
+                    else if ((rightDot < -0.1f && Mathf.Abs(forwardDot) < 0.1f && !camInverted) || (rightDot > 0.1f && Mathf.Abs(forwardDot) < 0.1f && camInverted))
+                    {
+                        spriteRenderer.sprite = spriteDerecha;
+                        spriteRenderer.flipX = true;
+                    }
+                    // Arriba
+                    else if (forwardDot > 0.1f && Mathf.Abs(rightDot) < 0.1f)
+                    {
+                        spriteRenderer.sprite = spriteArriba;
+                        spriteRenderer.flipX = false;
+                    }
+                    // Abajo
+                    else if (forwardDot < -0.1f && Mathf.Abs(rightDot) < 0.1f)
+                    {
+                        spriteRenderer.sprite = spriteAbajo;
+                        spriteRenderer.flipX = false;
+                    }
+                    // Oblicuo arriba-derecha
+                    else if (((rightDot > 0.1f && forwardDot > 0.1f && !camInverted) || (rightDot < -0.1f && forwardDot > 0.1f && camInverted)))
+                    {
+                        spriteRenderer.sprite = spriteArribaDerecha;
+                        spriteRenderer.flipX = false;
+                    }
+                    // Oblicuo arriba-izquierda
+                    else if (((rightDot < -0.1f && forwardDot > 0.1f && !camInverted) || (rightDot > 0.1f && forwardDot > 0.1f && camInverted)))
+                    {
+                        spriteRenderer.sprite = spriteArribaDerecha;
+                        spriteRenderer.flipX = true;
+                    }
+                }
             }
         }
         if (jumpAction != null && jumpAction.WasPressedThisFrame() && isGrounded)
