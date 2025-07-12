@@ -43,6 +43,8 @@ namespace ProyectSecret.Core
                 directionalLight.intensity = 1f;
                 directionalLight.color = Color.white;
             }
+            // Publicar evento de inicio de día
+            ProyectSecret.Events.GameEventBus.Instance.Publish(new ProyectSecret.Events.DayStartedEvent());
         }
 
         void SetNight()
@@ -54,6 +56,8 @@ namespace ProyectSecret.Core
                 directionalLight.intensity = 0.2f;
                 directionalLight.color = new Color(0.2f, 0.2f, 0.5f);
             }
+            // Publicar evento de inicio de noche
+            ProyectSecret.Events.GameEventBus.Instance.Publish(new ProyectSecret.Events.NightStartedEvent());
         }
 
         void RotateLight()
