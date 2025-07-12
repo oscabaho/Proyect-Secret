@@ -25,44 +25,53 @@ public class PaperMarioCameraController : MonoBehaviour
     void LateUpdate()
     {
         if (target == null) return;
-        // Detectar si el jugador se mueve "hacia la cámara" (input vertical positivo)
-        bool movingTowardsCamera = false;
-        bool inputHeldTowardsCamera = false;
-        if (playerMovementScript != null)
+        if (playerMovementScript == null) return;
+
+        // Detectar si el jugador mantiene input hacia abajo
+        bool inputDown = playerMovementScript.IsMovingDown;
+
+        if (!isCameraInverted)
         {
-            Vector2 input = playerMovementScript.GetMoveInput();
-            // Detecta si el input de acercarse a la cámara está siendo sostenido
-            inputHeldTowardsCamera = input.y < -0.1f;
-            movingTowardsCamera = inputHeldTowardsCamera;
-        }
-        if (inputHeldTowardsCamera)
-        {
-            if (!isCameraInverted)
+            if (inputDown)
             {
                 moveTowardsCameraTimer += Time.deltaTime;
                 if (moveTowardsCameraTimer >= invertThreshold)
                 {
-                    isCameraInverted = true;
-                    // Cambia el sprite del jugador a "frontal" si tienes uno
-                    if (playerMovementScript != null)
-                        playerMovementScript.SetFrontalSprite();
+                    InvertCameraInstant();
+                    moveTowardsCameraTimer = 0f;
                 }
             }
-            // Si la cámara ya está invertida, no volver a ejecutar el cambio
-        }
-        else
-        {
-            moveTowardsCameraTimer = 0f;
-            // Si la cámara está invertida y el input se suelta, restaurar la cámara y el sprite
-            if (isCameraInverted)
+            else
             {
-                isCameraInverted = false;
-                if (playerMovementScript != null)
-                    playerMovementScript.SetDefaultSprite();
+                moveTowardsCameraTimer = 0f;
             }
         }
+        // Ahora la cámara invertida permanece hasta que se invoque RestoreCameraInstant manualmente
+
         Vector3 desiredPosition = target.position + (isCameraInverted ? invertedOffset : offset);
         transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
         transform.LookAt(target.position + Vector3.up * 1.5f);
+    }
+
+    // Método público para invertir la cámara instantáneamente
+    public void InvertCameraInstant()
+    {
+        isCameraInverted = true;
+        if (playerMovementScript != null)
+        {
+            playerMovementScript.SetCameraInverted(true);
+            playerMovementScript.SetFrontalSprite();
+        }
+    }
+
+    // Método público para restaurar la cámara instantáneamente
+    public void RestoreCameraInstant()
+    {
+        isCameraInverted = false;
+        if (playerMovementScript != null)
+        {
+            playerMovementScript.SetCameraInverted(false);
+            playerMovementScript.SetDefaultSprite();
+        }
     }
 }

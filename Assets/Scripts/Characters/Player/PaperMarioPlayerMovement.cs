@@ -4,9 +4,25 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Movimiento lateral estilo Paper Mario usando el Nuevo Input System.
 /// </summary>
-[RequireComponent(typeof(Rigidbody))]
-public class PaperMarioPlayerMovement : MonoBehaviour
-{
+ [RequireComponent(typeof(Rigidbody))]
+ public class PaperMarioPlayerMovement : MonoBehaviour
+ {
+    // Estado de inversión de cámara
+    private bool isCameraInverted = false;
+    // Permite saber si el jugador está presionando input de movimiento
+    public bool IsMovingDown { get; private set; } = false;
+
+    // Llamado por el controlador de cámara para notificar el estado de inversión
+    public void SetCameraInverted(bool inverted)
+    {
+        isCameraInverted = inverted;
+        // Si la cámara se acaba de invertir, forzar la "dirección inicial" al soltar el input de atrás
+        if (!inverted)
+        {
+            // Al restaurar la cámara, el input vuelve a la lógica normal automáticamente
+            // Si quieres forzar la posición o animación, puedes hacerlo aquí
+        }
+    }
     [Header("Sprite frontal (mirando a la cámara)")]
     [SerializeField] private Sprite spriteFrontal;
 
@@ -143,49 +159,63 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         if (moveAction != null)
         {
             Vector2 input = moveAction.ReadValue<Vector2>();
-            Vector3 move = new Vector3(input.x, 0, input.y); // Permite movimiento horizontal, vertical y diagonal
+            // Detectar si el jugador está presionando hacia abajo (para la cámara)
+            IsMovingDown = input.y < -0.1f;
+
+            // Invertir el eje Z si la cámara está invertida
+            float z = isCameraInverted ? -input.y : input.y;
+            Vector3 move = new Vector3(input.x, 0, z); // Permite movimiento horizontal, vertical y diagonal
             rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
 
-            // Cambiar sprite según dirección
+            // Cambiar sprite según dirección (ajustar lógica si la cámara está invertida)
             if (spriteRenderer != null)
             {
+                // Si la cámara está invertida, invertir la lógica de arriba/abajo
+                float yDir = isCameraInverted ? -input.y : input.y;
                 // Derecha
-                if (input.x > 0.1f && Mathf.Abs(input.y) < 0.1f)
+                if (input.x > 0.1f && Mathf.Abs(yDir) < 0.1f)
                 {
                     spriteRenderer.sprite = spriteDerecha;
                     spriteRenderer.flipX = false;
                 }
                 // Izquierda
-                else if (input.x < -0.1f && Mathf.Abs(input.y) < 0.1f)
+                else if (input.x < -0.1f && Mathf.Abs(yDir) < 0.1f)
                 {
                     spriteRenderer.sprite = spriteDerecha;
                     spriteRenderer.flipX = true;
                 }
                 // Oblicuo arriba-derecha
-                else if (input.x > 0.1f && input.y > 0.1f)
+                else if (input.x > 0.1f && yDir > 0.1f)
                 {
                     spriteRenderer.sprite = spriteArribaDerecha;
                     spriteRenderer.flipX = false;
                 }
                 // Oblicuo arriba-izquierda
-                else if (input.x < -0.1f && input.y > 0.1f)
+                else if (input.x < -0.1f && yDir > 0.1f)
                 {
                     spriteRenderer.sprite = spriteArribaDerecha;
                     spriteRenderer.flipX = true;
                 }
                 // Arriba
-                else if (Mathf.Abs(input.x) < 0.1f && input.y > 0.1f)
+                else if (Mathf.Abs(input.x) < 0.1f && yDir > 0.1f)
                 {
                     spriteRenderer.sprite = spriteArriba;
                     spriteRenderer.flipX = false;
                 }
                 // Abajo
-                else if (Mathf.Abs(input.x) < 0.1f && input.y < -0.1f)
+                else if (Mathf.Abs(input.x) < 0.1f && yDir < -0.1f)
                 {
                     spriteRenderer.sprite = spriteAbajo;
                     spriteRenderer.flipX = false;
                 }
-                // Puedes agregar más condiciones para otras direcciones si tienes más sprites
+            }
+
+            // Restaurar input a valores iniciales al soltar el input de atrás tras invertir la cámara
+            if (isCameraInverted && Mathf.Abs(input.x) < 0.1f && Mathf.Abs(input.y) < 0.1f)
+            {
+                // Cuando el jugador suelta el input después de invertir la cámara, restaurar la lógica de input
+                // Esto solo afecta la lógica interna, la cámara permanece invertida
+                isCameraInverted = false;
             }
         }
         if (jumpAction != null && jumpAction.WasPressedThisFrame() && isGrounded)
