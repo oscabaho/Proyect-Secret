@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections.Generic;
 using ProyectSecret.Inventory;
@@ -29,6 +28,7 @@ namespace ProyectSecret.Combat.SceneManagement
     public class PlayerPersistentData : ScriptableObject
     {
         [SerializeField] private int playerHealth;
+        [HideInInspector] public bool CameFromDefeat = false;
         [SerializeField] private string equippedWeaponId;
         [SerializeField] private float equippedWeaponDurability;
         [SerializeField] private int equippedWeaponHits;
@@ -49,9 +49,9 @@ namespace ProyectSecret.Combat.SceneManagement
             var equipment = player.GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
             if (equipment != null && equipment.EquippedWeaponInstance != null)
             {
-                equippedWeaponId = equipment.EquippedWeaponInstance.weaponData != null ? equipment.EquippedWeaponInstance.weaponData.Id : null;
-                equippedWeaponDurability = equipment.EquippedWeaponInstance.currentDurability;
-                equippedWeaponHits = equipment.EquippedWeaponInstance.hits;
+                equippedWeaponId = equipment.EquippedWeaponInstance.WeaponData != null ? equipment.EquippedWeaponInstance.WeaponData.Id : null;
+                equippedWeaponDurability = equipment.EquippedWeaponInstance.CurrentDurability;
+                equippedWeaponHits = equipment.EquippedWeaponInstance.Hits;
             }
             else
             {
@@ -78,8 +78,8 @@ namespace ProyectSecret.Combat.SceneManagement
                 if (weaponItem != null)
                 {
                     var weaponInstance = new WeaponInstance(weaponItem);
-                    weaponInstance.currentDurability = equippedWeaponDurability;
-                    weaponInstance.hits = equippedWeaponHits;
+                    weaponInstance.SetDurability(equippedWeaponDurability);
+                    weaponInstance.SetHits(equippedWeaponHits);
                     equipment.EquipWeaponInstance(weaponInstance);
                 }
             }

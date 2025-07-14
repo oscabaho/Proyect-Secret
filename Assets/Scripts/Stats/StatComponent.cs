@@ -14,8 +14,8 @@ namespace ProyectSecret.Stats
         [SerializeField, Tooltip("Valor máximo de la estadística")] private int maxValue = 100;
         [SerializeField, HideInInspector] private int currentValue;
 
-        public int MaxValue => maxValue;
-        public int CurrentValue => currentValue;
+        public int MaxValue { get { return maxValue; } }
+        public int CurrentValue { get { return currentValue; } }
 
         // Exponer el evento solo para suscripción, no para asignación externa
         public event Action<StatComponent> OnValueChanged

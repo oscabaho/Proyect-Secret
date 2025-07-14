@@ -7,15 +7,25 @@ namespace ProyectSecret.Inventory
     /// </summary>
     public class WeaponInstance
     {
-        public WeaponItem weaponData;
-        public float currentDurability;
-        public int hits;
+        public WeaponItem WeaponData { get; private set; }
+        public float CurrentDurability { get; private set; }
+        public int Hits { get; private set; }
+
+        public void SetDurability(float value)
+        {
+            CurrentDurability = value;
+        }
+
+        public void SetHits(int value)
+        {
+            Hits = value;
+        }
 
         public WeaponInstance(WeaponItem weaponData)
         {
-            this.weaponData = weaponData;
-            this.currentDurability = weaponData.MaxDurability;
-            this.hits = 0;
+            WeaponData = weaponData;
+            CurrentDurability = weaponData.MaxDurability;
+            Hits = 0;
         }
     }
 }
