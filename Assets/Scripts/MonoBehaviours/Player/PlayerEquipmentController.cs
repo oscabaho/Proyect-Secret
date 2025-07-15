@@ -30,7 +30,9 @@ public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces
         {
             if (equipmentSlots == null)
             {
+                #if UNITY_EDITOR
                 Debug.LogError("[PlayerEquipmentController] EquipmentSlots no asignado.");
+                #endif
                 return;
             }
             if (instance != null)
@@ -48,7 +50,9 @@ public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces
         {
             if (equipmentSlots == null)
             {
+                #if UNITY_EDITOR
                 Debug.LogError("[PlayerEquipmentController] EquipmentSlots no asignado.");
+                #endif
                 return;
             }
             equipmentSlots.EquipWeapon(weaponItem);
@@ -57,7 +61,9 @@ public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces
 
         public void EquipItemById(string itemId)
         {
+            #if UNITY_EDITOR
             Debug.Log($"Equipando ítem con ID: {itemId}");
+            #endif
             // Implementa la lógica real según tu inventario
         }
 
@@ -65,7 +71,9 @@ public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces
         {
             if (equipmentSlots == null)
             {
+                #if UNITY_EDITOR
                 Debug.LogError("[PlayerEquipmentController] EquipmentSlots no asignado.");
+                #endif
                 return;
             }
             equipmentSlots?.UnequipWeapon();

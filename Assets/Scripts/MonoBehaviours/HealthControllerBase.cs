@@ -24,7 +24,11 @@ namespace Characters
             if (healthBehaviour == null)
                 healthBehaviour = GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
             if (healthBehaviour == null)
+            {
+                #if UNITY_EDITOR
                 Debug.LogWarning($"{GetType().Name}: HealthComponentBehaviour no asignado.");
+                #endif
+            }
         }
         public virtual void TakeDamage(int amount)
         {

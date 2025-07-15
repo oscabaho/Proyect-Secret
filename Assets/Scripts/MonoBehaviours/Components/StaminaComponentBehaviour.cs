@@ -16,6 +16,14 @@ namespace ProyectSecret.Components
         public int MaxValue => stamina.MaxValue;
         public void AffectValue(int value) => stamina.AffectValue(value);
 
+        /// <summary>
+        /// Establece la stamina al máximo.
+        /// </summary>
+        public void SetToMax()
+        {
+            stamina.SetToMax();
+        }
+
         private void Awake()
         {
             // Inicialización si es necesario

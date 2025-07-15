@@ -19,7 +19,9 @@ namespace ProyectSecret.Spawning
         {
             if (daggerPrefab == null || spawnPoints.Count < daggersToSpawn)
             {
+                #if UNITY_EDITOR
                 Debug.LogWarning("Configura el prefab y al menos tantos spawn points como dagas a instanciar.");
+                #endif
                 return;
             }
             var selectedIndices = new HashSet<int>();

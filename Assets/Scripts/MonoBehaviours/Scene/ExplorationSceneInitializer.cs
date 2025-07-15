@@ -23,8 +23,15 @@ public class ExplorationSceneInitializer : MonoBehaviour
         }
         else
         {
-            // Instancia el jugador en el punto normal (puedes adaptar esto)
+            // Instancia el jugador en el punto normal (primera vez)
             var player = Instantiate(playerPrefab, statueSpawnPoint.position, Quaternion.identity);
+
+            // Inicializa vida y stamina al máximo SOLO si es la primera vez (no hay datos previos)
+            var health = player.GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
+            if (health != null) health.SetToMax();
+            var stamina = player.GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
+            if (stamina != null) stamina.SetToMax();
+
             playerPersistentData.ApplyToPlayer(player, null);
         }
     }

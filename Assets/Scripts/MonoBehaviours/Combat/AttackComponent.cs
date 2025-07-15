@@ -40,7 +40,9 @@ namespace ProyectSecret.Combat.Behaviours
             {
                 if (equipmentController == null || equipmentController.EquippedWeaponInstance == null)
                 {
+                    #if UNITY_EDITOR
                     Debug.LogWarning("No hay arma equipada para atacar.");
+                    #endif
                     return;
                 }
                 staminaBehaviour.Stamina.UseStamina(staminaCost);
@@ -68,7 +70,9 @@ namespace ProyectSecret.Combat.Behaviours
             }
             else
             {
+                #if UNITY_EDITOR
                 Debug.Log("No hay suficiente stamina para atacar.");
+                #endif
             }
         }
     }

@@ -16,6 +16,14 @@ namespace ProyectSecret.Components
         public int MaxValue => health.MaxValue;
         public void AffectValue(int value) => health.AffectValue(value);
 
+        /// <summary>
+        /// Establece la vida al máximo.
+        /// </summary>
+        public void SetToMax()
+        {
+            health.SetToMax();
+        }
+
         private void Awake()
         {
             // Inicialización si es necesario

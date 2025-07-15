@@ -22,7 +22,9 @@ namespace ProyectSecret.Inventory.UI
         private void OnInventoryChanged(InventoryChangedEvent evt)
         {
             // Aquí actualizas la UI según el nuevo estado del inventario
+            #if UNITY_EDITOR
             Debug.Log($"Inventario actualizado. Total de ítems: {evt.Inventory.GetItems().Count}");
+            #endif
             // Ejemplo: Redibujar slots, actualizar iconos, etc.
         }
     }

@@ -31,20 +31,26 @@ namespace ProyectSecret.Quests
             if (evt.Entity != null && evt.Entity.CompareTag("Enemy"))
             {
                 enemiesDefeated++;
+                #if UNITY_EDITOR
                 Debug.Log($"Misión: Enemigos derrotados = {enemiesDefeated}");
+                #endif
                 // Aquí puedes comprobar si se cumple una misión
             }
         }
 
         private void OnCombatVictory(CombatVictoryEvent evt)
         {
+            #if UNITY_EDITOR
             Debug.Log("Misión: ¡Victoria en combate!");
+            #endif
         }
 
         private void OnItemUsed(ItemUsedEvent evt)
         {
             itemsUsed++;
+            #if UNITY_EDITOR
             Debug.Log($"Misión: Ítems usados = {itemsUsed}");
+            #endif
             // Aquí puedes comprobar si se cumple una misión de uso de ítems
         }
     }

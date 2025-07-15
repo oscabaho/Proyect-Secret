@@ -25,7 +25,9 @@ namespace ProyectSecret.Combat.SceneManagement
         private void OnEnemyDefeated()
         {
             // Aquí puedes mostrar UI de victoria, animaciones, etc.
+            #if UNITY_EDITOR
             Debug.Log("¡Enemigo derrotado! Regresando a exploración...");
+            #endif
             // Guardar estado actualizado del jugador e inventario
             if (playerPersistentData != null && playerInstance != null)
                 playerPersistentData.SaveFromPlayer(playerInstance);
@@ -36,11 +38,13 @@ namespace ProyectSecret.Combat.SceneManagement
         // Manejo explícito de derrota
         public void OnPlayerDefeated()
         {
+            #if UNITY_EDITOR
             Debug.Log("¡Jugador derrotado! Regresando a exploración, inicio de día, punto fijo.");
-            // Guardar estado si es necesario
+            #endif
+            // Guardar estado actualizado de vida y stamina del jugador antes de regresar a exploración
             if (playerPersistentData != null && playerInstance != null)
             {
-                playerPersistentData.SaveFromPlayer(playerInstance);
+                playerPersistentData.SaveFromPlayer(playerInstance); // Esto guarda vida, stamina y demás stats actuales
                 playerPersistentData.CameFromDefeat = true;
             }
             // Publicar evento de inicio de día

@@ -24,7 +24,9 @@ namespace ProyectSecret.Achievements
             // Ejemplo: desbloquear logro si el enemigo derrotado es de cierto tipo
             if (evt.Entity != null && evt.Entity.CompareTag("Enemy"))
             {
+                #if UNITY_EDITOR
                 Debug.Log("¡Logro desbloqueado: Derrotaste a un enemigo!");
+                #endif
                 // Aquí puedes marcar el logro como desbloqueado
             }
         }

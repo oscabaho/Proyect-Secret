@@ -85,7 +85,9 @@ using UnityEngine.InputSystem;
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
         {
+            #if UNITY_EDITOR
             Debug.LogWarning("No se encontró SpriteRenderer en el jugador. Añádelo al GameObject.");
+            #endif
         }
         SubscribeToDayNightEvents();
         if (inputActions != null)
@@ -94,7 +96,9 @@ using UnityEngine.InputSystem;
         }
         else
         {
+            #if UNITY_EDITOR
             Debug.LogWarning("InputActionAsset no asignado en el inspector.");
+            #endif
         }
     }
 
@@ -138,7 +142,9 @@ using UnityEngine.InputSystem;
         }
         else
         {
+            #if UNITY_EDITOR
             Debug.LogWarning($"No se encontró el ActionMap '{actionMapName}' en el InputActionAsset.");
+            #endif
         }
     }
 

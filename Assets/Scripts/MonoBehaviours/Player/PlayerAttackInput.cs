@@ -19,7 +19,11 @@ public class PlayerAttackInput : MonoBehaviour
         if (playerCamera == null)
             playerCamera = GetComponentInChildren<Camera>();
         if (playerCamera == null)
+        {
+            #if UNITY_EDITOR
             Debug.LogWarning("PlayerAttackInput: No se encontró cámara en el jugador.");
+            #endif
+        }
         var inputActionAsset = InputSystem.actions;
         if (inputActionAsset != null)
             attackAction = inputActionAsset.FindAction(attackActionName);

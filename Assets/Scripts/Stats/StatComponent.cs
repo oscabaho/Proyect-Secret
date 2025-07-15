@@ -9,6 +9,14 @@ namespace ProyectSecret.Stats
     [Serializable]
     public abstract class StatComponent
     {
+        /// <summary>
+        /// Establece el valor actual al máximo.
+        /// </summary>
+        public void SetToMax()
+        {
+            currentValue = maxValue;
+            _onValueChanged?.Invoke(this);
+        }
         [field: NonSerialized]
         private event Action<StatComponent> _onValueChanged;
         [SerializeField, Tooltip("Valor máximo de la estadística")] private int maxValue = 100;
