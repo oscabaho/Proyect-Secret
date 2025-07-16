@@ -38,7 +38,11 @@ public class PaperMarioCameraController : MonoBehaviour
         }
         Vector3 desiredPosition = target.position + (isCameraInverted ? invertedOffset : offset);
         transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        transform.LookAt(target.position + Vector3.up * 1.5f);
+        // Si está invertida, mira al personaje en el eje Z; si no, mira normal
+        if (isCameraInverted)
+            transform.LookAt(target.position + target.forward * 1.5f);
+        else
+            transform.LookAt(target.position + Vector3.up * 1.5f);
     }
 
     // Método público para invertir la cámara instantáneamente
