@@ -12,6 +12,10 @@ using UnityEngine.InputSystem;
     // Permite saber si el jugador está presionando input de movimiento
     public bool IsMovingDown { get; private set; } = false;
 
+    [Header("Puntos de spawn de arma")]
+    [SerializeField] private Transform WeaponPoint;
+    [SerializeField] private Transform HitBoxPoint;
+
     // Llamado por el controlador de cámara para notificar el estado de inversión
     public void SetCameraInverted(bool inverted)
     {
@@ -185,6 +189,12 @@ using UnityEngine.InputSystem;
                 camRight.Normalize();
                 Vector3 moveDir = (camForward * input.y + camRight * input.x).normalized;
                 rb.linearVelocity = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
+
+                // Actualizar WeaponPoint y HitBoxPoint para que apunten en la dirección de movimiento
+                if (WeaponPoint != null && moveDir.sqrMagnitude > 0.01f)
+                    WeaponPoint.forward = moveDir;
+                if (HitBoxPoint != null && moveDir.sqrMagnitude > 0.01f)
+                    HitBoxPoint.forward = moveDir;
 
                 // Cambiar sprite según dirección relativa a la cámara
                 if (spriteRenderer != null)
