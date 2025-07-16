@@ -32,7 +32,8 @@ public class WeaponPickup : MonoBehaviour
         Debug.Log($"WeaponPickup: Awake en {gameObject.name}, weaponItem asignado: {(weaponItem != null ? weaponItem.name : "null")}, trigger: {(interactionTrigger != null ? interactionTrigger.name : "null")}");
     }
 
-    private void OnTriggerEnter(Collider other)
+    // Este método es llamado por el hijo trigger (WeaponPickupTrigger)
+    public void OnPickupTriggered(Collider other)
     {
         Debug.Log($"WeaponPickup: Trigger activado por {other.name}");
         var equipmentController = other.GetComponent<PlayerEquipmentController>();
