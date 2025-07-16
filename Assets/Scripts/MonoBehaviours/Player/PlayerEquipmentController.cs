@@ -6,7 +6,7 @@ namespace ProyectSecret.Inventory
     /// <summary>
     /// Controlador de equipamiento del jugador. Gestiona el equipamiento y auto-equipamiento de armas y otros ítems.
     /// </summary>
-    [RequireComponent(typeof(EquipmentSlots))]
+    // [RequireComponent(typeof(EquipmentSlots))] // EquipmentSlots no es un MonoBehaviour
 public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces.IPlayerEquipmentController
     {
         [SerializeField] private EquipmentSlots equipmentSlots;

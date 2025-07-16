@@ -132,6 +132,13 @@ GameObject:
   - component: {fileID: 103897258}
   - component: {fileID: 103897256}
   - component: {fileID: 103897259}
+  - component: {fileID: 103897266}
+  - component: {fileID: 103897265}
+  - component: {fileID: 103897264}
+  - component: {fileID: 103897263}
+  - component: {fileID: 103897262}
+  - component: {fileID: 103897261}
+  - component: {fileID: 103897260}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -166,7 +173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8eee29a6fd249b04ea728553394b5570, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spriteFrontal: {fileID: 21300000, guid: 5dbf30b0586c78d459d2ee69175be110, type: 3}
+  spriteFrontal: {fileID: 0}
   inputActions: {fileID: -944628639613478452, guid: fcbddd531342fbb4dbfb0a3e85be621f, type: 3}
   dayActionMap: PlayerDay
   nightActionMap: PlayerNight
@@ -281,6 +288,111 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &103897260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103897251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2042c0428f3d4e14286920db0998610b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerCamera: {fileID: 738492298}
+  attackActionName: Attack
+  inputActions: {fileID: -944628639613478452, guid: fcbddd531342fbb4dbfb0a3e85be621f, type: 3}
+--- !u!114 &103897261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103897251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 469791fc54571a04ba1b9ba6e02973b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackCooldown: 1
+  staminaCost: 10
+  staminaBehaviour: {fileID: 103897265}
+  equipmentController: {fileID: 0}
+  weapon: {fileID: 0}
+--- !u!114 &103897262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103897251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 765ca15a9d8a9214b923dd507720cbe3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &103897263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103897251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bade89e88bf39f04b96ce805759d98cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthBehaviour: {fileID: 103897264}
+  staminaRecoveryAmount: 5
+  staminaRecoveryInterval: 1
+--- !u!114 &103897264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103897251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3319e7c983239ff418e0d367ca8a08af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health:
+    maxValue: 100
+    currentValue: 0
+--- !u!114 &103897265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103897251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8fbb62fa9eaa8e42ae2510cb471acfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stamina:
+    maxValue: 100
+    currentValue: 0
+--- !u!114 &103897266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103897251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b4e79462e5899547b3bdf34f4391c45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxSlots: 5
+  equipmentSlots:
+    equippedWeapon: {fileID: 0}
+  initialItems: []
 --- !u!1 &358210788
 GameObject:
   m_ObjectHideFlags: 0
