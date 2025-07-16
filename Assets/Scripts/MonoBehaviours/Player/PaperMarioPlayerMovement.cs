@@ -16,11 +16,16 @@ using UnityEngine.InputSystem;
     public void SetCameraInverted(bool inverted)
     {
         isCameraInverted = inverted;
-        // Si la cámara se acaba de invertir, forzar la "dirección inicial" al soltar el input de atrás
-        if (!inverted)
+        // Actualiza el weaponHolder para que apunte al frente correcto
+        var equipmentController = GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
+        if (equipmentController != null && equipmentController.EquipmentSlots != null)
         {
-            // Al restaurar la cámara, el input vuelve a la lógica normal automáticamente
-            // Si quieres forzar la posición o animación, puedes hacerlo aquí
+            Transform weaponHolder = equipmentController.GetType().GetField("weaponHolder", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(equipmentController) as Transform;
+            if (weaponHolder != null)
+            {
+                // Si la cámara está invertida, apunta hacia atrás; si no, hacia adelante
+                weaponHolder.forward = inverted ? -transform.forward : transform.forward;
+            }
         }
     }
     [Header("Sprite frontal (mirando a la cámara)")]

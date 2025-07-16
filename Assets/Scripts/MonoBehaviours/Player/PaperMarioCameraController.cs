@@ -36,23 +36,20 @@ public class PaperMarioCameraController : MonoBehaviour
         // Detectar si el jugador mantiene input hacia abajo
         bool inputDown = playerMovementScript.IsMovingDown;
 
-        if (!isCameraInverted)
+        // Permitir que el temporizador se reinicie y la inversión pueda repetirse
+        if (inputDown)
         {
-            if (inputDown)
+            moveTowardsCameraTimer += Time.deltaTime;
+            if (!isCameraInverted && moveTowardsCameraTimer >= invertThreshold)
             {
-                moveTowardsCameraTimer += Time.deltaTime;
-                if (moveTowardsCameraTimer >= invertThreshold)
-                {
-                    InvertCameraInstant();
-                    moveTowardsCameraTimer = 0f;
-                }
-            }
-            else
-            {
+                InvertCameraInstant();
                 moveTowardsCameraTimer = 0f;
             }
         }
-        // Ahora la cámara invertida permanece hasta que se invoque RestoreCameraInstant manualmente
+        else
+        {
+            moveTowardsCameraTimer = 0f;
+        }
 
         Vector3 desiredPosition = target.position + (isCameraInverted ? invertedOffset : offset);
         transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
