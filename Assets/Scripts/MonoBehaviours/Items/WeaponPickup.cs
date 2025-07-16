@@ -24,20 +24,36 @@ public class WeaponPickup : MonoBehaviour
                 if (col != null && col.isTrigger)
                 {
                     interactionTrigger = child.gameObject;
+                    Debug.Log($"WeaponPickup: Trigger hijo encontrado: {interactionTrigger.name}");
                     break;
                 }
             }
         }
+        Debug.Log($"WeaponPickup: Awake en {gameObject.name}, weaponItem asignado: {(weaponItem != null ? weaponItem.name : "null")}, trigger: {(interactionTrigger != null ? interactionTrigger.name : "null")}");
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"WeaponPickup: Trigger activado por {other.name}");
         var equipmentController = other.GetComponent<PlayerEquipmentController>();
+        if (equipmentController == null)
+        {
+            Debug.LogWarning($"WeaponPickup: {other.name} no tiene PlayerEquipmentController");
+        }
+        if (weaponItem == null)
+        {
+            Debug.LogWarning($"WeaponPickup: weaponItem no asignado en {gameObject.name}");
+        }
         if (equipmentController != null && weaponItem != null)
         {
+            Debug.Log($"WeaponPickup: Equipando arma {weaponItem.name} en {other.name}");
             equipmentController.EquipWeapon(weaponItem); // Equipa la daga al jugador
             if (interactionTrigger != null)
+            {
                 interactionTrigger.SetActive(false); // Desactiva el trigger de interacción
+                Debug.Log($"WeaponPickup: Trigger {interactionTrigger.name} desactivado");
+            }
+            Debug.Log($"WeaponPickup: Destruyendo {gameObject.name} tras recogida");
             Destroy(gameObject); // Elimina la daga del suelo
         }
     }
