@@ -6,12 +6,15 @@ using ProyectSecret.Combat.Behaviours;
 /// Controlador de input de ataque para el jugador. Traduce el input y la dirección de la cámara en ataques usando AttackComponent.
 /// </summary>
 [RequireComponent(typeof(AttackComponent))]
+
 public class PlayerAttackInput : MonoBehaviour
 {
     [SerializeField] private Camera playerCamera;
     [SerializeField] private string attackActionName = "Attack";
+    [SerializeField] private InputActionAsset inputActions; // Asigna el mismo asset que el movimiento
     private InputAction attackAction;
     private AttackComponent attackComponent;
+
 
     private void Awake()
     {
@@ -24,7 +27,20 @@ public class PlayerAttackInput : MonoBehaviour
             Debug.LogWarning("PlayerAttackInput: No se encontró cámara en el jugador.");
             #endif
         }
-        var inputActionAsset = InputSystem.actions;
+        // Si no se asignó manualmente, intenta obtener el InputActionAsset del movimiento
+        if (inputActions == null)
+        {
+            var movement = GetComponent<PaperMarioPlayerMovement>();
+            if (movement != null)
+            {
+                var field = typeof(PaperMarioPlayerMovement).GetField("inputActions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    inputActions = field.GetValue(movement) as InputActionAsset;
+                }
+            }
+        }
+        var inputActionAsset = inputActions;
         if (inputActionAsset != null)
             attackAction = inputActionAsset.FindAction(attackActionName);
     }
