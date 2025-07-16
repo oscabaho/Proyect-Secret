@@ -12,9 +12,8 @@ namespace ProyectSecret.Characters
     public class PlayerHealthController : HealthControllerBase
     {
         private ProyectSecret.Components.StaminaComponentBehaviour staminaBehaviour;
-        private new ProyectSecret.Components.HealthComponentBehaviour healthBehaviour;
         public ProyectSecret.Components.StaminaComponent Stamina { get { return staminaBehaviour != null ? staminaBehaviour.Stamina : null; } }
-        public new ProyectSecret.Components.HealthComponent Health { get { return healthBehaviour != null ? healthBehaviour.Health : null; } }
+        // Usa la propiedad Health de la base (no se redefine para evitar warning)
 
         [Header("Stamina Recovery")]
         [SerializeField] private int staminaRecoveryAmount = 5;
@@ -25,7 +24,6 @@ namespace ProyectSecret.Characters
         protected override void Awake()
         {
             base.Awake();
-            healthBehaviour = GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
             if (healthBehaviour == null)
                 Debug.LogWarning("PlayerHealthController: No se encontró HealthComponentBehaviour.");
             staminaBehaviour = GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
