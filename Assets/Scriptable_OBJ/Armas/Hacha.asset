@@ -86,4 +86,5 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxMasteryHits: 100
-  weaponHitboxPrefab: {fileID: 5448976339290444927, guid: aefd9f281b8e76047ae5bb618f5ef76a, type: 3}
+  weaponHitboxPrefab: {fileID: 2991063226198235580, guid: 32a7fcc137bffbd4b9e99b84cf8b330d, type: 3}
+  weaponPrefab: {fileID: 5448976339290444927, guid: aefd9f281b8e76047ae5bb618f5ef76a, type: 3}

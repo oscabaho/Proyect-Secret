@@ -24,18 +24,18 @@ public class WeaponPickup : MonoBehaviour
                 if (col != null && col.isTrigger)
                 {
                     interactionTrigger = child.gameObject;
-                    Debug.Log($"WeaponPickup: Trigger hijo encontrado: {interactionTrigger.name}");
+                    //Debug.Log($"WeaponPickup: Trigger hijo encontrado: {interactionTrigger.name}");
                     break;
                 }
             }
         }
-        Debug.Log($"WeaponPickup: Awake en {gameObject.name}, weaponItem asignado: {(weaponItem != null ? weaponItem.name : "null")}, trigger: {(interactionTrigger != null ? interactionTrigger.name : "null")}");
+        //Debug.Log($"WeaponPickup: Awake en {gameObject.name}, weaponItem asignado: {(weaponItem != null ? weaponItem.name : "null")}, trigger: {(interactionTrigger != null ? interactionTrigger.name : "null")}");
     }
 
     // Este método es llamado por el hijo trigger (WeaponPickupTrigger)
     public void OnPickupTriggered(Collider other)
     {
-        Debug.Log($"WeaponPickup: Trigger activado por {other.name}");
+        //Debug.Log($"WeaponPickup: Trigger activado por {other.name}");
         var equipmentController = other.GetComponent<PlayerEquipmentController>();
         if (equipmentController == null)
         {
@@ -47,14 +47,14 @@ public class WeaponPickup : MonoBehaviour
         }
         if (equipmentController != null && weaponItem != null)
         {
-            Debug.Log($"WeaponPickup: Equipando arma {weaponItem.name} en {other.name}");
+            //Debug.Log($"WeaponPickup: Equipando arma {weaponItem.name} en {other.name}");
             equipmentController.EquipWeapon(weaponItem); // Equipa la daga al jugador
             if (interactionTrigger != null)
             {
                 interactionTrigger.SetActive(false); // Desactiva el trigger de interacción
-                Debug.Log($"WeaponPickup: Trigger {interactionTrigger.name} desactivado");
+                //Debug.Log($"WeaponPickup: Trigger {interactionTrigger.name} desactivado");
             }
-            Debug.Log($"WeaponPickup: Destruyendo {gameObject.name} tras recogida");
+            //Debug.Log($"WeaponPickup: Destruyendo {gameObject.name} tras recogida");
             Destroy(gameObject); // Elimina la daga del suelo
         }
     }

@@ -18,7 +18,7 @@ public class WeaponPickupTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"WeaponPickupTrigger: Trigger activado por {other.name}");
+        //Debug.Log($"WeaponPickupTrigger: Trigger activado por {other.name}");
         if (parentPickup != null)
             parentPickup.OnPickupTriggered(other);
     }

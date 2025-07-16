@@ -151,7 +151,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5807357027477904135}
   - component: {fileID: 5205587598272648746}
-  - component: {fileID: 2051668508454394292}
+  - component: {fileID: 5326222907890874260}
   m_Layer: 0
   m_Name: Trigger
   m_TagString: Untagged
@@ -197,7 +197,7 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &2051668508454394292
+--- !u!114 &5326222907890874260
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -206,6 +206,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 4761135254922527381}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a158067a953ecf4daf6f735bd470f42, type: 3}
+  m_Script: {fileID: 11500000, guid: adf4ff0479497044aaf28d7e68b938da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
