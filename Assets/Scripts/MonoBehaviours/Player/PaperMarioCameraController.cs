@@ -36,13 +36,16 @@ public class PaperMarioCameraController : MonoBehaviour
             InvertCameraInstant();
             moveTowardsCameraTimer = 0f;
         }
-        Vector3 desiredPosition = target.position + (isCameraInverted ? invertedOffset : offset);
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
-        // Si está invertida, mira al personaje en el eje Z; si no, mira normal
+        // Si la cámara es hijo del player, solo ajusta el offset local y la rotación local
+        transform.localPosition = isCameraInverted ? invertedOffset : offset;
         if (isCameraInverted)
-            transform.LookAt(target.position + target.forward * 1.5f);
+        {
+            transform.localRotation = Quaternion.Euler(transform.localEulerAngles.x, 180f, transform.localEulerAngles.z);
+        }
         else
-            transform.LookAt(target.position + Vector3.up * 1.5f);
+        {
+            transform.localRotation = Quaternion.identity;
+        }
     }
 
     // Método público para invertir la cámara instantáneamente
