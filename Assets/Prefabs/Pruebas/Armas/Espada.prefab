@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8650429750072207182}
   - component: {fileID: 3741782345596313494}
   - component: {fileID: -42713212792967875}
+  - component: {fileID: 6861580397360283898}
   m_Layer: 0
   m_Name: Espada
   m_TagString: Untagged
@@ -126,6 +127,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponItem: {fileID: 11400000, guid: 76aed1e50b05f77409e600a7e0b982c6, type: 2}
   interactionTrigger: {fileID: 4761135254922527381}
+--- !u!114 &6861580397360283898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2036988242651982064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac8cd7b50f79fb441a94466d84d545df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponData: {fileID: 11400000, guid: 76aed1e50b05f77409e600a7e0b982c6, type: 2}
+  owner: {fileID: 0}
 --- !u!1 &4761135254922527381
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,6 +151,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5807357027477904135}
   - component: {fileID: 5205587598272648746}
+  - component: {fileID: 2051668508454394292}
   m_Layer: 0
   m_Name: Trigger
   m_TagString: Untagged
@@ -181,3 +197,15 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2051668508454394292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4761135254922527381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a158067a953ecf4daf6f735bd470f42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
