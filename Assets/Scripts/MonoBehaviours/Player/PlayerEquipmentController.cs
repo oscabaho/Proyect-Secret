@@ -10,6 +10,9 @@ namespace ProyectSecret.Inventory
 public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces.IPlayerEquipmentController
     {
         [SerializeField] private EquipmentSlots equipmentSlots;
+        [Header("Punto de equipamiento (Weapon Holder)")]
+        [SerializeField] private Transform weaponHolder; // Asigna el hijo en el prefab del jugador
+        private GameObject equippedWeaponGO;
 
         // Instancia equipada actualmente (puede ser null si no hay arma equipada)
         public WeaponInstance EquippedWeaponInstance { get; private set; }
@@ -57,6 +60,16 @@ public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces
             }
             equipmentSlots.EquipWeapon(weaponItem);
             EquippedWeaponInstance = new WeaponInstance(weaponItem);
+
+            // Instancia el prefab del arma equipada en el punto de equipamiento
+            if (equippedWeaponGO != null)
+                Destroy(equippedWeaponGO);
+            if (weaponItem != null && (weaponItem as WeaponItem).WeaponPrefab != null && weaponHolder != null)
+            {
+                equippedWeaponGO = Instantiate((weaponItem as WeaponItem).WeaponPrefab, weaponHolder);
+                equippedWeaponGO.transform.localPosition = Vector3.zero;
+                equippedWeaponGO.transform.localRotation = Quaternion.identity;
+            }
         }
 
         public void EquipItemById(string itemId)
@@ -78,6 +91,11 @@ public class PlayerEquipmentController : MonoBehaviour, ProyectSecret.Interfaces
             }
             equipmentSlots?.UnequipWeapon();
             EquippedWeaponInstance = null;
+            if (equippedWeaponGO != null)
+            {
+                Destroy(equippedWeaponGO);
+                equippedWeaponGO = null;
+            }
         }
     }
 }

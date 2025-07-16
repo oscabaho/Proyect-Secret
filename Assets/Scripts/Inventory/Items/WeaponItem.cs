@@ -18,6 +18,8 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         [SerializeField] private AnimationCurve masteryCurve = null;
         [SerializeField] private int maxMasteryHits = 100;
         [SerializeField] private GameObject weaponHitboxPrefab;
+        [Header("Prefab visual del arma")]
+        [SerializeField] private GameObject weaponPrefab;
 
         public int WeaponDamage => weaponDamage;
         public float AttackSpeed => attackSpeed;
@@ -26,6 +28,7 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         public AnimationCurve MasteryCurve => masteryCurve;
         public int MaxMasteryHits => maxMasteryHits;
         public GameObject WeaponHitboxPrefab => weaponHitboxPrefab;
+        public GameObject WeaponPrefab => weaponPrefab;
 
         /// <summary>
         /// Instancia y retorna el hitbox del arma (debe ser hijo del jugador o del arma física).
