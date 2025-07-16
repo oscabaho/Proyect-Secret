@@ -8,7 +8,6 @@ public class PaperMarioCameraController : MonoBehaviour
     [SerializeField] private Transform target;
     [SerializeField] private Vector3 offset = new Vector3(0, 5, -10);
     [SerializeField] private Vector3 invertedOffset = new Vector3(0, 5, 10);
-    [SerializeField] private float smoothSpeed = 5f;
     [SerializeField] private float invertThreshold = 2f;
     private bool isCameraInverted;
     private float moveTowardsCameraTimer;
@@ -36,14 +35,15 @@ public class PaperMarioCameraController : MonoBehaviour
             InvertCameraInstant();
             moveTowardsCameraTimer = 0f;
         }
-        // Si la cámara es hijo del player, solo ajusta el offset local y la rotación local
-        transform.localPosition = isCameraInverted ? invertedOffset : offset;
+        // Si la cámara es hijo del player, ajusta la posición y rotación correctamente
         if (isCameraInverted)
         {
+            transform.localPosition = invertedOffset;
             transform.localRotation = Quaternion.Euler(transform.localEulerAngles.x, 180f, transform.localEulerAngles.z);
         }
         else
         {
+            transform.localPosition = offset;
             transform.localRotation = Quaternion.identity;
         }
     }
