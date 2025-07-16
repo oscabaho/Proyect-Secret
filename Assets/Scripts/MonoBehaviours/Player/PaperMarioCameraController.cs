@@ -66,15 +66,4 @@ public class PaperMarioCameraController : MonoBehaviour
             playerMovementScript.SetFrontalSprite();
         }
     }
-
-    // Método público para restaurar la cámara instantáneamente
-    public void RestoreCameraInstant()
-    {
-        isCameraInverted = false;
-        if (playerMovementScript != null)
-        {
-            playerMovementScript.SetCameraInverted(false);
-            playerMovementScript.SetDefaultSprite();
-        }
-    }
 }

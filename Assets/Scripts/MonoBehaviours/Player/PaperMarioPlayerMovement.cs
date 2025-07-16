@@ -7,14 +7,13 @@ using UnityEngine.InputSystem;
  [RequireComponent(typeof(Rigidbody))]
  public class PaperMarioPlayerMovement : MonoBehaviour
  {
+    [Header("Puntos de spawn de arma")]
+    [SerializeField] private Transform WeaponPoint;
+    [SerializeField] private Transform HitBoxPoint;
     // Estado de inversión de cámara
     private bool isCameraInverted = false;
     // Permite saber si el jugador está presionando input de movimiento
     public bool IsMovingDown { get; private set; } = false;
-
-    [Header("Puntos de spawn de arma")]
-    [SerializeField] private Transform WeaponPoint;
-    [SerializeField] private Transform HitBoxPoint;
 
     // Llamado por el controlador de cámara para notificar el estado de inversión
     public void SetCameraInverted(bool inverted)
@@ -196,17 +195,14 @@ using UnityEngine.InputSystem;
                 if (HitBoxPoint != null && moveDir.sqrMagnitude > 0.01f)
                     HitBoxPoint.forward = moveDir;
 
-                // Cambiar sprite según dirección relativa a la cámara
+                // ...existing code for sprite selection...
                 if (spriteRenderer != null)
                 {
-                    // Proyectar el movimiento en el espacio de la cámara para decidir el sprite
                     float forwardDot = Vector3.Dot(moveDir, camForward);
                     float rightDot = Vector3.Dot(moveDir, camRight);
-                    // Si la cámara está invertida, invertir la lógica de derecha/izquierda
                     bool camInverted = false;
                     if (Camera.main != null)
                     {
-                        // Detectar si la cámara está invertida por el offset
                         var camController = Camera.main.GetComponent<PaperMarioCameraController>();
                         if (camController != null)
                             camInverted = camController.IsCameraInverted();
@@ -240,6 +236,13 @@ using UnityEngine.InputSystem;
                     {
                         spriteRenderer.sprite = spriteArribaDerecha;
                         spriteRenderer.flipX = false;
+            // Si la cámara está invertida y el input de movimiento se suelta, rota el personaje 180° en Y
+            var camControllerCheck = Camera.main != null ? Camera.main.GetComponent<PaperMarioCameraController>() : null;
+            if (camControllerCheck != null && camControllerCheck.IsCameraInverted() && input == Vector2.zero)
+            {
+                // Rota el personaje para que mire hacia la cámara
+                transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y + 180f, 0);
+            }
                     }
                     // Oblicuo arriba-izquierda
                     else if (((rightDot < -0.1f && forwardDot > 0.1f && !camInverted) || (rightDot > 0.1f && forwardDot > 0.1f && camInverted)))
