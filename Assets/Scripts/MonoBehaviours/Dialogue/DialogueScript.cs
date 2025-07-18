@@ -13,10 +13,12 @@ namespace ProyectSecret.UI.Dialogue
         [SerializeField]private float textSpeed = 0.1f;
         public int index;
         private InputAction interactAction;
+        private InputAction look;
         void Awake()
         {
             dialogueText.text = string.Empty;
             interactAction = InputSystem.actions.FindAction("Interact");
+            look = InputSystem.actions.FindAction("Look");
             gameObject.SetActive(false);
         }
 
@@ -61,6 +63,7 @@ namespace ProyectSecret.UI.Dialogue
             }
             else
             {
+                dialogueText.text = string.Empty;
                 gameObject.SetActive(false);
             }
         }
