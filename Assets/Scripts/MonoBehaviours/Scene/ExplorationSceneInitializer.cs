@@ -16,7 +16,7 @@ public class ExplorationSceneInitializer : MonoBehaviour
         // Determina si el jugador viene de una derrota
         if (playerPersistentData != null && playerPersistentData.CameFromDefeat)
         {
-            // Instancia el jugador en el punto de la estatua
+            // Instancia el jugador en el punto de la estatua y aplica la cámara.
             var player = Instantiate(playerPrefab, statueSpawnPoint.position, Quaternion.identity);
             playerPersistentData.ApplyToPlayer(player, null); // Aplica datos persistentes si es necesario
             playerPersistentData.CameFromDefeat = false; // Resetea el flag
@@ -25,12 +25,27 @@ public class ExplorationSceneInitializer : MonoBehaviour
         {
             // Instancia el jugador en el punto normal (primera vez)
             var player = Instantiate(playerPrefab, statueSpawnPoint.position, Quaternion.identity);
+           
 
             // Inicializa vida y stamina al máximo SOLO si es la primera vez (no hay datos previos)
             var health = player.GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
             if (health != null) health.SetToMax();
             var stamina = player.GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
+
+            PaperMarioPlayerMovement playerMovement = player.GetComponent<PaperMarioPlayerMovement>();
+            if (playerMovement != null)
+            {
+                // Busca la cámara en los hijos del jugador y se la asigna.
+                Camera cam = player.GetComponentInChildren<Camera>();
+                if (cam == null && Camera.main != null)
+                {
+                    cam = Camera.main;  //Fallback a Camera.main si no encuentra en los hijos
+                }
+                if (cam != null) playerMovement.SetActiveCamera(cam);
+                else Debug.LogError("ExplorationSceneInitializer: No se encontró una cámara en los hijos del jugador instanciado.");
+            }
             if (stamina != null) stamina.SetToMax();
+
 
             playerPersistentData.ApplyToPlayer(player, null);
         }

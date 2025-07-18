@@ -67,5 +67,6 @@
         "*.sln": "*.csproj",
     },
     "dotnet.defaultSolution": "Proyect-Secret.sln",
-    "github.copilot.nextEditSuggestions.enabled": true
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }

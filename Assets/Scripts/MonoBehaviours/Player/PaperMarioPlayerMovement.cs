@@ -65,6 +65,36 @@ using UnityEngine.InputSystem;
     private InputAction jumpAction;
     private InputActionMap currentActionMap;
     [Header("Movimiento")]
+    [SerializeField] private Camera activeCamera;
+
+    /// <summary>
+    /// Establece la cámara que el movimiento debe seguir.
+    /// </summary>
+    /// <param name="cam"></param>
+    public void SetActiveCamera(Camera cam)
+    {
+        activeCamera = cam;
+
+        SetDayInput(); // Por defecto inicia en modo día
+
+        if (activeCamera == null)
+        {
+            activeCamera = GetComponentInChildren<Camera>(); // Busca en los hijos primero
+            if (activeCamera == null)
+            {
+                Debug.LogError("PaperMarioPlayerMovement: No se pudo encontrar una cámara activa ni en los hijos ni en Camera.main.  El movimiento del personaje no funcionará correctamente.");
+            }
+            else
+            {
+                Debug.LogWarning("PaperMarioPlayerMovement: No se asignó una cámara activa externamente, utilizando la primera cámara encontrada en los hijos.");
+            }
+        }
+        else
+        {
+            // Si se asignó correctamente, podrías agregar lógica adicional aquí si lo necesitas
+            Debug.Log("PaperMarioPlayerMovement: Cámara activa asignada exitosamente desde otro script.");
+        }
+    }
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 7f;
 
@@ -92,6 +122,17 @@ using UnityEngine.InputSystem;
         if (inputActions != null)
         {
             SetDayInput(); // Por defecto inicia en modo día
+        }
+        // Fallback si no se ha asignado una cámara desde otro script
+        if (activeCamera == null)
+        {
+            activeCamera = GetComponentInChildren<Camera>(); // Busca en los hijos primero
+            if (activeCamera == null && Camera.main != null)
+                activeCamera = Camera.main; // Fallback a Camera.main si no encuentra en los hijos
+            //activeCamera = Camera.main;
+
+            //activeCamera = GameObject.FindGameObjectWithTag(cameraTag).GetComponent<Camera>();
+            Debug.LogWarning("PaperMarioPlayerMovement: No se asignó una cámara activa. Usando Camera.main como fallback.");
         }
         else
         {
@@ -165,11 +206,10 @@ using UnityEngine.InputSystem;
         {
             Vector2 input = moveAction.ReadValue<Vector2>();
             IsMovingDown = input.y < -0.1f;
-            Camera cam = Camera.main;
-            if (cam != null)
+            if (activeCamera != null)
             {
-                Vector3 camForward = cam.transform.forward;
-                Vector3 camRight = cam.transform.right;
+                Vector3 camForward = activeCamera.transform.forward;
+                Vector3 camRight = activeCamera.transform.right;
                 camForward.y = 0f;
                 camRight.y = 0f;
                 camForward.Normalize();

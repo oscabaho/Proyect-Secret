@@ -6,8 +6,14 @@ using UnityEngine;
 public class PaperMarioCameraController : MonoBehaviour
 {
     [SerializeField] private Transform target;
-    [SerializeField] private Vector3 offset = new Vector3(0, 5, -10);
-    [SerializeField] private Vector3 invertedOffset = new Vector3(0, 5, 10);
+    [Tooltip("Offset de la cámara en la vista normal (X = izquierda/derecha, Y = altura, Z = cercanía/lejanía).  Un valor mayor en Y dará un ángulo más 'desde arriba'.")]
+    [SerializeField] private Vector3 offset = new Vector3(0, 7, -7);
+    [Tooltip("Offset de la cámara en la vista invertida (X = izquierda/derecha, Y = altura, Z = cercanía/lejanía).  Un valor mayor en Y dará un ángulo más 'desde arriba'.")]
+    [SerializeField] private Vector3 invertedOffset = new Vector3(0, 7, 7);
+
+    [Tooltip("Ángulo de inclinación de la cámara en grados.  Valores positivos inclinan la cámara hacia abajo.")]
+    [SerializeField] private float cameraAngleX = 30f;
+
     [SerializeField] private float invertThreshold = 2f;
     private bool isCameraInverted;
     private float moveTowardsCameraTimer;
@@ -19,7 +25,10 @@ public class PaperMarioCameraController : MonoBehaviour
         if (target == null) return;
         playerMovementScript = target.GetComponent<PaperMarioPlayerMovement>();
         if (playerMovementScript != null)
+        {
             playerMovementScript.OnCameraInvertedChanged += HandleCameraInvertedChanged;
+            //playerMovementScript.SetActiveCamera(GetComponent<Camera>()); // Esto lo hará el ExplorationSceneInitializer
+        }
     }
 
     // Maneja el evento de inversión de cámara
@@ -39,11 +48,11 @@ public class PaperMarioCameraController : MonoBehaviour
         if (isCameraInverted)
         {
             transform.localPosition = invertedOffset;
-            transform.localRotation = Quaternion.Euler(transform.localEulerAngles.x, 180f, transform.localEulerAngles.z);
+            transform.localRotation = Quaternion.Euler(cameraAngleX, 180f, 0f);
         }
         else
         {
-            transform.localPosition = offset;
+            transform.localPosition = offset;   
             transform.localRotation = Quaternion.identity;
         }
     }
