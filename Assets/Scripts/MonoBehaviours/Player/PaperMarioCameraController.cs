@@ -62,6 +62,6 @@ public class PaperMarioCameraController : MonoBehaviour
     {
         isCameraInverted = true;
         playerMovementScript?.SetCameraInverted(true);
-        playerMovementScript?.SetFrontalSprite();
+        // Ya no se usa SetFrontalSprite, la animación se controla por movimiento
     }
 }
