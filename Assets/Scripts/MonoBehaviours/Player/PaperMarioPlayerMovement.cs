@@ -9,12 +9,10 @@ public class PaperMarioPlayerMovement : MonoBehaviour
     // Evento para notificar cambio de inversión de cámara
     public event System.Action<bool> OnCameraInvertedChanged;
     
-    [Header("Puntos de spawn de arma")]
-    [SerializeField] private Transform WeaponPoint;
-    [SerializeField] private Transform HitBoxPoint;
+    // Los puntos de arma y hitbox ahora son gestionados por PlayerPointSwitcher
 
     // Estado de inversión de cámara
-    private bool isCameraInverted = false;
+    public bool isCameraInverted = false;
     
 // [Header("Configuración de Sprites")] // Ya no se usan sprites de prueba, solo animaciones
 private Animator animator;
@@ -49,30 +47,23 @@ private Animator animator;
         private set => _isMovingDown = value;
     }
 
-    // Llamado por el controlador de cámara para notificar el estado de inversión
+    /// <summary>
+    /// Llamado por el controlador de cámara para notificar el estado de inversión.
+    /// Sincroniza todos los puntos y objetos dependientes de la cámara.
+    /// </summary>
     public void SetCameraInverted(bool inverted)
     {
         isCameraInverted = inverted;
         OnCameraInvertedChanged?.Invoke(inverted);
-        UpdateWeaponHolderDirection();
-    }
-
-    private void UpdateWeaponHolderDirection()
-    {
-        var equipmentController = GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
-        if (equipmentController != null && equipmentController.EquipmentSlots != null)
+        // Usar PlayerPointSwitcher para actualizar puntos y mover hijos
+        var pointSwitcher = GetComponent<PlayerPointSwitcher>();
+        if (pointSwitcher != null)
         {
-            System.Reflection.FieldInfo field = equipmentController.GetType().GetField("weaponHolder", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            if (field != null)
-            {
-                Transform weaponHolder = field.GetValue(equipmentController) as Transform;
-                if (weaponHolder != null)
-                    weaponHolder.forward = isCameraInverted ? -transform.forward : transform.forward;
-            }
+            pointSwitcher.UpdateActivePoints(isCameraInverted);
+            pointSwitcher.SwitchPoints(isCameraInverted);
         }
     }
+
 
     // Método de sprites de prueba eliminado. Ahora se usan animaciones.
 
@@ -240,10 +231,25 @@ private Animator animator;
             Vector3 moveDir = (camForward * input.y + camRight * input.x).normalized;
             rb.linearVelocity = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
 
-            if (WeaponPoint != null && moveDir.sqrMagnitude > 0.01f)
-                WeaponPoint.forward = moveDir;
-            if (HitBoxPoint != null && moveDir.sqrMagnitude > 0.01f)
-                HitBoxPoint.forward = moveDir;
+            // Actualiza la dirección de los puntos activos usando PlayerPointSwitcher
+            var pointSwitcher = GetComponent<PlayerPointSwitcher>();
+            if (pointSwitcher != null && moveDir.sqrMagnitude > 0.01f)
+            {
+                if (!isCameraInverted)
+                {
+                    if (pointSwitcher.WeaponPoint != null)
+                        pointSwitcher.WeaponPoint.forward = moveDir;
+                    if (pointSwitcher.HitBoxPoint != null)
+                        pointSwitcher.HitBoxPoint.forward = moveDir;
+                }
+                else
+                {
+                    if (pointSwitcher.WeaponPoint1 != null)
+                        pointSwitcher.WeaponPoint1.forward = moveDir;
+                    if (pointSwitcher.HitBoxPoint1 != null)
+                        pointSwitcher.HitBoxPoint1.forward = moveDir;
+                }
+            }
 
             // --- Animación ---
             if (animator != null)

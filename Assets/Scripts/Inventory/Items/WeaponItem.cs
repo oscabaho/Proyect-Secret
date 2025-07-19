@@ -8,7 +8,7 @@ namespace ProyectSecret.Inventory.Items
     /// ScriptableObject base para armas. Permite instanciar el hitbox, aplicar daño y ser usado/equipado.
     /// </summary>
     [CreateAssetMenu(fileName = "WeaponItem", menuName = "Inventory/WeaponItem")]
-public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, ProyectSecret.Interfaces.IEquipable
+public class WeaponItem : MysteryItem, IUsableItem, IEquipable
     {
         [Header("Datos del arma")]
         [SerializeField] private int weaponDamage = 10;
@@ -17,7 +17,9 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         [SerializeField] private AnimationCurve durabilityCurve = null;
         [SerializeField] private AnimationCurve masteryCurve = null;
         [SerializeField] private int maxMasteryHits = 100;
-        [SerializeField] private GameObject weaponHitboxPrefab;
+        // Eliminado: weaponHitboxPrefab
+        [Header("Prefab de hitbox de ataque")]
+        [SerializeField] private GameObject hitBoxPrefab;
         [Header("Prefab visual del arma")]
         [SerializeField] private GameObject weaponPrefab;
 
@@ -27,7 +29,8 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         public AnimationCurve DurabilityCurve => durabilityCurve;
         public AnimationCurve MasteryCurve => masteryCurve;
         public int MaxMasteryHits => maxMasteryHits;
-        public GameObject WeaponHitboxPrefab => weaponHitboxPrefab;
+        // Eliminado: WeaponHitboxPrefab
+        public GameObject HitBoxPrefab => hitBoxPrefab;
         public GameObject WeaponPrefab => weaponPrefab;
 
         /// <summary>
@@ -35,7 +38,7 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         /// </summary>
         public WeaponHitbox GetWeaponHitboxInstance(Transform parent = null)
         {
-            if (weaponHitboxPrefab == null)
+            if (hitBoxPrefab == null)
             {
                 #if UNITY_EDITOR
                 Debug.LogWarning($"WeaponItem {name} no tiene asignado un prefab de hitbox.");
@@ -43,8 +46,8 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
                 return null;
             }
             GameObject hitboxObj = parent != null
-                ? Object.Instantiate(weaponHitboxPrefab, parent)
-                : Object.Instantiate(weaponHitboxPrefab);
+                ? Object.Instantiate(hitBoxPrefab, parent)
+                : Object.Instantiate(hitBoxPrefab);
             return hitboxObj.GetComponent<WeaponHitbox>();
         }
 
@@ -69,7 +72,7 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
             var equipmentController = user.GetComponent<PlayerEquipmentController>();
             if (equipmentController != null)
             {
-                equipmentController.EquipItemById(((MysteryItem)this).Id);
+                equipmentController.EquipItemById(this.Id);
                 #if UNITY_EDITOR
                 Debug.Log($"{DisplayName} equipada.");
                 #endif
