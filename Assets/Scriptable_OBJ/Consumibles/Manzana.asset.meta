@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Scriptable_OBJ/Consumibles/Manzana.asset.meta
+guid: 402454b981e8680419330a22effede1c
+========
+guid: 453beabc3b44e3442a38d49044c5fd87
+>>>>>>>> bd708d058de7d1380b042c3611906ddd9268d6ee:Assets/Scriptable_OBJ/Consumibles/Cebolla.asset.meta
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -18,6 +18,8 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         [SerializeField] private AnimationCurve masteryCurve = null;
         [SerializeField] private int maxMasteryHits = 100;
         [SerializeField] private GameObject weaponHitboxPrefab;
+        [Header("Prefab visual del arma")]
+        [SerializeField] private GameObject weaponPrefab;
 
         public int WeaponDamage => weaponDamage;
         public float AttackSpeed => attackSpeed;
@@ -26,6 +28,7 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         public AnimationCurve MasteryCurve => masteryCurve;
         public int MaxMasteryHits => maxMasteryHits;
         public GameObject WeaponHitboxPrefab => weaponHitboxPrefab;
+        public GameObject WeaponPrefab => weaponPrefab;
 
         /// <summary>
         /// Instancia y retorna el hitbox del arma (debe ser hijo del jugador o del arma física).
@@ -34,7 +37,9 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         {
             if (weaponHitboxPrefab == null)
             {
+                #if UNITY_EDITOR
                 Debug.LogWarning($"WeaponItem {name} no tiene asignado un prefab de hitbox.");
+                #endif
                 return null;
             }
             GameObject hitboxObj = parent != null
@@ -52,7 +57,9 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
             if (damageable != null)
             {
                 damageable.TakeDamage(weaponDamage);
+                #if UNITY_EDITOR
                 Debug.Log($"{owner.name} infligió {weaponDamage} de daño a {target.name} con {name}.");
+                #endif
             }
         }
 
@@ -63,11 +70,15 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
             if (equipmentController != null)
             {
                 equipmentController.EquipItemById(((MysteryItem)this).Id);
+                #if UNITY_EDITOR
                 Debug.Log($"{DisplayName} equipada.");
+                #endif
             }
             else
             {
+                #if UNITY_EDITOR
                 Debug.LogWarning("No se encontró PlayerEquipmentController en el usuario.");
+                #endif
             }
         }
 
@@ -75,11 +86,15 @@ public class WeaponItem : MysteryItem, ProyectSecret.Interfaces.IUsableItem, Pro
         public EquipmentSlotType GetSlotType() => EquipmentSlotType.Weapon;
         public void OnEquip(GameObject user)
         {
+            #if UNITY_EDITOR
             Debug.Log($"{DisplayName} equipada en el jugador.");
+            #endif
         }
         public void OnUnequip(GameObject user)
         {
+            #if UNITY_EDITOR
             Debug.Log($"{DisplayName} fue desequipada.");
+            #endif
         }
         public string GetId() => Id;
     }

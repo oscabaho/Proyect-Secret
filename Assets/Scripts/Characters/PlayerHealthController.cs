@@ -1,7 +1,5 @@
-using System;
+using System.Collections;
 using UnityEngine;
-using ProyectSecret.Components;
-using ProyectSecret.Stats;
 using Characters;
 
 namespace ProyectSecret.Characters
@@ -14,19 +12,43 @@ namespace ProyectSecret.Characters
     public class PlayerHealthController : HealthControllerBase
     {
         private ProyectSecret.Components.StaminaComponentBehaviour staminaBehaviour;
-        private new ProyectSecret.Components.HealthComponentBehaviour healthBehaviour;
-        public ProyectSecret.Components.StaminaComponent Stamina => staminaBehaviour != null ? staminaBehaviour.Stamina : null;
-        public new ProyectSecret.Components.HealthComponent Health => healthBehaviour != null ? healthBehaviour.Health : null;
+        public ProyectSecret.Components.StaminaComponent Stamina { get { return staminaBehaviour != null ? staminaBehaviour.Stamina : null; } }
+        // Usa la propiedad Health de la base (no se redefine para evitar warning)
+
+        [Header("Stamina Recovery")]
+        [SerializeField] private int staminaRecoveryAmount = 5;
+        [SerializeField] private float staminaRecoveryInterval = 1f;
+        private Coroutine staminaRecoveryCoroutine;
+        private float staminaRecoveryDelay = 2f;
 
         protected override void Awake()
         {
             base.Awake();
-            healthBehaviour = GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
             if (healthBehaviour == null)
                 Debug.LogWarning("PlayerHealthController: No se encontró HealthComponentBehaviour.");
             staminaBehaviour = GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
             if (staminaBehaviour == null)
                 Debug.LogWarning("PlayerHealthController: No se encontró StaminaComponentBehaviour.");
+        }
+
+        public void OnPlayerAttack()
+        {
+            if (staminaRecoveryCoroutine != null)
+            {
+                StopCoroutine(staminaRecoveryCoroutine);
+            }
+            staminaRecoveryCoroutine = StartCoroutine(StaminaRecoveryRoutine());
+        }
+
+        private IEnumerator StaminaRecoveryRoutine()
+        {
+            yield return new WaitForSeconds(staminaRecoveryDelay);
+            while (Stamina != null && Stamina.CurrentStamina < Stamina.MaxValue)
+            {
+                Stamina.AffectValue(staminaRecoveryAmount);
+                yield return new WaitForSeconds(staminaRecoveryInterval);
+            }
+            staminaRecoveryCoroutine = null;
         }
 
         protected override void Death()

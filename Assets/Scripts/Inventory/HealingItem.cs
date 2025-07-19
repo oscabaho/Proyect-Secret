@@ -25,11 +25,15 @@ namespace Inventory
             if (health != null && health.Health != null)
             {
                 health.Health.AffectValue(healAmount);
+                #if UNITY_EDITOR
                 Debug.Log($"Curado {healAmount} puntos de vida.");
+                #endif
             }
             else
             {
+                #if UNITY_EDITOR
                 Debug.LogWarning("No se pudo curar: PlayerHealthController o HealthComponent no encontrado.");
+                #endif
             }
         }
 

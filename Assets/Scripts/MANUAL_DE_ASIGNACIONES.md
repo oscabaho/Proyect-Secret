@@ -1,63 +1,213 @@
+
+# Manual de Implementación y Asignación de Scripts (Unity)
+
+> **¡Bienvenido!** Este manual está pensado para personas con poca o ninguna experiencia previa en Unity. Aquí aprenderás, paso a paso, cómo preparar tus escenas, qué scripts debes asignar a cada GameObject y cómo organizar tu proyecto para que todo funcione correctamente.
+
+---
+
+---
+
+## Índice
+
+1. Introducción rápida al proyecto
+2. Estructura recomendada de carpetas y archivos
+3. Escenas principales y su propósito
+4. Entidades y prefabs clave
+5. Asignación manual de scripts por entidad y escena
+6. Ubicación de scripts en la jerarquía de Unity
+7. Configuración de componentes y variables en el Inspector
+8. Flujo de datos persistentes entre escenas
+9. Consejos y buenas prácticas para principiantes
+10. Preguntas frecuentes y solución de problemas
+
+---
+
+## 1. Introducción rápida al proyecto
+Este proyecto es un Survival Horror con elementos RPG y narrativa, donde el jugador explora, combate y resuelve misterios en una aldea maldita. El ciclo día/noche y la gestión de vida, stamina, inventario y eventos son fundamentales.
+
+
+## 2. Estructura recomendada de carpetas y archivos
+
+- `Assets/Scripts/MonoBehaviours/` — Scripts que se asignan a GameObjects en la escena (por ejemplo, control de jugador, enemigos, UI).
+- `Assets/Scripts/Components/` — Scripts que definen la lógica interna de estadísticas o sistemas (por ejemplo, vida, stamina).
+- `Assets/Scripts/Stats/` — Scripts para estadísticas base reutilizables.
+- `Assets/Prefabs/` — Prefabricados: plantillas de objetos que puedes reutilizar (jugador, enemigos, armas, etc.).
+- `Assets/Scenes/` — Tus escenas principales (Exploración, Combate, Menú, etc.).
+
+> **¿Qué es un prefab?**
+> Un prefab es como un "molde" de un objeto. Puedes crear copias idénticas en la escena y, si cambias el prefab, todos los objetos basados en él se actualizan automáticamente.
+
+
+## 3. Escenas principales y su propósito
+
+- **Exploración**: El jugador recorre el mundo, habla con NPCs y busca pistas. Aquí no hay combate.
+- **Combate**: El jugador pelea contra enemigos. Aquí se usan los sistemas de vida, stamina y ataque.
+- **Menú/Inventario**: El jugador gestiona su equipo, consulta logros y misiones.
+
+> **¿Qué es una escena?**
+> Una escena en Unity es como un "nivel" o "pantalla". Puedes tener varias escenas y cambiar entre ellas (por ejemplo, pasar de exploración a combate).
+
+
+## 4. Entidades y prefabs clave
+
+- **Jugador**: El personaje que controlas. Debe tener todos los scripts de movimiento, vida, stamina, inventario y ataque.
+- **Enemigos**: Personajes controlados por la IA. Tienen scripts de comportamiento y salud.
+- **Objetos destruibles**: Cosas que el jugador puede romper (cajas, barriles, etc.).
+- **Armas**: Objetos que el jugador puede equipar. Se gestionan desde ScriptableObjects (archivos de datos, no scripts en la escena).
+- **UI**: Elementos de la interfaz (inventario, barra de vida, logros, misiones).
+
+> **¿Qué es un GameObject?**
+> Es cualquier objeto en tu escena de Unity: un personaje, una luz, una cámara, un botón, etc.
+
+---
 # Manual de Asignaciones de Scripts (Unity)
 
 Este documento sirve como guía rápida para la asignación manual de scripts y componentes clave en tu proyecto. Aquí encontrarás qué scripts debes añadir manualmente a cada GameObject relevante y recomendaciones para la organización de la escena.
 
 ---
 
-## Asignación Manual de Scripts
+
+## 5. Asignación manual de scripts por entidad y escena
 
 
-### 1. Player (Jugador)
-- **PaperMarioPlayerMovement**: Movimiento lateral estilo Paper Mario (Nuevo Input System).
-- **PaperMarioCameraController**: Cámara lateral/fija que sigue al jugador.
-- **BillboardCharacter**: Hace que el personaje mire siempre a la cámara.
-- **PlayerInventory**: Gestión del inventario del jugador.
-- **PlayerEquipmentController**: Controla el equipamiento y auto-equipamiento de armas.
-- **StaminaComponentBehaviour**: Gestión de la stamina del jugador (añadir este componente al GameObject, acceso obligatorio a través de este wrapper).
-- **HealthComponentBehaviour**: Gestión de la salud del jugador (añadir este componente al GameObject, acceso obligatorio a través de este wrapper).
-- **WeaponMasteryComponent**: Guarda la destreza/maestría por tipo de arma.
-- **AttackComponent**: Lógica de ataque y consumo de stamina. Ahora activa/desactiva el hitbox del arma durante la animación de ataque y consume stamina usando el wrapper.
+### Player (Jugador)
 
-> Asegúrate de tener un `InputActionAsset` configurado y asignado en los campos `InputActionReference` de los scripts de movimiento.
+**¿Cómo armar el jugador?**
+1. Crea un GameObject vacío llamado `Player`.
+2. Añade los siguientes scripts al GameObject `Player`:
+   - `PaperMarioPlayerMovement` (movimiento)
+   - `PlayerInventory` (inventario)
+   - `PlayerEquipmentController` (equipamiento)
+   - `StaminaComponentBehaviour` (stamina)
+   - `HealthComponentBehaviour` (vida)
+   - `WeaponMasteryComponent` (maestría de armas)
+   - `AttackComponent` (ataque)
+3. Si tienes un modelo 3D o sprite, agrégalo como hijo de `Player` y ponle el script `BillboardCharacter`.
+4. Si usas cámara propia, crea un GameObject hijo de `Player` llamado `CameraPivot` y asígnale el script `PaperMarioCameraController`.
+
+> **Nota:** Para que el movimiento funcione, debes tener un `InputActionAsset` creado y asignado en el campo correspondiente del script `PaperMarioPlayerMovement`.
+
+**Ejemplo de jerarquía:**
+```
+Player
+├── ModeloVisual (con BillboardCharacter)
+├── CameraPivot (con PaperMarioCameraController)
+```
 
 
-### 2. Enemigos
-- **Enemy**: Lógica principal del enemigo.
-- **EnemyHealthController**: Control de salud y muerte del enemigo.
-- **HealthComponentBehaviour**: Componente obligatorio para que la vida del enemigo funcione correctamente (nuevo sistema, acceso obligatorio a través de este wrapper).
-- (Opcional) **KryptoniteDebuff**: Si el enemigo puede ser debilitado por un ítem específico del jugador.
+### Enemigos
 
-### 3. Objetos Destruibles
-- **DestructibleHealthController**: Control de salud y destrucción de objetos o NPCs simples.
-- **HealthComponentBehaviour**: Obligatorio para que el daño funcione correctamente.
+1. Crea un GameObject vacío llamado `Enemy`.
+2. Añade los scripts:
+   - `Enemy` (comportamiento)
+   - `EnemyHealthController` (salud y muerte)
+   - `HealthComponentBehaviour` (vida)
+   - (Opcional) `KryptoniteDebuff` si el enemigo puede ser debilitado por un ítem.
 
-### 4. Armas (GameObject de arma en la escena, si aplica)
-- **WeaponHitbox**: Solo si el arma tiene representación física en la escena. El prefab de hitbox se asigna en el ScriptableObject `WeaponItem` y se instancia automáticamente al equipar el arma.
-- **Nota:** Las armas se gestionan exclusivamente desde ScriptableObjects y el sistema de inventario/equipamiento. No asignes scripts de arma manualmente a GameObjects salvo que implementes comportamientos avanzados.
+**Ejemplo de jerarquía:**
+```
+Enemy
+├── ModeloVisual
+```
 
-### 5. Áreas de Daño
-- **AreaDamage**: Aplica daño al entrar en el área. Usa el wrapper `HealthComponentBehaviour` para modificar la vida.
-- **(Se añade automáticamente AreaDamageTimer a los objetos que entran, no es necesario asignarlo manualmente)**
 
-### 6. UI y Subsistemas
-- **InventoryUIUpdater**: Actualiza la UI del inventario al cambiar.
-- **AchievementSystem**: Sistema de logros, suscriptor a eventos globales.
-- **QuestSystem**: Sistema de misiones, suscriptor a eventos globales.
+### Objetos Destruibles
 
-### 7. GameManager y Sistemas Globales
-- **GameEventBus**: (Singleton, se crea automáticamente si es necesario)
-- **GameServices**: (Singleton, se crea automáticamente si es necesario)
-- **GameManager**: (Recomendado) Un GameObject vacío en la escena con scripts de inicialización global, control de flujo de escenas, etc.
+1. Crea un GameObject llamado `DestructibleObject`.
+2. Añade los scripts:
+   - `DestructibleHealthController`
+   - `HealthComponentBehaviour`
+
+
+### Armas (GameObject de arma en la escena, si aplica)
+
+- Si el arma tiene presencia física, crea un GameObject `Weapon` y asígnale el script `WeaponHitbox`.
+- Normalmente, las armas se gestionan desde ScriptableObjects y el sistema de inventario/equipamiento. **No asignes scripts de arma manualmente** salvo que implementes comportamientos avanzados.
+
+
+### Áreas de Daño
+
+1. Crea un GameObject llamado `DamageArea`.
+2. Añade el script `AreaDamage`.
+3. El script `AreaDamageTimer` se añade automáticamente cuando un objeto entra en el área.
+
+
+### UI y Subsistemas
+
+1. Crea GameObjects para la UI (por ejemplo, `InventoryUI`, `AchievementsUI`, `QuestsUI`).
+2. Añade los scripts:
+   - `InventoryUIUpdater` (en el GameObject de inventario)
+   - `AchievementSystem` (en el GameObject de logros o uno global)
+   - `QuestSystem` (en el GameObject de misiones o uno global)
+
+
+### GameManager y Sistemas Globales
+
+1. Crea un GameObject vacío llamado `GameManager` en la raíz de la escena.
+2. Añade los scripts:
+   - `GameManager` (control global)
+   - `GameEventBus` (se crea automáticamente si es necesario)
+   - `GameServices` (se crea automáticamente si es necesario)
 
 ---
 
-## Descripción de Entidades Clave
 
-### Player (Jugador)
-- Controlado por el usuario. Tiene movimiento, inventario, equipamiento, stamina, salud, ataque y destreza de armas.
-- El movimiento y la cámara usan el Nuevo Input System de Unity.
-- **IMPORTANTE:** Todos los sistemas que modifiquen vida o stamina deben hacerlo a través de los componentes `HealthComponentBehaviour` y `StaminaComponentBehaviour`.
+## 6. Ubicación de scripts en la jerarquía de Unity
 
-### Enemigos
-- IA controlada por scripts. Tienen salud y pueden tener debuffs especiales.
-- **IMPORTANTE:** El daño y la curación se aplican siempre a través de `HealthComponentBehaviour`.
+> **Consejo:** Usa prefabs para guardar configuraciones y evitar tener que repetir el trabajo en cada escena.
+
+- Los scripts del jugador van en el GameObject principal del prefab `Player`.
+- Los scripts de enemigos y objetos destruibles van en sus respectivos prefabs.
+- Los scripts de UI van en los GameObjects de la interfaz (Canvas, paneles, etc.).
+- Los sistemas globales (GameManager, EventBus) van en GameObjects vacíos en la raíz de la escena.
+
+
+## 7. Configuración de componentes y variables en el Inspector
+
+- Haz clic en el GameObject al que asignaste un script.
+- En el panel Inspector, verás los campos públicos y `[SerializeField]` de cada script.
+- Ajusta los valores de vida, stamina, inventario y referencias a prefabs según la dificultad y el diseño.
+- Asigna los ScriptableObjects y referencias necesarias en cada componente (arrastra desde el panel Project).
+
+> **¿Qué es el Inspector?**
+> Es el panel de Unity donde puedes ver y modificar las propiedades de los objetos seleccionados.
+
+
+## 8. Flujo de datos persistentes entre escenas
+
+- El estado del jugador (vida, stamina, inventario, etc.) se guarda automáticamente al cambiar de escena o morir.
+- Se recupera al cargar la escena de exploración o combate usando el sistema `PlayerPersistentData`.
+- No necesitas hacer nada manual: los scripts se encargan de guardar y restaurar los datos.
+
+
+## 9. Consejos y buenas prácticas para principiantes
+
+- Usa prefabs para reutilizar configuraciones y ahorrar tiempo.
+- Organiza la jerarquía de la escena por tipo de entidad (jugador, enemigos, UI, sistemas globales).
+- Usa ScriptableObjects para datos globales y configuraciones (por ejemplo, armas, datos persistentes).
+- Prueba cada sistema por separado antes de integrarlo en la escena final.
+- Haz copias de seguridad de tus escenas y prefabs antes de hacer cambios grandes.
+- Lee los mensajes de la consola de Unity para detectar errores y advertencias.
+
+
+## 10. Preguntas frecuentes y solución de problemas
+
+- **¿Por qué mi jugador no se mueve?**
+  - Verifica que el script de movimiento esté asignado y que el `InputActionAsset` esté configurado.
+- **¿Por qué no se guarda la vida o el inventario?**
+  - Asegúrate de que los componentes `HealthComponentBehaviour` y `PlayerInventory` estén asignados al jugador.
+- **¿Por qué no veo la UI?**
+  - Revisa que los scripts de UI estén en los GameObjects correctos y que el Canvas esté activo.
+- **¿Por qué no funciona el daño?**
+  - Verifica que los objetos tengan el script `HealthComponentBehaviour` y que los colliders estén configurados como triggers si es necesario.
+- Consulta la consola de Unity para mensajes de error y advertencias.
+
+---
+
+> **Glosario rápido:**
+> - **GameObject:** Cualquier objeto en la escena de Unity.
+> - **Prefab:** Plantilla reutilizable de un GameObject.
+> - **Script:** Código que da comportamiento a un GameObject.
+> - **Inspector:** Panel donde configuras los componentes de un GameObject.
+> - **ScriptableObject:** Archivo de datos reutilizable para configuraciones globales.
+> - **Componente:** Script o módulo que se añade a un GameObject para darle funcionalidad.

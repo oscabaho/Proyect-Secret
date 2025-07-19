@@ -1,4 +1,77 @@
+
 # Documentación del Proyecto Unity: Manual de Clases, Métodos y Variables
+
+> **¡Bienvenido!** Esta documentación está pensada para quienes están comenzando en Unity. Aquí encontrarás explicaciones claras, ejemplos comentados y advertencias para evitar errores comunes. Si tienes dudas sobre cómo asignar scripts o configurar objetos, consulta también el `MANUAL_DE_ASIGNACIONES.md`.
+
+---
+
+## Guía rápida para principiantes
+
+Esta sección te ayudará a entender la arquitectura general del proyecto y a evitar los errores más comunes.
+
+### Mini-diagrama visual de flujo
+
+```mermaid
+flowchart TD
+    A[ScriptableObject Asset] -->|Asignar| B[Componente en GameObject]
+    B -->|Usar en juego| C[Sistema de Inventario/Combate]
+    C -->|Modifica| D[HealthComponentBehaviour / StaminaComponentBehaviour]
+```
+
+---
+
+### Tabla de dependencias
+
+| Sistema/Componente                | Depende de...                        | Asignar en...                      |
+|-----------------------------------|--------------------------------------|------------------------------------|
+| PlayerInventory                   | WeaponItem, HealingItem, MysteryItem | Inspector del jugador              |
+| WeaponItem                        | WeaponHitbox prefab, HealthComponentBehaviour | ScriptableObject, Prefab         |
+| HealingItem                       | HealthComponentBehaviour             | ScriptableObject, PlayerInventory  |
+| CombatTransferData                | Prefabs, datos temporales            | CombatSceneLoader, CombatSceneInitializer |
+| AttackComponent                   | WeaponItem, Animator                 | Jugador/Enemigo                    |
+
+---
+
+### Errores frecuentes y soluciones
+
+| Error / Síntoma                        | Causa probable                                      | Solución rápida                                      |
+|----------------------------------------|-----------------------------------------------------|------------------------------------------------------|
+| NullReferenceException                 | Asset o campo no asignado                           | Asigna el asset en el Inspector                      |
+| No puedes arrastrar el asset           | Campo en Inspector de tipo incorrecto               | Revisa el tipo del campo y el `[CreateAssetMenu]`    |
+| No aparece opción de crear asset       | Falta `[CreateAssetMenu]` en el script              | Agrega `[CreateAssetMenu]` al ScriptableObject       |
+| Cambios en asset no se reflejan        | Asset duplicado o no se guarda                      | Usa un solo asset y guarda los cambios               |
+| Inspector no muestra campos            | ScriptableObject mal serializado                    | Marca campos como [SerializeField]                   |
+| El arma no hace daño o no colisiona    | Prefab de hitbox incorrecto o sin WeaponHitbox      | Asigna prefab correcto y revisa el colisionador      |
+| El ítem no se puede usar               | No implementa IUsableItem o no está en ItemDatabase | Implementa interfaz y registra en ItemDatabase       |
+| No transfiere datos entre escenas      | ScriptableObject no asignado                        | Asigna el asset en los componentes de transferencia  |
+
+---
+
+### Preguntas frecuentes (FAQ)
+
+**¿Puedo modificar la vida directamente desde un Script?**
+>No. Siempre usa los behaviours (`HealthComponentBehaviour` o `StaminaComponentBehaviour`).
+
+**¿Por qué no aparece mi ScriptableObject en el menú de creación?**
+>Verifica que el script tenga `[CreateAssetMenu]`.
+
+**¿Puedo compartir un mismo ScriptableObject entre varios objetos?**
+>Sí, esa es la principal ventaja: reutilización y consistencia de datos.
+
+**¿Qué hago si el asset no funciona como espero?**
+>Revisa la tabla de errores frecuentes y asegúrate de que todo esté asignado correctamente.
+
+**¿Dónde encuentro más ayuda?**
+>Consulta el archivo `MANUAL_DE_ASIGNACIONES.md` para pasos de asignación en escenas y el `MANUAL_SCRIPTABLEOBJECTS.md` para el uso detallado de ScriptableObjects.
+
+---
+
+### Referencias cruzadas
+
+- [Manual de Asignaciones](MANUAL_DE_ASIGNACIONES.md): Guía paso a paso para asignar scripts y assets en escenas.
+- [Manual de ScriptableObjects](MANUAL_SCRIPTABLEOBJECTS.md): Guía visual y detallada para crear y usar ScriptableObjects.
+
+---
 
 ## Índice
 1. [Clases Principales](#clases-principales)
@@ -13,22 +86,41 @@
 
 ---
 
+
 ## Clases Principales
 
+> **¿Qué es una clase?**
+> Una clase es como un plano o receta que define el comportamiento y los datos de un objeto en el juego. Los scripts en Unity suelen ser clases que se asignan a GameObjects.
+
 ### ProyectSecret.Components.HealthComponentBehaviour y ProyectSecret.Components.StaminaComponentBehaviour
+
+**¿Para qué sirven?**
+- Permiten que cualquier GameObject (jugador, enemigo, objeto destruible) tenga vida o stamina.
+- Son la única forma recomendada de modificar vida y stamina desde otros scripts.
 - **HealthComponentBehaviour**: Componente MonoBehaviour que gestiona la vida de cualquier entidad (jugador, enemigo, objeto destruible). Debe ser añadido al GameObject y expone la estadística de vida editable desde el Inspector.
 - **StaminaComponentBehaviour**: Igual que el anterior, pero para la stamina (usualmente solo en el jugador).
-- **Acceso universal:** Todos los sistemas deben acceder a la vida y stamina exclusivamente a través de estos wrappers:
-  - `GetComponent<HealthComponentBehaviour>().Health`
-  - `GetComponent<StaminaComponentBehaviour>().Stamina`
-- **No accedas nunca directamente a HealthComponent o StaminaComponent desde otros scripts.**
+
+> **Acceso universal:**
+> Siempre usa:
+> ```csharp
+> var health = GetComponent<HealthComponentBehaviour>();
+> if (health != null) health.Health.AffectValue(-10); // Aplica daño
+> ```
+> Nunca accedas directamente a `HealthComponent` o `StaminaComponent` desde otros scripts.
 
 ### ProyectSecret.Characters.HealthControllerBase
+
+**¿Para qué sirve?**
+- Es una clase base para controladores de salud (jugador, enemigos, objetos destruibles).
+- Asegura que siempre se use el wrapper `HealthComponentBehaviour`.
 - Clase base para controladores de salud (jugador, enemigos, objetos destruibles).
 - Accede a la vida a través de `HealthComponentBehaviour`.
 - Cualquier entidad que herede de esta clase debe tener el componente `HealthComponentBehaviour`.
 
 ### ProyectSecret.Combat.Behaviours.AttackComponent
+
+**¿Para qué sirve?**
+- Gestiona el ataque del jugador o enemigos y el consumo de stamina.
 - Usa `StaminaComponentBehaviour` para consumir stamina al atacar.
 - Ejemplo de uso:
 ```csharp
@@ -39,6 +131,9 @@ if (staminaBehaviour != null && staminaBehaviour.Stamina.CurrentStamina >= stami
 ```
 
 ### ProyectSecret.Areas.Damage.AreaDamage y AreaDamageTimer
+
+**¿Para qué sirven?**
+- Permiten que áreas del escenario apliquen daño automáticamente a quien entre en ellas.
 - Usan `HealthComponentBehaviour` para aplicar daño a cualquier objeto que entre en el área.
 - Ejemplo de uso:
 ```csharp
@@ -51,6 +146,12 @@ if (healthBehaviour != null) {
 ---
 
 ## Cambios recientes y mejores prácticas
+
+> **Importante:**
+> - El sistema de ataque es modular y fácil de conectar con animaciones.
+> - Toda la lógica de armas está centralizada en `WeaponItem` y sus instancias.
+> - Usa siempre los métodos públicos y wrappers para modificar vida, stamina, inventario y equipamiento.
+> - Consulta el `MANUAL_DE_ASIGNACIONES.md` para saber dónde y cómo asignar cada script.
 - El sistema de ataque es completamente modular y basado en colisionadores (hitboxes), facilitando la integración con animaciones y efectos visuales.
 - Se eliminaron scripts y campos obsoletos (como `attackRange` y raycasts en ataques).
 - Toda la lógica de armas está centralizada en `WeaponItem` y sus instancias.
@@ -59,6 +160,9 @@ if (healthBehaviour != null) {
 ---
 
 ## Manual de Métodos
+
+> **¿Qué es un método?**
+> Un método es una función que realiza una acción específica. Por ejemplo, `AddItem()` agrega un ítem al inventario.
 
 ### InventoryModel
 - **AddItem(MysteryItem item)**: Agrega un ítem si hay espacio y no existe ya.
@@ -101,6 +205,9 @@ if (healthBehaviour != null) {
 
 ## Manual de Variables
 
+> **¿Qué es una variable?**
+> Una variable es un dato que almacena información, como la vida máxima, el daño de un arma o el nombre de un ítem.
+
 ### InventoryModel
 - **[SerializeField] private int maxSlots**: Número máximo de slots en el inventario (por defecto 5).
 - **public event Action OnInventoryChanged**: Evento disparado al cambiar el inventario.
@@ -129,6 +236,9 @@ if (healthBehaviour != null) {
 
 ## Sistema de Inventario e Ítems Usables
 
+> **¿Qué es el inventario?**
+> Es el sistema que permite al jugador almacenar, usar y equipar objetos. Los ítems pueden ser armas, pociones, llaves, etc.
+
 - El inventario almacena hasta un número configurable de ítems no stackeables.
 - Los ítems pueden ser misteriosos (tipo oculto) y muestran su descripción en la UI al hacer hover.
 - Los ítems usables implementan la interfaz `IUsableItem` y se registran en `ItemDatabase`.
@@ -146,6 +256,9 @@ inventoryModel.UseItem("espada", playerGameObject);
 ---
 
 ## Sistema de Armas, Durabilidad y Maestría
+
+> **¿Qué es un ScriptableObject?**
+> Es un archivo de datos reutilizable que define las propiedades de un arma, ítem o cualquier otro objeto configurable desde el editor de Unity. Consulta el `MANUAL_SCRIPTABLEOBJECTS.md` para aprender a crearlos y usarlos.
 
 - Las armas (`WeaponItem`) definen daño, velocidad, durabilidad máxima, curva de desgaste y curva de maestría.
 - Al usar un arma desde el inventario, se crea una instancia (`WeaponInstance`) que gestiona la durabilidad y la maestría de esa arma específica.
@@ -213,6 +326,9 @@ attackComponent.TryAttack();
 
 ## Eventos, Extensibilidad y Arquitectura Global
 
+> **¿Qué es un evento?**
+> Es una forma de avisar a otros sistemas cuando algo importante ocurre (por ejemplo, cuando el jugador recoge un ítem o derrota a un enemigo). Los eventos permiten que la UI y otros sistemas reaccionen automáticamente.
+
 - El sistema de inventario y otros sistemas clave exponen eventos para facilitar la integración con UI y otros sistemas.
 - El EventBus (`GameEvents`) permite comunicación desacoplada entre sistemas (logros, misiones, UI, etc). Se implementa como singleton global.
 - Puedes crear nuevos ítems usables implementando `IUsableItem` y registrándolos en `ItemDatabase`.
@@ -222,6 +338,12 @@ attackComponent.TryAttack();
 ---
 
 ## Buenas Prácticas y Seguridad
+
+> **Consejos para evitar errores:**
+> - Usa siempre los métodos públicos y wrappers para modificar datos.
+> - No modifiques variables privadas directamente desde otros scripts.
+> - Suscríbete y desuscríbete a eventos correctamente (`OnEnable`/`OnDisable`).
+> - Lee los mensajes de la consola de Unity para detectar errores y advertencias.
 
 - Usa siempre métodos públicos del inventario y equipamiento para modificar su estado.
 - Valida los ítems antes de agregarlos o usarlos.
@@ -236,6 +358,9 @@ attackComponent.TryAttack();
 ---
 
 ## Ejemplos de Uso
+
+> **¿Cómo se usa esto en la práctica?**
+> Aquí tienes ejemplos comentados para cada caso de uso común. Si tienes dudas sobre la jerarquía o la asignación de scripts, revisa el `MANUAL_DE_ASIGNACIONES.md`.
 
 ### Acceso correcto a vida y stamina
 ```csharp
@@ -273,6 +398,9 @@ float masteryBonus = equippedWeaponInstance.weaponData.MasteryCurve.Evaluate(equ
 ---
 
 ## Diagrama de Arquitectura
+
+> **¿Para qué sirve este diagrama?**
+> Te ayuda a visualizar cómo se relacionan las clases y sistemas principales del proyecto. Si tienes dudas sobre cómo se conectan, consulta también los ejemplos y el manual de asignaciones.
 
 ```mermaid
 classDiagram
@@ -345,7 +473,18 @@ classDiagram
 
 ---
 
+
 > Esta documentación refleja la arquitectura y funcionamiento actual del sistema de inventario, ítems, armas, equipamiento, durabilidad, maestría y eventos. Manténla actualizada ante cualquier cambio relevante.
+
+---
+
+> **Glosario básico:**
+> - **GameObject:** Objeto en la escena de Unity (jugador, enemigo, cámara, etc.).
+> - **Prefab:** Plantilla reutilizable de un GameObject.
+> - **Script:** Código que da comportamiento a un GameObject.
+> - **Inspector:** Panel donde configuras los componentes de un GameObject.
+> - **ScriptableObject:** Archivo de datos reutilizable para configuraciones globales.
+> - **Componente:** Script o módulo que se añade a un GameObject para darle funcionalidad.
 
 ---
 

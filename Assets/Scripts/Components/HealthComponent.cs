@@ -1,16 +1,14 @@
 using System;
 using ProyectSecret.Stats;
-using UnityEngine;
 
 namespace ProyectSecret.Components
 {
+    /// <summary>
+    /// Componente concreto para la vida, hereda de StatComponent.
+    /// </summary>
     [Serializable]
     public class HealthComponent : StatComponent
     {
-        public override void AffectValue(int value)
-        {
-            base.AffectValue(value);
-            Debug.Log($"HealthComponent: Vida actual = {CurrentValue}");
-        }
+        // Puedes agregar lógica específica de vida aquí si lo necesitas
     }
 }

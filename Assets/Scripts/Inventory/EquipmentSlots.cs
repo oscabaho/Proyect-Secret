@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using UnityEngine;
 using ProyectSecret.Inventory.Items;
@@ -14,7 +13,7 @@ namespace ProyectSecret.Inventory
         [SerializeField] private WeaponItem equippedWeapon;
         // Puedes agregar más slots aquí (armadura, accesorios, etc)
 
-        public WeaponItem EquippedWeapon => equippedWeapon;
+        public WeaponItem EquippedWeapon { get { return equippedWeapon; } }
 
         public void EquipWeapon(WeaponItem weapon)
         {
