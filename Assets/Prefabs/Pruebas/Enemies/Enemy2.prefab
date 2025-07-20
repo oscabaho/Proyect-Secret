@@ -87,6 +87,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healthBehaviour: {fileID: 0}
   fadeDuration: 2
+  DeathSound: {fileID: 8300000, guid: e84e8a15c2b3c3d4997d172d031e3e77, type: 3}
 --- !u!114 &8485304171881216399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105,11 +106,14 @@ MonoBehaviour:
   rockSpawnHeight: 10
   rockSpawnRadius: 5
   rockSpawnInterval: 0.5
+  rockSound: {fileID: 8300000, guid: a857a22f1c7964241989ef522e145935, type: 3}
   vulnerablePartPrefab: {fileID: 0}
   vulnerableSpawnPoint: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: d6fe1cdf871a776448c0143bc38ba13b, type: 3}
   chargeTime: 2
   attackSpeed: 10
   attackDuration: 1.5
+  dragSound: {fileID: 8300000, guid: 37dd98f9f0298ec4fb85db0563082278, type: 3}
 --- !u!114 &5622512857555862081
 MonoBehaviour:
   m_ObjectHideFlags: 0

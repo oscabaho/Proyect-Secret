@@ -13,6 +13,8 @@ public class ExplorationSceneInitializer : MonoBehaviour
     [SerializeField] private Transform statueSpawnPoint;
     [SerializeField] private PlayerPersistentData playerPersistentData;
     [SerializeField] private ItemDatabase itemDatabase; // Añadir referencia a la base de datos de ítems
+    [Header("Cancion de fondo")]
+    [SerializeField] private AudioClip backgroundMusic; // Canción de fondo para la escena
 
     void Start()
     {
@@ -72,5 +74,7 @@ public class ExplorationSceneInitializer : MonoBehaviour
                 #endif
             }
         }
+
+        SoundManager.Smanager.StartMusic(backgroundMusic); // Reproducir música de fondo
     }
 }

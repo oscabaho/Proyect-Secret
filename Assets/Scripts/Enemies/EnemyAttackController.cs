@@ -17,15 +17,18 @@ namespace ProyectSecret.Enemies
         [SerializeField] private float rockSpawnHeight = 10f;
         [SerializeField] private float rockSpawnRadius = 5f;
         [SerializeField] private float rockSpawnInterval = 0.5f;
+        [SerializeField] private AudioClip rockSound;
 
         [Header("Fase 2: Parte vulnerable")]
         [SerializeField] private GameObject vulnerablePartPrefab;
         [SerializeField] private Transform vulnerableSpawnPoint;
+        [SerializeField] private AudioClip attackSound;
 
         [Header("Fase 3: Carga y ataque recto")]
         [SerializeField] private float chargeTime = 2f;
         [SerializeField] private float attackSpeed = 10f;
         [SerializeField] private float attackDuration = 1.5f;
+        [SerializeField] private AudioClip dragSound;
         private Vector3 attackDirection;
         private Vector3 targetPosition;
 
@@ -67,6 +70,7 @@ namespace ProyectSecret.Enemies
                 Vector3 spawnPos = transform.position + Vector3.up * rockSpawnHeight + Random.insideUnitSphere * rockSpawnRadius;
                 GameObject rock = Instantiate(rockPrefab, spawnPos, Quaternion.identity);
                 // El script RockController se encarga de destruir la piedra al colisionar con el suelo
+                SoundManager.Smanager.ReproduceEffect(rockSound);
                 yield return new WaitForSeconds(rockSpawnInterval);
             }
         }
@@ -75,7 +79,8 @@ namespace ProyectSecret.Enemies
         {
             // Enemigo ataca con parte vulnerable. La parte vulnerable se autodestruirá.
             GameObject partObject = Instantiate(vulnerablePartPrefab, vulnerableSpawnPoint.position, Quaternion.identity);
-            
+            SoundManager.Smanager.ReproduceEffect(attackSound);
+
             // Inyectamos la dependencia de la salud del enemigo.
             var vulnerableController = partObject.GetComponent<VulnerablePartController>();
             if (vulnerableController != null)
@@ -112,6 +117,7 @@ namespace ProyectSecret.Enemies
                 attackTimer += Time.deltaTime;
                 yield return null;
             }
+            SoundManager.Smanager.ReproduceEffect(dragSound);
         }
     }
 }

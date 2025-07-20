@@ -11,6 +11,8 @@ namespace ProyectSecret.Enemies
     {
         [Header("Fade Out Config")]
         [SerializeField] private float fadeDuration = 2f;
+        [Header("Death Sound")]
+        [SerializeField] private AudioClip DeathSound;
 
         // La clase base ya se encarga de recibir daño (TakeDamage) y de publicar el evento de muerte.
         // Solo necesitamos implementar el comportamiento específico de la muerte del enemigo.
@@ -50,6 +52,7 @@ namespace ProyectSecret.Enemies
                 timer += Time.deltaTime;
                 yield return null;
             }
+            SoundManager.Smanager.ReproduceEffect(DeathSound); // Reproducir sonido de muerte
             Destroy(gameObject);
             // El evento estático OnEnemyDestroyed ya no es necesario.
         }

@@ -1248,11 +1248,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8366928f004cc6045bc131fc9c7eeeda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  transferData: {fileID: 0}
+  transferData: {fileID: 11400000, guid: 672dd13ac8bd77347b088ce593ae3277, type: 2}
   playerSpawnPoint: {fileID: 1679314873}
   enemySpawnPoint: {fileID: 1380423284}
-  playerPersistentData: {fileID: 0}
-  itemDatabase: {fileID: 0}
+  playerPersistentData: {fileID: 11400000, guid: 4b697eec965912c48a25849fa11c20c1, type: 2}
+  itemDatabase: {fileID: 11400000, guid: d45caa0e04d97e346950e496eeb62245, type: 2}
   Music: {fileID: 8300000, guid: 54c4f1420024a3d45b40476bcd760b23, type: 3}
 --- !u!4 &695550200
 Transform:
