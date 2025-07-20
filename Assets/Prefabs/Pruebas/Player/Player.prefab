@@ -209,7 +209,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7959420949094829934}
   - component: {fileID: 5045590331970572952}
-  - component: {fileID: 6426238806742044817}
+  - component: {fileID: 750751822701500320}
   - component: {fileID: 8893854837389161022}
   - component: {fileID: 333113706365408261}
   - component: {fileID: 4056374823813341148}
@@ -278,8 +278,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 2
---- !u!135 &6426238806742044817
-SphereCollider:
+--- !u!136 &750751822701500320
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -296,9 +296,11 @@ SphereCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 7.470438
-  m_Center: {x: 0, y: 0.7118168, z: 0}
+  serializedVersion: 2
+  m_Radius: 3.2805953
+  m_Height: 14.456763
+  m_Direction: 1
+  m_Center: {x: 0, y: -0.713532, z: 0.2805978}
 --- !u!212 &8893854837389161022
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -382,12 +384,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6783571df6ca73d41ba49d0236d89f18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitBoxPoint: {fileID: 3048763232443632849}
-  hitBoxPoint1: {fileID: 2293744280824456786}
   equipmentSlots:
     equippedWeapon: {fileID: 0}
-  weaponHolder: {fileID: 1873185031702502268}
-  weaponHolder1: {fileID: 4891382524184911303}
 --- !u!114 &6805546621234333231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -542,6 +540,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8eee29a6fd249b04ea728553394b5570, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isCameraInverted: 0
   inputActions: {fileID: -944628639613478452, guid: fcbddd531342fbb4dbfb0a3e85be621f, type: 3}
   dayActionMap: PlayerDay
   nightActionMap: PlayerNight

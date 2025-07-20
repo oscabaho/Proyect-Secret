@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using Characters;
+using ProyectSecret.Events;
 
 namespace ProyectSecret.Characters
 {
@@ -17,9 +18,9 @@ namespace ProyectSecret.Characters
 
         [Header("Stamina Recovery")]
         [SerializeField] private int staminaRecoveryAmount = 5;
-        [SerializeField] private float staminaRecoveryInterval = 1f;
+        [SerializeField] private float staminaRecoveryInterval = 0.5f;
+        [SerializeField] private float staminaRecoveryDelay = 2f;
         private Coroutine staminaRecoveryCoroutine;
-        private float staminaRecoveryDelay = 2f;
 
         protected override void Awake()
         {
@@ -31,7 +32,20 @@ namespace ProyectSecret.Characters
                 Debug.LogWarning("PlayerHealthController: No se encontró StaminaComponentBehaviour.");
         }
 
-        public void OnPlayerAttack()
+        private void OnEnable()
+        {
+            // Suscribirse a un evento genérico de acción del jugador que consume stamina
+            GameEventBus.Instance.Subscribe<PlayerActionUsedStaminaEvent>(HandlePlayerAction);
+        }
+
+        private void OnDisable()
+        {
+            if (GameEventBus.Instance != null)
+                GameEventBus.Instance.Unsubscribe<PlayerActionUsedStaminaEvent>(HandlePlayerAction);
+        }
+
+        // Este método se llama cuando cualquier acción (ataque, esquivar, etc.) consume stamina
+        private void HandlePlayerAction(PlayerActionUsedStaminaEvent evt)
         {
             if (staminaRecoveryCoroutine != null)
             {
@@ -43,7 +57,7 @@ namespace ProyectSecret.Characters
         private IEnumerator StaminaRecoveryRoutine()
         {
             yield return new WaitForSeconds(staminaRecoveryDelay);
-            while (Stamina != null && Stamina.CurrentStamina < Stamina.MaxValue)
+            while (Stamina != null && Stamina.CurrentValue < Stamina.MaxValue)
             {
                 Stamina.AffectValue(staminaRecoveryAmount);
                 yield return new WaitForSeconds(staminaRecoveryInterval);
@@ -53,8 +67,10 @@ namespace ProyectSecret.Characters
 
         protected override void Death()
         {
-            // Aquí puedes agregar lógica personalizada para la muerte del jugador
-            Destroy(gameObject);
+            // Notificar a otros sistemas que el jugador ha muerto, en lugar de destruirlo aquí.
+            // El CombatSceneController se encargará de la lógica de derrota y de la destrucción del objeto.
+            GameEventBus.Instance.Publish(new PlayerDiedEvent(gameObject));
+            // Ya no se destruye aquí para permitir que otros sistemas reaccionen al evento.
         }
     }
 }

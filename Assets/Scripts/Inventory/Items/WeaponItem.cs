@@ -5,10 +5,10 @@ using ProyectSecret.Combat.Behaviours;
 namespace ProyectSecret.Inventory.Items
 {
     /// <summary>
-    /// ScriptableObject base para armas. Permite instanciar el hitbox, aplicar daño y ser usado/equipado.
+    /// ScriptableObject base para armas. Define sus propiedades y comportamiento al ser equipado.
     /// </summary>
     [CreateAssetMenu(fileName = "WeaponItem", menuName = "Inventory/WeaponItem")]
-public class WeaponItem : MysteryItem, IUsableItem, IEquipable
+    public class WeaponItem : MysteryItem, IEquipable
     {
         [Header("Datos del arma")]
         [SerializeField] private int weaponDamage = 10;
@@ -17,7 +17,7 @@ public class WeaponItem : MysteryItem, IUsableItem, IEquipable
         [SerializeField] private AnimationCurve durabilityCurve = null;
         [SerializeField] private AnimationCurve masteryCurve = null;
         [SerializeField] private int maxMasteryHits = 100;
-        // Eliminado: weaponHitboxPrefab
+        
         [Header("Prefab de hitbox de ataque")]
         [SerializeField] private GameObject hitBoxPrefab;
         [Header("Prefab visual del arma")]
@@ -29,27 +29,8 @@ public class WeaponItem : MysteryItem, IUsableItem, IEquipable
         public AnimationCurve DurabilityCurve => durabilityCurve;
         public AnimationCurve MasteryCurve => masteryCurve;
         public int MaxMasteryHits => maxMasteryHits;
-        // Eliminado: WeaponHitboxPrefab
         public GameObject HitBoxPrefab => hitBoxPrefab;
         public GameObject WeaponPrefab => weaponPrefab;
-
-        /// <summary>
-        /// Instancia y retorna el hitbox del arma (debe ser hijo del jugador o del arma física).
-        /// </summary>
-        public WeaponHitbox GetWeaponHitboxInstance(Transform parent = null)
-        {
-            if (hitBoxPrefab == null)
-            {
-                #if UNITY_EDITOR
-                Debug.LogWarning($"WeaponItem {name} no tiene asignado un prefab de hitbox.");
-                #endif
-                return null;
-            }
-            GameObject hitboxObj = parent != null
-                ? Object.Instantiate(hitBoxPrefab, parent)
-                : Object.Instantiate(hitBoxPrefab);
-            return hitboxObj.GetComponent<WeaponHitbox>();
-        }
 
         /// <summary>
         /// Aplica daño al objetivo usando la lógica del arma.
@@ -62,25 +43,6 @@ public class WeaponItem : MysteryItem, IUsableItem, IEquipable
                 damageable.TakeDamage(weaponDamage);
                 #if UNITY_EDITOR
                 Debug.Log($"{owner.name} infligió {weaponDamage} de daño a {target.name} con {name}.");
-                #endif
-            }
-        }
-
-        // Implementación de IUsableItem
-        public void Use(GameObject user)
-        {
-            var equipmentController = user.GetComponent<PlayerEquipmentController>();
-            if (equipmentController != null)
-            {
-                equipmentController.EquipItemById(this.Id);
-                #if UNITY_EDITOR
-                Debug.Log($"{DisplayName} equipada.");
-                #endif
-            }
-            else
-            {
-                #if UNITY_EDITOR
-                Debug.LogWarning("No se encontró PlayerEquipmentController en el usuario.");
                 #endif
             }
         }

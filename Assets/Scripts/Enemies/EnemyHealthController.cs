@@ -1,45 +1,32 @@
 using UnityEngine;
 using System.Collections;
-using ProyectSecret.Components;
+using Characters; // Necesario para heredar de HealthControllerBase
 
 namespace ProyectSecret.Enemies
 {
-    public class EnemyHealthController : MonoBehaviour
+    /// <summary>
+    /// Controlador de salud para el enemigo. Ahora hereda de la clase base para unificar la lógica.
+    /// </summary>
+    public class EnemyHealthController : HealthControllerBase
     {
-        [Header("Vida del enemigo")]
-        [SerializeField] private HealthComponentBehaviour healthBehaviour;
-        public HealthComponent Health { get { return healthBehaviour != null ? healthBehaviour.Health : null; } }
+        [Header("Fade Out Config")]
+        [SerializeField] private float fadeDuration = 2f;
 
-        private void Awake()
+        // La clase base ya se encarga de recibir daño (TakeDamage) y de publicar el evento de muerte.
+        // Solo necesitamos implementar el comportamiento específico de la muerte del enemigo.
+        protected override void Death()
         {
-            if (healthBehaviour == null)
-                healthBehaviour = GetComponent<HealthComponentBehaviour>();
-        }
-
-        public void TakeDamage(int amount)
-        {
-            if (Health != null)
-            {
-                Health.AffectValue(-amount);
-                if (Health.CurrentValue <= 0)
-                {
-                    Die();
-                }
-            }
-        }
-
-        private void Die()
-        {
-            // Inicia desvanecimiento gradual antes de destruir el objeto
+            // El evento CharacterDeathEvent ya ha sido publicado por la clase base.
+            // Ahora solo nos encargamos del efecto visual de la muerte.
             StartCoroutine(FadeAndDestroy());
         }
 
-        [Header("Fade Out Config")]
-        [SerializeField] private float fadeDuration = 2f; // Estándar para fade out
-        public static System.Action OnEnemyDestroyed;
-
         private IEnumerator FadeAndDestroy()
         {
+            // Desactivar el collider para evitar más interacciones mientras muere.
+            var collider = GetComponent<Collider>();
+            if (collider != null) collider.enabled = false;
+
             float timer = 0f;
             Renderer[] renderers = GetComponentsInChildren<Renderer>();
             Color[] originalColors = new Color[renderers.Length];
@@ -64,7 +51,7 @@ namespace ProyectSecret.Enemies
                 yield return null;
             }
             Destroy(gameObject);
-            OnEnemyDestroyed?.Invoke(); // Notifica que el enemigo fue destruido para iniciar el cambio de escena
+            // El evento estático OnEnemyDestroyed ya no es necesario.
         }
     }
 }

@@ -30,6 +30,13 @@ namespace ProyectSecret.Enemies
         private Vector3 targetPosition;
 
         private Coroutine phaseRoutine;
+        private EnemyHealthController healthController;
+
+        private void Awake()
+        {
+            // Cacheamos la referencia a la salud del enemigo para pasarla a la parte vulnerable.
+            healthController = GetComponent<EnemyHealthController>();
+        }
 
         public void StartPhase1()
         {
@@ -67,10 +74,23 @@ namespace ProyectSecret.Enemies
         private IEnumerator Phase2Routine()
         {
             // Enemigo ataca con parte vulnerable
-            GameObject part = Instantiate(vulnerablePartPrefab, vulnerableSpawnPoint.position, Quaternion.identity);
-            // El script VulnerablePartController gestiona el daño y el tiempo de vulnerabilidad
+            GameObject partObject = Instantiate(vulnerablePartPrefab, vulnerableSpawnPoint.position, Quaternion.identity);
+            
+            // Inyectamos la dependencia de la salud del enemigo.
+            var vulnerableController = partObject.GetComponent<VulnerablePartController>();
+            if (vulnerableController != null)
+            {
+                vulnerableController.Initialize(healthController);
+            }
+            else
+            {
+                #if UNITY_EDITOR
+                Debug.LogWarning("El prefab de la parte vulnerable no tiene el componente VulnerablePartController.");
+                #endif
+            }
+
             yield return new WaitForSeconds(vulnerablePartDuration);
-            if (part != null) Destroy(part);
+            if (partObject != null) Destroy(partObject);
         }
 
         private IEnumerator Phase3Routine(Transform player)

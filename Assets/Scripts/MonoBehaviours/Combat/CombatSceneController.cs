@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using MonoBehaviours.Enemies;
 using ProyectSecret.Events;
+using System.Collections;
 
 namespace ProyectSecret.Combat.SceneManagement
 {
@@ -13,47 +14,82 @@ namespace ProyectSecret.Combat.SceneManagement
         [SerializeField] private Enemy enemy;
         [SerializeField] private string explorationSceneName = "Exploracion";
         [SerializeField] private float delayAfterVictory = 2f;
+        [SerializeField] private float delayAfterDefeat = 1.5f;
         [SerializeField] private GameObject playerInstance; // Asigna el jugador instanciado en combate
         [SerializeField] private PlayerPersistentData playerPersistentData;
 
-        private void Start()
+        private void OnEnable()
         {
-            if (enemy != null)
-                enemy.SubscribeOnDeath(OnEnemyDefeated);
+            GameEventBus.Instance.Subscribe<PlayerDiedEvent>(HandlePlayerDeath);
+            GameEventBus.Instance.Subscribe<CharacterDeathEvent>(HandleCharacterDeath);
         }
 
-        private void OnEnemyDefeated()
+        private void OnDisable()
         {
-            // Aquí puedes mostrar UI de victoria, animaciones, etc.
+            if(GameEventBus.Instance != null)
+            {
+                GameEventBus.Instance.Unsubscribe<PlayerDiedEvent>(HandlePlayerDeath);
+                GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(HandleCharacterDeath);
+            }
+        }
+
+        private void HandleCharacterDeath(CharacterDeathEvent evt)
+        {
+            if (enemy != null && evt.Entity == enemy.gameObject)
+            {
+                StartCoroutine(VictorySequence());
+            }
+        }
+
+        private IEnumerator VictorySequence()
+        {
             #if UNITY_EDITOR
             Debug.Log("¡Enemigo derrotado! Regresando a exploración...");
             #endif
+
             // Guardar estado actualizado del jugador e inventario
             if (playerPersistentData != null && playerInstance != null)
                 playerPersistentData.SaveFromPlayer(playerInstance);
+            
             GameEventBus.Instance.Publish(new CombatVictoryEvent(enemy != null ? enemy.gameObject : null));
-            Invoke(nameof(ReturnToExplorationAfterDefeat), delayAfterVictory);
+
+            // Esperar el delay usando la corutina
+            yield return new WaitForSeconds(delayAfterVictory);
+
+            // Cargar la escena de exploración
+            ReturnToExploration();
         }
 
-        // Manejo explícito de derrota
-        public void OnPlayerDefeated()
+        private void HandlePlayerDeath(PlayerDiedEvent evt)
         {
+            if (evt.PlayerObject != playerInstance) return;
+
             #if UNITY_EDITOR
             Debug.Log("¡Jugador derrotado! Regresando a exploración, inicio de día, punto fijo.");
             #endif
-            // Guardar estado actualizado de vida y stamina del jugador antes de regresar a exploración
-            if (playerPersistentData != null && playerInstance != null)
-            {
-                playerPersistentData.SaveFromPlayer(playerInstance); // Esto guarda vida, stamina y demás stats actuales
-                playerPersistentData.CameFromDefeat = true;
-            }
-            // Publicar evento de inicio de día
-            GameEventBus.Instance.Publish(new ProyectSecret.Events.DayStartedEvent());
-            // Regresar a exploración tras un pequeño delay (puedes ajustar)
-            Invoke(nameof(ReturnToExplorationAfterDefeat), 1.5f);
+            
+            StartCoroutine(DefeatSequence());
         }
 
-        private void ReturnToExplorationAfterDefeat()
+        private IEnumerator DefeatSequence()
+        {
+            // Guardar estado actualizado de vida y stamina del jugador antes de regresar a exploración
+            if (playerPersistentData != null)
+            {
+                playerPersistentData.SaveFromPlayer(playerInstance);
+                playerPersistentData.CameFromDefeat = true;
+            }
+            
+            GameEventBus.Instance.Publish(new ProyectSecret.Events.DayStartedEvent());
+
+            // Esperar el delay
+            yield return new WaitForSeconds(delayAfterDefeat);
+
+            // Cargar la escena de exploración
+            ReturnToExploration();
+        }
+
+        private void ReturnToExploration()
         {
             // Aquí puedes implementar lógica para posicionar al jugador en el punto fijo (estatua)
             // Por ahora solo carga la escena, la lógica de posicionamiento debe ir en el inicializador de la escena de exploración

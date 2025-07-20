@@ -11,7 +11,6 @@ namespace ProyectSecret.Interfaces
         EquipmentSlots EquipmentSlots { get; }
         void EquipWeaponInstance(WeaponInstance instance);
         void EquipWeapon(WeaponItem weaponItem);
-        void EquipItemById(string itemId);
         void UnequipWeapon();
     }
 }

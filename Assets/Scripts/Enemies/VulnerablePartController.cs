@@ -9,6 +9,16 @@ namespace ProyectSecret.Enemies
         public event System.Action OnDeath;
         public float vulnerableTime = 3f;
         private bool isVulnerable = true;
+        private EnemyHealthController enemyHealth;
+
+        /// <summary>
+        /// Inicializa la parte vulnerable con una referencia a la salud del enemigo.
+        /// Debe ser llamado por quien lo instancia.
+        /// </summary>
+        public void Initialize(EnemyHealthController healthController)
+        {
+            enemyHealth = healthController;
+        }
 
         private void Start()
         {
@@ -17,13 +27,9 @@ namespace ProyectSecret.Enemies
 
         public void TakeDamage(int amount)
         {
-            if (isVulnerable)
+            if (isVulnerable && enemyHealth != null)
             {
-                var enemyHealth = FindFirstObjectByType<EnemyHealthController>();
-                if (enemyHealth != null)
-                {
-                    enemyHealth.TakeDamage(amount);
-                }
+                enemyHealth.TakeDamage(amount);
             }
         }
 

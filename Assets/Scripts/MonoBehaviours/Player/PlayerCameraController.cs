@@ -14,6 +14,8 @@ namespace ProyectSecret.MonoBehaviours.Player
         private Camera camaraTrasera, camaraFrontal;
         private Camera activeCamera;
 
+        private PaperMarioPlayerMovement playerMovement;
+
         /// <summary>
         /// Evento que se dispara cuando la cámara activa cambia.
         /// </summary>
@@ -21,12 +23,35 @@ namespace ProyectSecret.MonoBehaviours.Player
 
         void Awake()
         {
+            playerMovement = GetComponent<PaperMarioPlayerMovement>();
+
             // Inicializa referencias a las cámaras hijas automáticamente
             camaraTrasera = transform.Find(nombreCamaraTrasera)?.GetComponent<Camera>();
             camaraFrontal = transform.Find(nombreCamaraFrontal)?.GetComponent<Camera>();
+            
             // Por defecto activa la trasera si existe
             if (camaraTrasera != null)
                 SetActiveCamera(camaraTrasera);
+        }
+
+        private void Update()
+        {
+            if (playerMovement == null || activeCamera == null) return;
+
+            // La lógica de 'DetectarAcercamiento' ahora vive aquí, haciendo este componente autocontenido.
+            if (playerMovement.IsMovingDown)
+            {
+                tiempoAcercandoseALaCamara += Time.deltaTime;
+                if (tiempoAcercandoseALaCamara >= tiempoParaInvertirCamara)
+                {
+                    InvertirCamara();
+                    tiempoAcercandoseALaCamara = 0.0f;
+                }
+            }
+            else
+            {
+                tiempoAcercandoseALaCamara = 0.0f;
+            }
         }
 
         /// <summary>
@@ -57,27 +82,12 @@ namespace ProyectSecret.MonoBehaviours.Player
                 return;
             }
             SetActiveCamera(activeCamera == camaraTrasera ? camaraFrontal : camaraTrasera);
-        }
-
-        /// <summary>
-        /// Detecta si el jugador está presionando el input de movimiento hacia abajo y la invierte si corresponde.
-        /// Debe llamarse desde el controlador de movimiento, pasando IsMovingDown.
-        /// </summary>
-        public void DetectarAcercamiento(bool isMovingDown)
-        {
-            if (activeCamera == null) return;
-            if (isMovingDown)
+            
+            // Notificar al sistema que el estado de inversión ha cambiado.
+            // Esto es crucial para que otros componentes (como el de equipamiento) reaccionen.
+            if (playerMovement != null)
             {
-                tiempoAcercandoseALaCamara += Time.deltaTime;
-                if (tiempoAcercandoseALaCamara >= tiempoParaInvertirCamara)
-                {
-                    InvertirCamara();
-                    tiempoAcercandoseALaCamara = 0.0f;
-                }
-            }
-            else
-            {
-                tiempoAcercandoseALaCamara = 0.0f;
+                playerMovement.SetCameraInverted(activeCamera == camaraFrontal);
             }
         }
 

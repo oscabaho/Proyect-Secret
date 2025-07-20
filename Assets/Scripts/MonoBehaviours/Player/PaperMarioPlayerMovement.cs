@@ -9,16 +9,14 @@ public class PaperMarioPlayerMovement : MonoBehaviour
     // Evento para notificar cambio de inversión de cámara
     public event System.Action<bool> OnCameraInvertedChanged;
     
-    // Los puntos de arma y hitbox ahora son gestionados por PlayerPointSwitcher
-
     // Estado de inversión de cámara
     public bool isCameraInverted = false;
     
-// [Header("Configuración de Sprites")] // Ya no se usan sprites de prueba, solo animaciones
-private Animator animator;
+    private Animator animator;
 
     [Header("Input System")]
-    [SerializeField] private InputActionAsset inputActions;
+    [field: SerializeField]
+    public InputActionAsset InputActions { get; private set; }
     [SerializeField] private string dayActionMap = "PlayerDay";
     [SerializeField] private string nightActionMap = "PlayerNight";
     [SerializeField] private string moveActionName = "Move";
@@ -55,17 +53,13 @@ private Animator animator;
     {
         isCameraInverted = inverted;
         OnCameraInvertedChanged?.Invoke(inverted);
-        // Usar PlayerPointSwitcher para actualizar puntos y mover hijos
+        
         var pointSwitcher = GetComponent<PlayerPointSwitcher>();
         if (pointSwitcher != null)
         {
             pointSwitcher.UpdateActivePoints(isCameraInverted);
-            pointSwitcher.SwitchPoints(isCameraInverted);
         }
     }
-
-
-    // Método de sprites de prueba eliminado. Ahora se usan animaciones.
 
     public Vector2 GetMoveInput()
     {
@@ -115,7 +109,7 @@ private Animator animator;
 
         SubscribeToDayNightEvents();
 
-        if (inputActions != null)
+        if (InputActions != null)
         {
             SetDayInput();
         }
@@ -162,14 +156,14 @@ private Animator animator;
 
     private void SwitchActionMap(string actionMapName)
     {
-        if (inputActions == null) return;
+        if (InputActions == null) return;
         
         if (currentActionMap != null)
         {
             currentActionMap.Disable();
         }
         
-        currentActionMap = inputActions.FindActionMap(actionMapName);
+        currentActionMap = InputActions.FindActionMap(actionMapName);
         
         if (currentActionMap != null)
         {
@@ -207,15 +201,9 @@ private Animator animator;
             Vector2 input = moveAction.ReadValue<Vector2>();
             IsMovingDown = input.y < -0.1f;
 
-            // Detecta si la cámara activa es la trasera (Camera) y aplica inversión de input
-            var cameraController = GetComponent<PlayerCameraController>();
-            bool invertInput = false;
-            if (cameraController != null && cameraController.GetActiveCamera() != null)
-            {
-                invertInput = cameraController.GetActiveCamera().name == "Camera";
-                cameraController.DetectarAcercamiento(IsMovingDown);
-            }
-            if (invertInput)
+            // Si la cámara está invertida, el input de movimiento también se invierte.
+            // La lógica ya no depende de buscar el controlador de cámara.
+            if (isCameraInverted)
             {
                 input.x = -input.x;
                 input.y = -input.y;
@@ -274,8 +262,6 @@ private Animator animator;
             isGrounded = false;
         }
     }
-
-    // Método de sprites de prueba eliminado. Animación y flipX se controlan desde Animator y Update.
 
     void OnCollisionEnter(Collision collision)
     {

@@ -27,13 +27,27 @@ namespace ProyectSecret.Inventory
 
         public bool RemoveItem(string itemId)
         {
-            var item = items.Find(i => i != null && i.Id == itemId);
+            var item = FindItem(itemId);
             if (item != null)
             {
-                items.Remove(item);
-                return true;
+                return RemoveItem(item);
             }
             return false;
+        }
+
+        public bool RemoveItem(MysteryItem item)
+        {
+            if (item == null) return false;
+            return items.Remove(item);
+        }
+
+        public MysteryItem FindItem(string itemId)
+        {
+            return items.Find(i => i != null && i.Id == itemId);
+        }
+        public void Clear()
+        {
+            items.Clear();
         }
 
         public bool HasItem(string itemId)
