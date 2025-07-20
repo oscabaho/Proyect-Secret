@@ -12,6 +12,8 @@ public class WeaponPickup : MonoBehaviour
     [SerializeField] private WeaponItem weaponItem; // Asigna el ScriptableObject en el inspector
     [Header("Trigger de interacción (hijo)")]
     [SerializeField] private GameObject interactionTrigger; // Asigna el hijo con el collider trigger
+    [Header("Sonido de recogida")]
+    [SerializeField] private AudioClip PickupSound; // Sonido que se reproduce al recoger el arma
 
     private void Awake()
     {
@@ -55,6 +57,7 @@ public class WeaponPickup : MonoBehaviour
                 //Debug.Log($"WeaponPickup: Trigger {interactionTrigger.name} desactivado");
             }
             //Debug.Log($"WeaponPickup: Destruyendo {gameObject.name} tras recogida");
+            SoundManager.Smanager.ReproduceEffect(PickupSound); // Reproduce sonido de recogida
             Destroy(gameObject); // Elimina la daga del suelo
         }
     }

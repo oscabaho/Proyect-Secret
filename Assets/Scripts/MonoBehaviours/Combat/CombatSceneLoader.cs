@@ -23,5 +23,15 @@ namespace ProyectSecret.Combat.SceneManagement
             transferData.kryptoniteItemId = kryptoniteItemId;
             SceneManager.LoadScene(combatSceneName);
         }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            LoadCombatScene(
+                transferData.playerPrefab,
+                transferData.enemyPrefab,
+                transferData.kryptoniteItemId,
+                other.gameObject
+            );
+        }
     }
 }

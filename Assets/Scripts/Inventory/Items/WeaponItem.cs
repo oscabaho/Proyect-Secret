@@ -31,6 +31,9 @@ namespace ProyectSecret.Inventory.Items
         public int MaxMasteryHits => maxMasteryHits;
         public GameObject HitBoxPrefab => hitBoxPrefab;
         public GameObject WeaponPrefab => weaponPrefab;
+        public AudioClip AttackSoundAir => AttackSoundAir;
+        public AudioClip AttackSoundEnemy => AttackSoundEnemy;
+        public AudioClip AttackSoundObject => AttackSoundObject;
 
         /// <summary>
         /// Aplica daño al objetivo usando la lógica del arma.
