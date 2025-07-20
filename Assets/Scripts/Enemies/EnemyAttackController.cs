@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace ProyectSecret.Enemies
 {
+    [RequireComponent(typeof(EnemyHealthController))]
     public class EnemyAttackController : MonoBehaviour
     {
         public AttackPhase CurrentPhase => currentPhase;
@@ -19,7 +20,6 @@ namespace ProyectSecret.Enemies
 
         [Header("Fase 2: Parte vulnerable")]
         [SerializeField] private GameObject vulnerablePartPrefab;
-        [SerializeField] private float vulnerablePartDuration = 3f;
         [SerializeField] private Transform vulnerableSpawnPoint;
 
         [Header("Fase 3: Carga y ataque recto")]
@@ -73,7 +73,7 @@ namespace ProyectSecret.Enemies
 
         private IEnumerator Phase2Routine()
         {
-            // Enemigo ataca con parte vulnerable
+            // Enemigo ataca con parte vulnerable. La parte vulnerable se autodestruirá.
             GameObject partObject = Instantiate(vulnerablePartPrefab, vulnerableSpawnPoint.position, Quaternion.identity);
             
             // Inyectamos la dependencia de la salud del enemigo.
@@ -89,8 +89,8 @@ namespace ProyectSecret.Enemies
                 #endif
             }
 
-            yield return new WaitForSeconds(vulnerablePartDuration);
-            if (partObject != null) Destroy(partObject);
+            // La corutina termina aquí. Ya no es responsable de destruir la parte vulnerable.
+            yield break;
         }
 
         private IEnumerator Phase3Routine(Transform player)

@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using ProyectSecret.Inventory;
 using ProyectSecret.Interfaces;
@@ -12,13 +11,13 @@ namespace ProyectSecret.Combat.Behaviours
     [RequireComponent(typeof(Collider))]
     public class WeaponHitbox : MonoBehaviour
     {
-        [SerializeField] private WeaponItem weaponData; // Asignar desde el prefab o dinámicamente
-        [SerializeField] private GameObject owner; // El jugador o entidad que porta el arma
+        private WeaponInstance weaponInstance; // Ahora referencia la instancia, no solo los datos.
+        private GameObject owner;
         private bool canDamage = false;
 
-        public void SetWeapon(WeaponItem weapon, GameObject weaponOwner)
+        public void Initialize(WeaponInstance instance, GameObject weaponOwner)
         {
-            weaponData = weapon;
+            weaponInstance = instance;
             owner = weaponOwner;
         }
 
@@ -27,14 +26,24 @@ namespace ProyectSecret.Combat.Behaviours
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!canDamage || weaponData == null || owner == null)
+            if (!canDamage || weaponInstance == null || owner == null)
                 return;
+            
             if (other.gameObject == owner)
                 return; // No dañarse a sí mismo
+            
             var damageable = other.GetComponent<IDamageable>();
             if (damageable != null)
             {
-                weaponData.ApplyDamage(owner, other.gameObject);
+                // Aplicar daño usando los datos del arma
+                weaponInstance.WeaponData.ApplyDamage(owner, other.gameObject);
+                
+                // Incrementar contador de golpes y reducir durabilidad
+                weaponInstance.AddHit();
+                weaponInstance.DecreaseDurability(1); // O un valor configurable desde WeaponData
+
+                // Desactivar el daño para que no golpee varias veces en un solo swing.
+                DisableDamage();
             }
         }
     }

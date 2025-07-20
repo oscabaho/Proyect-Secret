@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 8669212645605233832}
   - component: {fileID: 3507642787666594889}
-  - component: {fileID: 8416507462055022676}
-  - component: {fileID: 7562319942541979384}
-  - component: {fileID: 2469251687021501247}
+  - component: {fileID: 1458450748444464830}
+  - component: {fileID: 7118956835019353061}
+  - component: {fileID: 8485304171881216399}
+  - component: {fileID: 5622512857555862081}
   m_Layer: 0
   m_Name: Enemy2
   m_TagString: Untagged
@@ -57,7 +58,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8416507462055022676
+--- !u!114 &1458450748444464830
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -72,7 +73,7 @@ MonoBehaviour:
   health:
     maxValue: 100
     currentValue: 0
---- !u!114 &7562319942541979384
+--- !u!114 &7118956835019353061
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -81,11 +82,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 4646000213364459723}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 364efddc1128d034d9f42fb9163a0969, type: 3}
+  m_Script: {fileID: 11500000, guid: 205e97bfbb7fbdf478910358da0dee3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   healthBehaviour: {fileID: 0}
---- !u!114 &2469251687021501247
+  fadeDuration: 2
+--- !u!114 &8485304171881216399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4646000213364459723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e5d872b750f14e45af5edcdff68ff3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentPhase: 0
+  rockPrefab: {fileID: 0}
+  rocksToSpawn: 5
+  rockSpawnHeight: 10
+  rockSpawnRadius: 5
+  rockSpawnInterval: 0.5
+  vulnerablePartPrefab: {fileID: 0}
+  vulnerableSpawnPoint: {fileID: 0}
+  chargeTime: 2
+  attackSpeed: 10
+  attackDuration: 1.5
+--- !u!114 &5622512857555862081
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -1,41 +1,34 @@
-using System;
 using UnityEngine;
-using ProyectSecret.Characters.Enemies;
+using ProyectSecret.Enemies;
 
 namespace MonoBehaviours.Enemies
 {
     /// <summary>
-    /// Controlador principal del enemigo. Orquesta IA, ataques y referencia a EnemyHealthController.
+    /// Controlador principal del enemigo. Orquesta IA, ataques y referencia a los sub-componentes.
     /// </summary>
     [RequireComponent(typeof(EnemyHealthController))]
+    [RequireComponent(typeof(EnemyAttackController))]
     public class Enemy : MonoBehaviour
     {
-    private EnemyHealthController healthController;
+        private EnemyHealthController healthController;
+        private EnemyAttackController attackController;
 
+        private void Awake()
+        {
+            healthController = GetComponent<EnemyHealthController>();
+            attackController = GetComponent<EnemyAttackController>();
 
-    private void Awake()
-    {
-        healthController = GetComponent<EnemyHealthController>();
-        if (healthController == null)
-            Debug.LogError("Enemy: No se encontró EnemyHealthController.");
-    }
+            if (healthController == null)
+                Debug.LogError("Enemy: No se encontró EnemyHealthController.");
+            if (attackController == null)
+                Debug.LogError("Enemy: No se encontró EnemyAttackController.");
+        }
 
-    public void TakeDamage(int amount)
-    {
-        healthController?.TakeDamage(amount);
-    }
+        public void TakeDamage(int amount)
+        {
+            healthController?.TakeDamage(amount);
+        }
 
-    public void SubscribeOnDeath(Action callback)
-    {
-        if (healthController != null)
-            healthController.OnDeath += callback;
-    }
-    public void UnsubscribeOnDeath(Action callback)
-    {
-        if (healthController != null)
-            healthController.OnDeath -= callback;
-    }
-
-    // Puedes agregar aquí la lógica de IA, ataques, percepción, etc.
+        // Puedes agregar aquí la lógica de IA que llame a attackController.StartPhase1(), etc.
     }
 }

@@ -49,6 +49,9 @@ namespace ProyectSecret.Inventory
                 if (newParent != null)
                 {
                     equippedWeaponGO.transform.SetParent(newParent, false);
+                    // Reseteamos la posición y rotación al cambiar de padre
+                    equippedWeaponGO.transform.localPosition = Vector3.zero;
+                    equippedWeaponGO.transform.localRotation = Quaternion.identity;
                 }
             }
         }
@@ -111,7 +114,8 @@ namespace ProyectSecret.Inventory
 
             if (weaponHitbox != null)
             {
-                weaponHitbox.SetWeapon(weaponData, gameObject);
+                // Pasamos la instancia completa, no solo los datos.
+                weaponHitbox.Initialize(EquippedWeaponInstance, gameObject);
                 weaponHitbox.EnableDamage();
                 Destroy(hitboxObj, 0.3f); // Autodestrucción para limpiar
                 return true;
@@ -130,7 +134,12 @@ namespace ProyectSecret.Inventory
             {
                 Transform weaponPoint = GetActiveWeaponPoint();
                 if (weaponPoint != null)
+                {
                     equippedWeaponGO = Instantiate(weaponItem.WeaponPrefab, weaponPoint);
+                    // Forzamos la posición y rotación a cero relativo al padre.
+                    equippedWeaponGO.transform.localPosition = Vector3.zero;
+                    equippedWeaponGO.transform.localRotation = Quaternion.identity;
+                }
             }
         }
 

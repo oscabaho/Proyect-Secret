@@ -4,18 +4,14 @@ using ProyectSecret.Interfaces;
 namespace ProyectSecret.Inventory.Items
 {
     [CreateAssetMenu(fileName = "HealingItem", menuName = "Inventory/HealingItem")]
-    public class HealingItem : ScriptableObject, IUsableItem
+    public class HealingItem : MysteryItem, IUsableItem
     {
-        [SerializeField] private string id;
-        [SerializeField] private string displayName;
-        [SerializeField] private string description;
-        [SerializeField] private Sprite icon;
+        // Los campos id, displayName, description e icon ahora se heredan de MysteryItem.
+        // Ya no es necesario declararlos aquí.
+        
+        [Header("Healing Properties")]
         [SerializeField] private int healAmount;
 
-        public string Id => id;
-        public string DisplayName => displayName;
-        public string Description => description;
-        public Sprite Icon => icon;
         public int HealAmount => healAmount;
 
         public void Use(GameObject user)
@@ -36,6 +32,6 @@ namespace ProyectSecret.Inventory.Items
             }
         }
 
-        public string GetId() => Id;
+        public string GetId() => Id; // Ahora usa el 'Id' heredado de MysteryItem
     }
 }

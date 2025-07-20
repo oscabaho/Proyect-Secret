@@ -9,11 +9,12 @@ namespace ProyectSecret.MonoBehaviours.Player
         private float tiempoAcercandoseALaCamara = 0.0f;
 
         [Header("Cámaras hijas")]
-        [SerializeField] private string nombreCamaraTrasera = "Camera";
-        [SerializeField] private string nombreCamaraFrontal = "Camera1";
-        private Camera camaraTrasera, camaraFrontal;
+        [Tooltip("Arrastra aquí el GameObject de la cámara trasera.")]
+        [SerializeField] private Camera camaraTrasera;
+        [Tooltip("Arrastra aquí el GameObject de la cámara frontal.")]
+        [SerializeField] private Camera camaraFrontal;
+        
         private Camera activeCamera;
-
         private PaperMarioPlayerMovement playerMovement;
 
         /// <summary>
@@ -25,13 +26,17 @@ namespace ProyectSecret.MonoBehaviours.Player
         {
             playerMovement = GetComponent<PaperMarioPlayerMovement>();
 
-            // Inicializa referencias a las cámaras hijas automáticamente
-            camaraTrasera = transform.Find(nombreCamaraTrasera)?.GetComponent<Camera>();
-            camaraFrontal = transform.Find(nombreCamaraFrontal)?.GetComponent<Camera>();
+            // Validar que las cámaras han sido asignadas en el Inspector.
+            if (camaraTrasera == null || camaraFrontal == null)
+            {
+                #if UNITY_EDITOR
+                Debug.LogError("PlayerCameraController: Faltan referencias a las cámaras. Por favor, asígnalas en el Inspector.");
+                #endif
+                return;
+            }
             
-            // Por defecto activa la trasera si existe
-            if (camaraTrasera != null)
-                SetActiveCamera(camaraTrasera);
+            // Por defecto activa la trasera.
+            SetActiveCamera(camaraTrasera);
         }
 
         private void Update()
@@ -61,11 +66,14 @@ namespace ProyectSecret.MonoBehaviours.Player
         {
             if (cam == null)
             {
-                Debug.LogError("PlayerCameraController: Cámara asignada es nula.");
+                Debug.LogError("PlayerCameraController: Se intentó activar una cámara nula.");
                 return;
             }
-            if (activeCamera != null)
-                activeCamera.gameObject.SetActive(false);
+
+            // Desactivar todas las cámaras para asegurar que solo una esté activa.
+            camaraTrasera.gameObject.SetActive(false);
+            camaraFrontal.gameObject.SetActive(false);
+
             activeCamera = cam;
             activeCamera.gameObject.SetActive(true);
             OnCameraChanged?.Invoke(activeCamera);
@@ -76,11 +84,6 @@ namespace ProyectSecret.MonoBehaviours.Player
         /// </summary>
         public void InvertirCamara()
         {
-            if (camaraTrasera == null || camaraFrontal == null)
-            {
-                Debug.LogError("PlayerCameraController: No se encontraron las cámaras hijas correctamente.");
-                return;
-            }
             SetActiveCamera(activeCamera == camaraTrasera ? camaraFrontal : camaraTrasera);
             
             // Notificar al sistema que el estado de inversión ha cambiado.
