@@ -398,6 +398,7 @@ MonoBehaviour:
   jumpActionName: Jump
   moveSpeed: 5
   jumpForce: 7
+  moveSound: {fileID: 8300000, guid: d4b423891e3cc554f85e9aedb0fefa59, type: 3}
 --- !u!114 &4413563322621177867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -444,6 +445,7 @@ MonoBehaviour:
   staminaRecoveryAmount: 5
   staminaRecoveryInterval: 0.5
   staminaRecoveryDelay: 2
+  PlayerDeathSound: {fileID: 8300000, guid: 43124e73252187a4aa78d53712f9b035, type: 3}
 --- !u!114 &7500067964294251843
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -16,6 +16,7 @@ namespace ProyectSecret.Combat.SceneManagement
         [SerializeField] private Transform enemySpawnPoint;
         [SerializeField] private PlayerPersistentData playerPersistentData;
         [SerializeField] private ItemDatabase itemDatabase;
+        [SerializeField] private AudioClip Music;
 
         private void Start()
         {
@@ -39,6 +40,7 @@ namespace ProyectSecret.Combat.SceneManagement
                     kryptonite.CheckKryptonite(player);
                 }
             }
+            SoundManager.Instancia.IniciarMusica(Music);
             transferData.Clear();
         }
     }
