@@ -1,7 +1,7 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using MonoBehaviours.Enemies;
 using ProyectSecret.Events;
+using ProyectSecret.Managers;
 using System.Collections;
 
 namespace ProyectSecret.Combat.SceneManagement
@@ -11,8 +11,7 @@ namespace ProyectSecret.Combat.SceneManagement
     /// </summary>
     public class CombatSceneController : MonoBehaviour
     {
-        [SerializeField] private Enemy enemy;
-        [SerializeField] private string explorationSceneName = "Exploracion";
+        [SerializeField] private Enemy enemy; // Se puede mantener si se necesita para eventos de victoria
         [SerializeField] private float delayAfterVictory = 2f;
         [SerializeField] private float delayAfterDefeat = 1.5f;
         [SerializeField] private GameObject playerInstance; // Asigna el jugador instanciado en combate
@@ -57,7 +56,7 @@ namespace ProyectSecret.Combat.SceneManagement
             yield return new WaitForSeconds(delayAfterVictory);
 
             // Cargar la escena de exploración
-            ReturnToExploration();
+            SceneTransitionManager.Instance?.LoadExplorationScene(playerInstance);
         }
 
         private void HandlePlayerDeath(PlayerDiedEvent evt)
@@ -86,14 +85,7 @@ namespace ProyectSecret.Combat.SceneManagement
             yield return new WaitForSeconds(delayAfterDefeat);
 
             // Cargar la escena de exploración
-            ReturnToExploration();
-        }
-
-        private void ReturnToExploration()
-        {
-            // Aquí puedes implementar lógica para posicionar al jugador en el punto fijo (estatua)
-            // Por ahora solo carga la escena, la lógica de posicionamiento debe ir en el inicializador de la escena de exploración
-            SceneManager.LoadScene(explorationSceneName);
+            SceneTransitionManager.Instance?.LoadExplorationScene(playerInstance);
         }
     }
 }

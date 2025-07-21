@@ -27,31 +27,38 @@ namespace ProyectSecret.Enemies
             var collider = GetComponent<Collider>();
             if (collider != null) collider.enabled = false;
 
+            // Usamos un MaterialPropertyBlock para cambiar el color sin crear instancias de material.
+            var propBlock = new MaterialPropertyBlock();
+            int colorID = Shader.PropertyToID("_Color"); // Cacheamos el ID de la propiedad del shader.
+
             float timer = 0f;
             Renderer[] renderers = GetComponentsInChildren<Renderer>();
-            Color[] originalColors = new Color[renderers.Length];
-            for (int i = 0; i < renderers.Length; i++)
+            
+            // Guardamos los colores originales de cada renderer para no perderlos.
+            var originalColors = new System.Collections.Generic.List<Color>();
+            foreach (var rend in renderers)
             {
-                if (renderers[i].material.HasProperty("_Color"))
-                    originalColors[i] = renderers[i].material.color;
+                if (rend.material.HasProperty(colorID))
+                    originalColors.Add(rend.material.color);
+                else
+                    originalColors.Add(Color.white); // Añadir un color por defecto si no tiene la propiedad
             }
+
             while (timer < fadeDuration)
             {
                 float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
                 for (int i = 0; i < renderers.Length; i++)
                 {
-                    if (renderers[i].material.HasProperty("_Color"))
-                    {
-                        Color c = originalColors[i];
-                        c.a = alpha;
-                        renderers[i].material.color = c;
-                    }
+                    renderers[i].GetPropertyBlock(propBlock); // Obtenemos el bloque actual
+                    Color newColor = originalColors[i];
+                    newColor.a = alpha;
+                    propBlock.SetColor(colorID, newColor);
+                    renderers[i].SetPropertyBlock(propBlock); // Aplicamos el bloque modificado
                 }
                 timer += Time.deltaTime;
                 yield return null;
             }
             Destroy(gameObject);
-            // El evento estático OnEnemyDestroyed ya no es necesario.
         }
     }
 }

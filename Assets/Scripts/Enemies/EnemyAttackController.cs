@@ -1,5 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using ProyectSecret.Interfaces;
+using ProyectSecret.VFX;
+using ProyectSecret.Utils; // 1. Importar el namespace del ObjectPool
 
 namespace ProyectSecret.Enemies
 {
@@ -13,10 +16,18 @@ namespace ProyectSecret.Enemies
 
         [Header("Fase 1: Caída de piedras")]
         [SerializeField] private GameObject rockPrefab;
-        [SerializeField] private int rocksToSpawn = 5;
+        [SerializeField] private GameObject shadowPrefab; // Prefab para la sombra/indicador
+        [SerializeField] private int numberOfGroups = 3;
+        [SerializeField] private int rocksPerGroup = 5;
+        [SerializeField] private float intervalBetweenGroups = 2f;
+        [SerializeField] private float spawnDelayWithinGroup = 0.1f;
         [SerializeField] private float rockSpawnHeight = 10f;
-        [SerializeField] private float rockSpawnRadius = 5f;
-        [SerializeField] private float rockSpawnInterval = 0.5f;
+        [SerializeField] private float rockSpawnRadius = 5f; // Radio de caída alrededor del jugador
+        [SerializeField] private LayerMask groundLayer; // Capa del suelo para el Raycast
+        
+        [Header("Fase 1 - Pooling")]
+        [SerializeField] private int rockPoolSize = 20;
+        [SerializeField] private int shadowPoolSize = 20;
 
         [Header("Fase 2: Parte vulnerable")]
         [SerializeField] private GameObject vulnerablePartPrefab;
@@ -31,18 +42,25 @@ namespace ProyectSecret.Enemies
 
         private Coroutine phaseRoutine;
         private EnemyHealthController healthController;
+        private ObjectPool<RockController> rockPool;
+        private ObjectPool<ShadowController> shadowPool;
 
         private void Awake()
         {
             // Cacheamos la referencia a la salud del enemigo para pasarla a la parte vulnerable.
             healthController = GetComponent<EnemyHealthController>();
+
+            // Inicializamos los pools de rocas y sombras
+            rockPool = new ObjectPool<RockController>(rockPrefab, rockPoolSize, transform);
+            if (shadowPrefab != null)
+                shadowPool = new ObjectPool<ShadowController>(shadowPrefab, shadowPoolSize, transform);
         }
 
-        public void StartPhase1()
+        public void StartPhase1(Transform player)
         {
             currentPhase = AttackPhase.Phase1;
             if (phaseRoutine != null) StopCoroutine(phaseRoutine);
-            phaseRoutine = StartCoroutine(Phase1Routine());
+            phaseRoutine = StartCoroutine(Phase1Routine(player));
         }
 
         public void StartPhase2()
@@ -59,15 +77,46 @@ namespace ProyectSecret.Enemies
             phaseRoutine = StartCoroutine(Phase3Routine(player));
         }
 
-        private IEnumerator Phase1Routine()
+        private IEnumerator Phase1Routine(Transform player)
         {
-            // Enemigo invulnerable, lanza piedras
-            for (int i = 0; i < rocksToSpawn; i++)
+            // Enemigo invulnerable, lanza grupos de piedras que caen cerca del jugador.
+            for (int g = 0; g < numberOfGroups; g++)
             {
-                Vector3 spawnPos = transform.position + Vector3.up * rockSpawnHeight + Random.insideUnitSphere * rockSpawnRadius;
-                GameObject rock = Instantiate(rockPrefab, spawnPos, Quaternion.identity);
-                // El script RockController se encarga de destruir la piedra al colisionar con el suelo
-                yield return new WaitForSeconds(rockSpawnInterval);
+                for (int r = 0; r < rocksPerGroup; r++)
+                {
+                    // 1. Calcular la posición de spawn de la roca en el cielo
+                    Vector3 spawnCenter = player.position;
+                    Vector3 spawnPos = spawnCenter + Vector3.up * rockSpawnHeight + Random.insideUnitSphere * rockSpawnRadius;
+
+                    // 2. Lanzar un Raycast hacia abajo para encontrar el punto de impacto en el suelo
+                    GameObject shadowInstance = null;
+                    if (shadowPool != null && Physics.Raycast(spawnPos, Vector3.down, out RaycastHit hit, 100f, groundLayer))
+                    {
+                        // 3. Obtener una sombra del pool y posicionarla en el punto de impacto
+                        shadowInstance = shadowPool.Get();
+                        if (shadowInstance != null)
+                        {
+                            // Posicionamos la sombra en el suelo y ligeramente elevada para evitar Z-fighting
+                            shadowInstance.transform.position = hit.point + new Vector3(0, 0.01f, 0);
+                            shadowInstance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                            shadowInstance.SetActive(true);
+                        }
+                    }
+
+                    // 4. Obtener una roca del pool, posicionarla y activarla
+                    GameObject rock = rockPool.Get();
+                    if (rock == null) continue;
+
+                    rock.transform.position = spawnPos;
+                    rock.transform.rotation = Quaternion.identity;
+                    rock.SetActive(true);
+                    rock.GetComponent<RockController>()?.Initialize(rockPool, shadowInstance);
+                    
+                    if (spawnDelayWithinGroup > 0)
+                        yield return new WaitForSeconds(spawnDelayWithinGroup);
+                }
+                // Intervalo entre grupos de rocas.
+                yield return new WaitForSeconds(intervalBetweenGroups);
             }
         }
 

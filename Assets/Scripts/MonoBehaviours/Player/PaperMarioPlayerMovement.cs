@@ -14,6 +14,7 @@ public class PaperMarioPlayerMovement : MonoBehaviour
     
     private Animator animator;
 
+    private PlayerPointSwitcher pointSwitcher;
     [Header("Input System")]
     [field: SerializeField]
     public InputActionAsset InputActions { get; private set; }
@@ -52,13 +53,9 @@ public class PaperMarioPlayerMovement : MonoBehaviour
     public void SetCameraInverted(bool inverted)
     {
         isCameraInverted = inverted;
-        OnCameraInvertedChanged?.Invoke(inverted);
-        
-        var pointSwitcher = GetComponent<PlayerPointSwitcher>();
-        if (pointSwitcher != null)
-        {
-            pointSwitcher.UpdateActivePoints(isCameraInverted);
-        }
+        OnCameraInvertedChanged?.Invoke(inverted);        
+        // Usamos la referencia cacheada. El '?' evita un error si el componente no existe.
+        pointSwitcher?.UpdateActivePoints(isCameraInverted);
     }
 
     public Vector2 GetMoveInput()
@@ -100,6 +97,7 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        pointSwitcher = GetComponent<PlayerPointSwitcher>();
         #if UNITY_EDITOR
         if (spriteRenderer == null)
         {
@@ -219,8 +217,7 @@ public class PaperMarioPlayerMovement : MonoBehaviour
             Vector3 moveDir = (camForward * input.y + camRight * input.x).normalized;
             rb.linearVelocity = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
 
-            // Actualiza la dirección de los puntos activos usando PlayerPointSwitcher
-            var pointSwitcher = GetComponent<PlayerPointSwitcher>();
+            // Usamos la referencia cacheada en lugar de buscar el componente cada frame.
             if (pointSwitcher != null && moveDir.sqrMagnitude > 0.01f)
             {
                 if (!isCameraInverted)

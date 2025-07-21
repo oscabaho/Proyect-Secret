@@ -225,7 +225,7 @@ GameObject:
   - component: {fileID: 1047437873341298747}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -456,6 +456,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6783571df6ca73d41ba49d0236d89f18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitboxPoolSize: 3
   equipmentSlots:
     equippedWeapon: {fileID: 0}
 --- !u!114 &3096245457891300321
