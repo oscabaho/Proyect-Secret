@@ -11,7 +11,7 @@ namespace ProyectSecret.Combat.SceneManagement
     /// </summary>
     public class CombatSceneController : MonoBehaviour
     {
-        [SerializeField] private Enemy enemy; // Se puede mantener si se necesita para eventos de victoria
+        [SerializeField] private GameObject enemyInstance; // Cambiamos la referencia a GameObject
         [SerializeField] private float delayAfterVictory = 2f;
         [SerializeField] private float delayAfterDefeat = 1.5f;
         [SerializeField] private GameObject playerInstance; // Asigna el jugador instanciado en combate
@@ -34,7 +34,7 @@ namespace ProyectSecret.Combat.SceneManagement
 
         private void HandleCharacterDeath(CharacterDeathEvent evt)
         {
-            if (enemy != null && evt.Entity == enemy.gameObject)
+            if (enemyInstance != null && evt.Entity == enemyInstance)
             {
                 StartCoroutine(VictorySequence());
             }
@@ -50,7 +50,7 @@ namespace ProyectSecret.Combat.SceneManagement
             if (playerPersistentData != null && playerInstance != null)
                 playerPersistentData.SaveFromPlayer(playerInstance);
             
-            GameEventBus.Instance.Publish(new CombatVictoryEvent(enemy != null ? enemy.gameObject : null));
+            GameEventBus.Instance.Publish(new CombatVictoryEvent(enemyInstance));
 
             // Esperar el delay usando la corutina
             yield return new WaitForSeconds(delayAfterVictory);

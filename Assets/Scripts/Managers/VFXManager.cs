@@ -1,6 +1,7 @@
 using UnityEngine;
 using ProyectSecret.Utils;
 using ProyectSecret.VFX;
+using System.Collections;
 
 namespace ProyectSecret.Managers
 {
@@ -56,6 +57,39 @@ namespace ProyectSecret.Managers
                     particleInstance.SetActive(true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Inicia un efecto de desvanecimiento y destrucción en un objeto.
+        /// </summary>
+        /// <param name="targetObject">El GameObject que se desvanecerá y destruirá.</param>
+        /// <param name="fadeDuration">La duración del desvanecimiento.</param>
+        public void PlayFadeAndDestroyEffect(GameObject targetObject, float fadeDuration)
+        {
+            if (targetObject == null) return;
+            StartCoroutine(FadeAndDestroyRoutine(targetObject, fadeDuration));
+        }
+
+        private IEnumerator FadeAndDestroyRoutine(GameObject targetObject, float fadeDuration)
+        {
+            Renderer[] renderers = targetObject.GetComponentsInChildren<Renderer>();
+            var propBlock = new MaterialPropertyBlock();
+            int colorID = Shader.PropertyToID("_Color");
+
+            float timer = 0f;
+            while (timer < fadeDuration)
+            {
+                float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
+                foreach (var rend in renderers)
+                {
+                    rend.GetPropertyBlock(propBlock);
+                    propBlock.SetColor(colorID, new Color(rend.material.color.r, rend.material.color.g, rend.material.color.b, alpha));
+                    rend.SetPropertyBlock(propBlock);
+                }
+                timer += Time.deltaTime;
+                yield return null;
+            }
+            Destroy(targetObject);
         }
     }
 }

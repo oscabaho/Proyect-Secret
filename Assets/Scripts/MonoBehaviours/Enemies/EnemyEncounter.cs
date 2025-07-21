@@ -7,18 +7,15 @@ public class EnemyEncounter : MonoBehaviour // Este script estaría en el enemig
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        // Usar CompareTag es más eficiente y desacopla la lógica del PlayerController.
+        if (other.CompareTag("Player")) 
         {
-            var playerController = other.GetComponent<ProyectSecret.Characters.Player.PlayerController>();
-            if (playerController != null)
-            {
-                GameObject playerPrefab = other.gameObject; // ¡OJO! Esto no es el prefab, es la instancia.
-                                                            // Lo ideal es tener una referencia al prefab original.
+            // NOTA: La obtención del 'playerPrefab' debe mejorarse. Lo ideal es tener una referencia
+            // al prefab original, quizás a través de un ScriptableObject o un manager.
+            GameObject playerPrefab = other.gameObject; // ¡OJO! Esto no es el prefab, es la instancia.
 
-                SceneTransitionManager.Instance?.LoadCombatScene(playerPrefab, enemyCombatPrefab, other.gameObject);
-                
-                gameObject.SetActive(false);
-            }
+            SceneTransitionManager.Instance?.LoadCombatScene(playerPrefab, enemyCombatPrefab, other.gameObject);
+            gameObject.SetActive(false);
         }
     }
 }

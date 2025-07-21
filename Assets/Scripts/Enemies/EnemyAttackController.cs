@@ -6,7 +6,6 @@ using ProyectSecret.Utils; // 1. Importar el namespace del ObjectPool
 
 namespace ProyectSecret.Enemies
 {
-    [RequireComponent(typeof(EnemyHealthController))]
     public class EnemyAttackController : MonoBehaviour
     {
         public AttackPhase CurrentPhase => currentPhase;
