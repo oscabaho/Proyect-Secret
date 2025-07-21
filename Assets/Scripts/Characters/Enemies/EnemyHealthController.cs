@@ -17,7 +17,7 @@ namespace ProyectSecret.Characters.Enemies
         protected override void Death()
         {
             // Aquí puedes agregar animaciones, efectos, recompensas, etc.
-            SoundManager.Smanager.ReproduceEffect(deathSound);
+            SoundManager.Instancia.ReproducirEfecto(deathSound);
             Destroy(gameObject);
         }
     }

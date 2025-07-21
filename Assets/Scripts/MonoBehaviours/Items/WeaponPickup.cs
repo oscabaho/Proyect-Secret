@@ -37,28 +37,22 @@ public class WeaponPickup : MonoBehaviour
     // Este método es llamado por el hijo trigger (WeaponPickupTrigger)
     public void OnPickupTriggered(Collider other)
     {
-        //Debug.Log($"WeaponPickup: Trigger activado por {other.name}");
         var equipmentController = other.GetComponent<PlayerEquipmentController>();
-        if (equipmentController == null)
+
+        // Usamos "guard clauses" para salir temprano si algo falta. Es más limpio.
+        if (equipmentController == null || weaponItem == null)
         {
-            Debug.LogWarning($"WeaponPickup: {other.name} no tiene PlayerEquipmentController");
+            #if UNITY_EDITOR
+            if (equipmentController == null) Debug.LogWarning($"WeaponPickup: El objeto '{other.name}' no tiene PlayerEquipmentController.");
+            if (weaponItem == null) Debug.LogWarning($"WeaponPickup: No hay un 'Weapon Item' asignado en el Inspector de '{gameObject.name}'.");
+            #endif
+            return;
         }
-        if (weaponItem == null)
-        {
-            Debug.LogWarning($"WeaponPickup: weaponItem no asignado en {gameObject.name}");
-        }
-        if (equipmentController != null && weaponItem != null)
-        {
-            //Debug.Log($"WeaponPickup: Equipando arma {weaponItem.name} en {other.name}");
-            equipmentController.EquipWeapon(weaponItem); // Equipa la daga al jugador
-            if (interactionTrigger != null)
-            {
-                interactionTrigger.SetActive(false); // Desactiva el trigger de interacción
-                //Debug.Log($"WeaponPickup: Trigger {interactionTrigger.name} desactivado");
-            }
-            //Debug.Log($"WeaponPickup: Destruyendo {gameObject.name} tras recogida");
-            SoundManager.Smanager.ReproduceEffect(PickupSound); // Reproduce sonido de recogida
-            Destroy(gameObject); // Elimina la daga del suelo
-        }
+
+        equipmentController.EquipWeapon(weaponItem);
+        SoundManager.Instancia.ReproducirEfecto(PickupSound);
+        if (interactionTrigger != null)
+            interactionTrigger.SetActive(false);
+        Destroy(gameObject);
     }
 }

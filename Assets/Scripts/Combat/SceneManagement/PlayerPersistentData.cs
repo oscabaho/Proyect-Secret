@@ -9,6 +9,7 @@ namespace ProyectSecret.Combat.SceneManagement
     public class SerializableInventoryData
     {
         // Ahora solo guardamos los IDs de todos los ítems, incluidas las armas.
+        [Tooltip("Lista de IDs de los ítems en el inventario.")]
         public List<string> itemIds = new List<string>();
     }
 
@@ -18,22 +19,22 @@ namespace ProyectSecret.Combat.SceneManagement
     [CreateAssetMenu(fileName = "PlayerPersistentData", menuName = "Combat/PlayerPersistentData")]
     public class PlayerPersistentData : ScriptableObject
     {
-        [SerializeField] private int playerHealth;
-        [SerializeField] private int playerStamina;
-        [HideInInspector] public bool CameFromDefeat = false;
-        [SerializeField] private string equippedWeaponId;
-        [SerializeField] private float equippedWeaponDurability;
-        [SerializeField] private int equippedWeaponHits;
-        [SerializeField] private SerializableInventoryData inventoryData = new SerializableInventoryData();
+        [Header("Player Stats")]
+        [SerializeField] public int playerHealth;
+        [SerializeField] public int playerStamina;
+        [SerializeField] public string equippedWeaponId;
+        [SerializeField] public float equippedWeaponDurability;
+        [SerializeField] public int equippedWeaponHits;
+        [SerializeField] public SerializableInventoryData inventoryData = new SerializableInventoryData();
 
-        public int PlayerHealth => playerHealth;
-        public int PlayerStamina => playerStamina;
-        public string EquippedWeaponId => equippedWeaponId;
-        public float EquippedWeaponDurability => equippedWeaponDurability;
-        public int EquippedWeaponHits => equippedWeaponHits;
-        public SerializableInventoryData InventoryData => inventoryData;
+        [Header("State Flags")]
+        [Tooltip("Se activa si el jugador vuelve de una derrota en combate.")]
+        public bool CameFromDefeat = false;
+        [Tooltip("Indica si hay una posición guardada para usar.")]
+        public bool HasSavedPosition = false;
+        public Vector3 LastPosition;
 
-        public void SaveFromPlayer(GameObject player)
+        public void SaveFromPlayer(GameObject player, bool savePosition = true)
         {
             var healthComp = player.GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
             if (healthComp != null)
@@ -60,6 +61,12 @@ namespace ProyectSecret.Combat.SceneManagement
             var playerInventory = player.GetComponent<ProyectSecret.MonoBehaviours.Player.PlayerInventory>();
             if (playerInventory != null)
                 inventoryData = playerInventory.ExportInventoryData();
+
+            if (savePosition)
+            {
+                LastPosition = player.transform.position;
+                HasSavedPosition = true;
+            }
         }
 
         public void ApplyToPlayer(GameObject player, ItemDatabase itemDatabase)
@@ -88,6 +95,23 @@ namespace ProyectSecret.Combat.SceneManagement
             var playerInventory = player.GetComponent<ProyectSecret.MonoBehaviours.Player.PlayerInventory>();
             if (playerInventory != null)
                 playerInventory.ImportInventoryData(inventoryData, itemDatabase);
+        }
+
+        /// <summary>
+        /// Resetea todos los datos a sus valores por defecto.
+        /// Útil para empezar una nueva partida.
+        /// </summary>
+        public void ResetData()
+        {
+            playerHealth = 0; // O tu valor inicial por defecto
+            playerStamina = 0; // O tu valor inicial por defecto
+            equippedWeaponId = null;
+            equippedWeaponDurability = 0;
+            equippedWeaponHits = 0;
+            inventoryData = new SerializableInventoryData();
+            CameFromDefeat = false;
+            HasSavedPosition = false;
+            LastPosition = Vector3.zero;
         }
     }
 }

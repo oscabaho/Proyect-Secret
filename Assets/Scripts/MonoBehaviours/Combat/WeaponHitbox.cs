@@ -12,7 +12,7 @@ namespace ProyectSecret.Combat.Behaviours
     [RequireComponent(typeof(Collider))]
     public class WeaponHitbox : MonoBehaviour
     {
-        private WeaponInstance weaponInstance; // Ahora referencia la instancia, no solo los datos.
+        private WeaponInstance weaponInstance;
         private GameObject owner;
         private bool canDamage = false;
 
@@ -36,21 +36,26 @@ namespace ProyectSecret.Combat.Behaviours
             var damageable = other.GetComponent<IDamageable>();
             if (damageable != null)
             {
-                // Obtenemos el punto de impacto más cercano para el VFX.
                 Vector3 impactPoint = other.ClosestPoint(transform.position);
 
-                // Llamamos al VFXManager para reproducir el efecto de impacto.
-                VFXManager.Instance?.PlayImpactEffect(
-                    impactPoint, weaponInstance.WeaponData.ImpactSound, weaponInstance.WeaponData.SoundVolume);
+                // --- Lógica de Efectos Separada ---
+                // 1. Llamar al SoundManager para el sonido.
+                if (SoundManager.Instancia != null && weaponInstance.WeaponData.ImpactSound != null)
+                {
+                    SoundManager.Instancia.ReproducirEfectoEnPunto(
+                        weaponInstance.WeaponData.ImpactSound, 
+                        impactPoint, 
+                        weaponInstance.WeaponData.SoundVolume);
+                }
 
-                // Aplicar daño usando los datos del arma
+                // 2. Llamar al VFXManager para las partículas.
+                VFXManager.Instance?.PlayImpactEffect(impactPoint);
+
+                // --- Lógica de Juego ---
                 weaponInstance.WeaponData.ApplyDamage(owner, other.gameObject);
-                
-                // Incrementar contador de golpes y reducir durabilidad
                 weaponInstance.AddHit();
-                weaponInstance.DecreaseDurability(1); // O un valor configurable desde WeaponData
+                weaponInstance.DecreaseDurability(1);
 
-                // Desactivar el daño para que no golpee varias veces en un solo swing.
                 DisableDamage();
             }
         }

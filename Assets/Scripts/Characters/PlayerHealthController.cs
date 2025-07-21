@@ -71,7 +71,7 @@ namespace ProyectSecret.Characters
         {
             // Notificar a otros sistemas que el jugador ha muerto, en lugar de destruirlo aquí.
             // El CombatSceneController se encargará de la lógica de derrota y de la destrucción del objeto.
-            SoundManager.Smanager.ReproduceEffect(PlayerDeathSound);
+            SoundManager.Instancia.ReproducirEfecto(PlayerDeathSound);
             GameEventBus.Instance.Publish(new PlayerDiedEvent(gameObject));
             // Ya no se destruye aquí para permitir que otros sistemas reaccionen al evento.
         }

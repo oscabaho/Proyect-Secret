@@ -35,7 +35,8 @@ public class PaperMarioPlayerMovement : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Camera activeCamera;
 
-    [SerializeField] private AudioClip MoveSound;
+    [Header("Sonidos")]
+    [SerializeField] private AudioClip moveSound;
     private bool isMoving;
 
     // Backing field privado para el estado de movimiento hacia abajo
@@ -48,6 +49,9 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         get => _isMovingDown;
         private set => _isMovingDown = value;
     }
+
+    // Fuente de audio dedicada para el sonido de movimiento en bucle.
+    private AudioSource _movimientoAudioSource;
 
     /// <summary>
     /// Llamado por el controlador de cámara para notificar el estado de inversión.
@@ -101,6 +105,11 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         pointSwitcher = GetComponent<PlayerPointSwitcher>();
+
+        // Añadimos un AudioSource para el sonido de movimiento.
+        _movimientoAudioSource = gameObject.AddComponent<AudioSource>();
+        _movimientoAudioSource.playOnAwake = false;
+        _movimientoAudioSource.loop = true; // El SoundManager también lo configura, pero es buena práctica.
         #if UNITY_EDITOR
         if (spriteRenderer == null)
         {
@@ -246,7 +255,18 @@ public class PaperMarioPlayerMovement : MonoBehaviour
             {
                 isMoving = false;
             }
-            if (isMoving)SoundManager.Smanager.ReproduceEffect(MoveSound);
+
+            // --- Lógica de Sonido de Movimiento ---
+            // Esto asegura que el sonido solo se inicie una vez y se detenga cuando el jugador pare.
+            if (isMoving)
+            {
+                SoundManager.Instancia.IniciarEfectoEnLoop(moveSound, _movimientoAudioSource);
+            }
+            else
+            {
+                SoundManager.Instancia.DetenerEfectoEnLoop(_movimientoAudioSource);
+            }
+
             // --- Animación ---
             if (animator != null)
             {

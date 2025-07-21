@@ -40,7 +40,7 @@ namespace ProyectSecret.Combat.SceneManagement
                     kryptonite.CheckKryptonite(player);
                 }
             }
-            SoundManager.Smanager.StartMusic(Music);
+            SoundManager.Instancia.IniciarMusica(Music);
             transferData.Clear();
         }
     }

@@ -78,7 +78,14 @@ namespace ProyectSecret.Enemies
         private void PlayImpactEffects(Vector3 position)
         {
             // Le pedimos al manager central que reproduzca los efectos por nosotros.
-            VFXManager.Instance?.PlayImpactEffect(position, impactSound, soundVolume);
+            // 1. Efecto visual de impacto
+            VFXManager.Instance?.PlayImpactEffect(position);
+
+            // 2. Sonido de impacto
+            if (impactSound != null)
+            {
+                SoundManager.Instancia?.ReproducirEfectoEnPunto(impactSound, position, soundVolume);
+            }
         }
     }
 }

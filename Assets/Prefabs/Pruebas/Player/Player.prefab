@@ -398,7 +398,7 @@ MonoBehaviour:
   jumpActionName: Jump
   moveSpeed: 5
   jumpForce: 7
-  MoveSound: {fileID: 8300000, guid: d4b423891e3cc554f85e9aedb0fefa59, type: 3}
+  moveSound: {fileID: 8300000, guid: d4b423891e3cc554f85e9aedb0fefa59, type: 3}
 --- !u!114 &4413563322621177867
 MonoBehaviour:
   m_ObjectHideFlags: 0

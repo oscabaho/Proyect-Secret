@@ -6,7 +6,7 @@ using System.Collections;
 namespace ProyectSecret.Managers
 {
     /// <summary>
-    /// Manager centralizado para gestionar efectos visuales y de sonido (VFX/SFX).
+    /// Manager centralizado para gestionar efectos visuales (VFX).
     /// Utiliza pools de objetos para un rendimiento óptimo.
     /// </summary>
     public class VFXManager : MonoBehaviour
@@ -20,7 +20,6 @@ namespace ProyectSecret.Managers
 
         private void Awake()
         {
-            // Implementación del patrón Singleton
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -30,23 +29,16 @@ namespace ProyectSecret.Managers
             Instance = this;
             DontDestroyOnLoad(gameObject);
             
-            // Inicializamos el pool de partículas que este manager gestionará
             if (impactParticlePrefab != null)
                 impactParticlePool = new ObjectPool<PooledParticleSystem>(impactParticlePrefab, impactParticlePoolSize, transform);
         }
 
         /// <summary>
-        /// Reproduce un efecto de impacto en una posición específica.
+        /// Reproduce un efecto de partículas en una posición específica.
         /// </summary>
         /// <param name="position">El punto en el mundo donde se reproducirá el efecto.</param>
-        /// <param name="sound">El clip de sonido a reproducir.</param>
-        /// <param name="volume">El volumen del sonido.</param>
-        public void PlayImpactEffect(Vector3 position, AudioClip sound, float volume = 1.0f)
+        public void PlayImpactEffect(Vector3 position)
         {
-            // Reproducir sonido en el punto de impacto
-            if (sound != null)
-                AudioSource.PlayClipAtPoint(sound, position, volume);
-
             // Obtener y activar una partícula del pool
             if (impactParticlePool != null)
             {
@@ -62,8 +54,6 @@ namespace ProyectSecret.Managers
         /// <summary>
         /// Inicia un efecto de desvanecimiento y destrucción en un objeto.
         /// </summary>
-        /// <param name="targetObject">El GameObject que se desvanecerá y destruirá.</param>
-        /// <param name="fadeDuration">La duración del desvanecimiento.</param>
         public void PlayFadeAndDestroyEffect(GameObject targetObject, float fadeDuration)
         {
             if (targetObject == null) return;
