@@ -125,6 +125,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponItem: {fileID: 11400000, guid: 4859c369f6da2914ca4ee83843bd17f4, type: 2}
   interactionTrigger: {fileID: 1256529986380179930}
+  PickupSound: {fileID: 8300000, guid: e2f3eb61d724c65489ea7e922a16c9db, type: 3}
 --- !u!114 &1447003434731253379
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,9 +12,12 @@ namespace ProyectSecret.Characters.Enemies
     [RequireComponent(typeof(Collider))]
     public class EnemyHealthController : HealthControllerBase
     {
+        [SerializeField]private AudioClip deathSound;
+
         protected override void Death()
         {
             // Aquí puedes agregar animaciones, efectos, recompensas, etc.
+            SoundManager.Smanager.ReproduceEffect(deathSound);
             Destroy(gameObject);
         }
     }

@@ -35,6 +35,9 @@ public class PaperMarioPlayerMovement : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Camera activeCamera;
 
+    [SerializeField] private AudioClip MoveSound;
+    private bool isMoving;
+
     // Backing field privado para el estado de movimiento hacia abajo
     private bool _isMovingDown;
     /// <summary>
@@ -235,7 +238,15 @@ public class PaperMarioPlayerMovement : MonoBehaviour
                         pointSwitcher.HitBoxPoint1.forward = moveDir;
                 }
             }
-
+            if(input.sqrMagnitude > 0.01f)
+            {
+                isMoving = true;
+            }
+            else
+            {
+                isMoving = false;
+            }
+            if (isMoving)SoundManager.Smanager.ReproduceEffect(MoveSound);
             // --- Animación ---
             if (animator != null)
             {
