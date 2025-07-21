@@ -1,6 +1,7 @@
 using UnityEngine;
 using ProyectSecret.Inventory;
 using ProyectSecret.Interfaces;
+using ProyectSecret.Managers;
 using ProyectSecret.Inventory.Items;
 
 namespace ProyectSecret.Combat.Behaviours
@@ -35,6 +36,13 @@ namespace ProyectSecret.Combat.Behaviours
             var damageable = other.GetComponent<IDamageable>();
             if (damageable != null)
             {
+                // Obtenemos el punto de impacto más cercano para el VFX.
+                Vector3 impactPoint = other.ClosestPoint(transform.position);
+
+                // Llamamos al VFXManager para reproducir el efecto de impacto.
+                VFXManager.Instance?.PlayImpactEffect(
+                    impactPoint, weaponInstance.WeaponData.ImpactSound, weaponInstance.WeaponData.SoundVolume);
+
                 // Aplicar daño usando los datos del arma
                 weaponInstance.WeaponData.ApplyDamage(owner, other.gameObject);
                 

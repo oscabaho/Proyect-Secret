@@ -1,7 +1,9 @@
 using UnityEngine;
 using ProyectSecret.MonoBehaviours.Player;
+using System.Collections;
 using ProyectSecret.Combat.Behaviours;
 using ProyectSecret.Inventory.Items;
+using ProyectSecret.Utils; // Importar el nuevo namespace
 
 namespace ProyectSecret.Inventory
 {
@@ -13,6 +15,10 @@ namespace ProyectSecret.Inventory
         private PlayerPointSwitcher pointSwitcher;
         private PaperMarioPlayerMovement playerMovement;
         private GameObject equippedWeaponGO;
+
+        [Header("Object Pooling")]
+        [SerializeField] private int hitboxPoolSize = 3;
+        private ObjectPool<WeaponHitbox> hitboxPool;
         
         [SerializeField] private EquipmentSlots equipmentSlots;
 
@@ -72,7 +78,7 @@ namespace ProyectSecret.Inventory
             {
                 equipmentSlots.EquipWeapon(instance.WeaponData);
                 EquippedWeaponInstance = instance;
-                UpdateWeaponVisuals(instance.WeaponData);
+                InitializeEquippedWeapon(instance.WeaponData);
             }
             else
             {
@@ -91,7 +97,7 @@ namespace ProyectSecret.Inventory
             }
             equipmentSlots.EquipWeapon(weaponItem);
             EquippedWeaponInstance = new WeaponInstance(weaponItem);
-            UpdateWeaponVisuals(weaponItem);
+            InitializeEquippedWeapon(weaponItem);
         }
 
         public bool CanAttack()
@@ -102,27 +108,49 @@ namespace ProyectSecret.Inventory
         public bool Attack()
         {
             if (!CanAttack()) return false;
-
-            WeaponItem weaponData = EquippedWeaponInstance.WeaponData;
-            if (weaponData.HitBoxPrefab == null) return false;
-
+            if (hitboxPool == null) return false; // No hay pool si no hay arma con hitbox
+            
+            GameObject hitboxObj = hitboxPool.Get();
+            if (hitboxObj == null)
+            {
+                #if UNITY_EDITOR
+                Debug.LogWarning("No hay hitbox disponible en el pool. El ataque podría ser demasiado rápido o el pool demasiado pequeño.");
+                #endif
+                return false;
+            }
+            
             Transform hitBoxPoint = GetActiveHitboxPoint();
             if (hitBoxPoint == null) return false;
 
-            GameObject hitboxObj = Instantiate(weaponData.HitBoxPrefab, hitBoxPoint.position, hitBoxPoint.rotation, hitBoxPoint);
             var weaponHitbox = hitboxObj.GetComponent<WeaponHitbox>();
-
             if (weaponHitbox != null)
             {
-                // Pasamos la instancia completa, no solo los datos.
+                hitboxObj.transform.SetParent(hitBoxPoint, false);
+                hitboxObj.transform.localPosition = Vector3.zero;
+                hitboxObj.transform.localRotation = Quaternion.identity;
+                hitboxObj.SetActive(true);
+
                 weaponHitbox.Initialize(EquippedWeaponInstance, gameObject);
                 weaponHitbox.EnableDamage();
-                Destroy(hitboxObj, 0.3f); // Autodestrucción para limpiar
+                
+                StartCoroutine(ReturnHitboxToPool(hitboxObj, 0.3f));
                 return true;
             }
 
-            Destroy(hitboxObj); // Limpiar si no tiene el componente correcto
+            // Si el objeto del pool no tiene el componente, lo desactivamos para evitar problemas.
+            hitboxObj.SetActive(false);
             return false;
+        }
+
+        private void InitializeEquippedWeapon(WeaponItem weaponItem)
+        {
+            UpdateWeaponVisuals(weaponItem);
+            
+            // Limpiar el pool anterior y crear uno nuevo para la nueva arma.
+            hitboxPool?.Clear();
+            hitboxPool = null; // Liberar la referencia
+            if (weaponItem != null && weaponItem.HitBoxPrefab != null)
+                hitboxPool = new ObjectPool<WeaponHitbox>(weaponItem.HitBoxPrefab, hitboxPoolSize, transform);
         }
 
         private void UpdateWeaponVisuals(WeaponItem weaponItem)
@@ -177,6 +205,16 @@ namespace ProyectSecret.Inventory
                 Destroy(equippedWeaponGO);
                 equippedWeaponGO = null;
             }
+            // Limpiar el pool de hitboxes al desequipar.
+            hitboxPool?.Clear();
+            hitboxPool = null;
+        }
+
+        private IEnumerator ReturnHitboxToPool(GameObject hitboxObj, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            // Devolver el objeto al pool para su reutilización.
+            hitboxPool?.Return(hitboxObj);
         }
     }
 }

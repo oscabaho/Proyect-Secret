@@ -10,18 +10,30 @@ namespace ProyectSecret.Combat.Behaviours
     /// </summary>
     public class AttackComponent : MonoBehaviour
     {
+        [Header("Configuration")]
         [SerializeField] private float attackCooldown = 1f;
         [SerializeField] private int staminaCost = 10;
+
+        [Header("Dependencies")]
+        [Tooltip("Componente de estamina del que se descontará el coste del ataque.")]
         [SerializeField] private StaminaComponentBehaviour staminaBehaviour;
+        [Tooltip("Controlador de equipamiento que gestiona el arma a usar.")]
         [SerializeField] private PlayerEquipmentController equipmentController;
+        
         private float lastAttackTime = -999f;
 
         private void Awake()
         {
+            // Es mejor validar las dependencias que asignarlas silenciosamente.
+            // Esto fuerza a una configuración correcta desde el Inspector y previene errores.
             if (staminaBehaviour == null)
-                staminaBehaviour = GetComponent<StaminaComponentBehaviour>();
+            {
+                Debug.LogError("AttackComponent: StaminaComponentBehaviour no está asignado en el Inspector.", this);
+            }
             if (equipmentController == null)
-                equipmentController = GetComponent<Inventory.PlayerEquipmentController>();
+            {
+                Debug.LogError("AttackComponent: PlayerEquipmentController no está asignado en el Inspector.", this);
+            }
         }
 
         /// <summary>

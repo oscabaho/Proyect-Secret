@@ -23,6 +23,10 @@ namespace ProyectSecret.Inventory.Items
         [Header("Prefab visual del arma")]
         [SerializeField] private GameObject weaponPrefab;
 
+        [Header("Efectos de Impacto")]
+        [SerializeField] private AudioClip impactSound;
+        [SerializeField] [Range(0f, 1f)] private float soundVolume = 0.9f;
+
         public int WeaponDamage => weaponDamage;
         public float AttackSpeed => attackSpeed;
         public float MaxDurability => maxDurability;
@@ -31,9 +35,8 @@ namespace ProyectSecret.Inventory.Items
         public int MaxMasteryHits => maxMasteryHits;
         public GameObject HitBoxPrefab => hitBoxPrefab;
         public GameObject WeaponPrefab => weaponPrefab;
-        public AudioClip AttackSoundAir => AttackSoundAir;
-        public AudioClip AttackSoundEnemy => AttackSoundEnemy;
-        public AudioClip AttackSoundObject => AttackSoundObject;
+        public AudioClip ImpactSound => impactSound;
+        public float SoundVolume => soundVolume;
 
         /// <summary>
         /// Aplica daño al objetivo usando la lógica del arma.
