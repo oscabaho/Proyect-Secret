@@ -1,37 +1,47 @@
 using UnityEngine;
+using ProyectSecret.Interfaces;
+using System.Collections; // Necesario para la corutina
 
 namespace ProyectSecret.Enemies
 {
-    using ProyectSecret.Interfaces;
-
     public class VulnerablePartController : MonoBehaviour, IDamageable
     {
-        public event System.Action OnDeath;
-        public float vulnerableTime = 3f;
+        [SerializeField] private float vulnerableTime = 3f;
         private bool isVulnerable = true;
+        private EnemyHealthController enemyHealth;
+
+        /// <summary>
+        /// Inicializa la parte vulnerable con una referencia a la salud del enemigo.
+        /// Debe ser llamado por quien lo instancia.
+        /// </summary>
+        public void Initialize(EnemyHealthController healthController)
+        {
+            enemyHealth = healthController;
+        }
 
         private void Start()
         {
-            Invoke(nameof(DisableVulnerability), vulnerableTime);
+            // Usamos una corutina para gestionar el ciclo de vida.
+            StartCoroutine(LifecycleRoutine());
+        }
+
+        private IEnumerator LifecycleRoutine()
+        {
+            // Esperar el tiempo de vulnerabilidad.
+            yield return new WaitForSeconds(vulnerableTime);
+
+            // Desactivar la vulnerabilidad y destruir el objeto.
+            isVulnerable = false;
+            // Aquí puedes añadir una animación de desaparición antes de destruir.
+            Destroy(gameObject);
         }
 
         public void TakeDamage(int amount)
         {
-            if (isVulnerable)
+            if (isVulnerable && enemyHealth != null)
             {
-                var enemyHealth = FindFirstObjectByType<EnemyHealthController>();
-                if (enemyHealth != null)
-                {
-                    enemyHealth.TakeDamage(amount);
-                }
+                enemyHealth.TakeDamage(amount);
             }
-        }
-
-        private void DisableVulnerability()
-        {
-            isVulnerable = false;
-            // Aquí puedes ocultar o animar la retirada de la parte vulnerable
-            OnDeath?.Invoke();
         }
     }
 }

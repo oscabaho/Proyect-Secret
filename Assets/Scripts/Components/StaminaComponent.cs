@@ -21,5 +21,13 @@ namespace ProyectSecret.Components
         {
             AffectValue(-amount);
         }
+
+        /// <summary>
+        /// Comprueba si hay suficiente stamina para una acción.
+        /// </summary>
+        public bool HasEnough(int amount)
+        {
+            return CurrentValue >= amount;
+        }
     }
 }

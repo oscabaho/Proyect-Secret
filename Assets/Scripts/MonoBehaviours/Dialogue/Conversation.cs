@@ -1,42 +1,50 @@
-using ProyectSecret.Core;
-using System;
 using UnityEngine;
-using UnityEngine.UIElements;
+using ProyectSecret.Interfaces;
+using ProyectSecret.UI.Dialogue;
 
-namespace ProyectSecret.UI.Dialogue
+/// <summary>
+/// Componente que se añade a los NPCs o objetos que pueden iniciar una conversación.
+/// Implementa IInteractable para ser detectado por el PlayerInteractionController.
+/// </summary>
+[RequireComponent(typeof(Collider))]
+public class Conversation : MonoBehaviour, IInteractable
 {
-    public class Conversation : MonoBehaviour
+    [Header("Referencias de Diálogo")]
+    [Tooltip("Arrastra aquí el panel de la UI que contiene el DialogueScript.")]
+    [SerializeField] private DialogueScript dialogueUI;
+    
+    [Header("Contenido del Diálogo")]
+    [TextArea(3, 10)]
+    [SerializeField] private string[] dialogueLines;
+
+    private void Awake()
     {
-        [SerializeField]private GameObject panel;
-        [SerializeField]private string[] conversationLines;
-        private bool dialogueActive = false;
-        DialogueScript dialogueScript;
-        void Awake()
+        // Si no se asigna la UI en el inspector, intenta encontrarla en la escena.
+        // Esto es útil, pero es mejor asignarla manualmente para evitar errores.
+        if (dialogueUI == null)
         {
-            dialogueScript = panel.GetComponent<DialogueScript>();
-        }
-
-        void Update()
-        {
-            
-        }
-
-        public void OnTriggerStay(Collider collider)
-        {
-            if (dialogueActive == false)
+            // Usamos el método más nuevo y eficiente para encontrar el objeto, incluyendo los inactivos.
+            dialogueUI = FindAnyObjectByType<DialogueScript>(FindObjectsInactive.Include);
+            if (dialogueUI == null)
             {
-                panel.SetActive(true);
-                dialogueScript.dialogueLines = conversationLines;
-                dialogueScript.index = 0;
-                dialogueScript.StartDialogue();
-                dialogueActive = true;
+                Debug.LogError("Conversation: No se pudo encontrar el DialogueScript en la escena.", this);
             }
         }
+    }
 
-        private void OnTriggerExit(Collider other)
+    /// <summary>
+    /// Este método se llama cuando el jugador presiona el botón de interacción.
+    /// </summary>
+    public void Interact(GameObject interactor)
+    {
+        if (dialogueUI != null && interactor.CompareTag("Player"))
         {
-            dialogueActive = false;
-
+            // Le pasamos nuestras líneas de diálogo al controlador de la UI.
+            dialogueUI.dialogueLines = this.dialogueLines;
+            
+            // Activamos el panel de la UI y comenzamos el diálogo.
+            dialogueUI.gameObject.SetActive(true);
+            dialogueUI.StartDialogue();
         }
     }
 }

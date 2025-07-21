@@ -2,23 +2,14 @@ using UnityEngine;
 using System.Collections.Generic;
 using ProyectSecret.Inventory;
 using ProyectSecret.Inventory.Items;
-using ProyectSecret.Components;
 
 namespace ProyectSecret.Combat.SceneManagement
 {
     [System.Serializable]
-    public class SerializableWeaponData
-    {
-        public string weaponId;
-        public float durability;
-        public int hits;
-    }
-
-    [System.Serializable]
     public class SerializableInventoryData
     {
-        public List<string> itemIds = new List<string>(); // IDs de ítems normales
-        public List<SerializableWeaponData> weapons = new List<SerializableWeaponData>(); // Armas con estado
+        // Ahora solo guardamos los IDs de todos los ítems, incluidas las armas.
+        public List<string> itemIds = new List<string>();
     }
 
     /// <summary>
@@ -28,6 +19,7 @@ namespace ProyectSecret.Combat.SceneManagement
     public class PlayerPersistentData : ScriptableObject
     {
         [SerializeField] private int playerHealth;
+        [SerializeField] private int playerStamina;
         [HideInInspector] public bool CameFromDefeat = false;
         [SerializeField] private string equippedWeaponId;
         [SerializeField] private float equippedWeaponDurability;
@@ -35,6 +27,7 @@ namespace ProyectSecret.Combat.SceneManagement
         [SerializeField] private SerializableInventoryData inventoryData = new SerializableInventoryData();
 
         public int PlayerHealth => playerHealth;
+        public int PlayerStamina => playerStamina;
         public string EquippedWeaponId => equippedWeaponId;
         public float EquippedWeaponDurability => equippedWeaponDurability;
         public int EquippedWeaponHits => equippedWeaponHits;
@@ -42,9 +35,13 @@ namespace ProyectSecret.Combat.SceneManagement
 
         public void SaveFromPlayer(GameObject player)
         {
-            var health = player.GetComponent<ProyectSecret.Components.HealthComponent>();
-            if (health != null)
-                playerHealth = health.CurrentValue;
+            var healthComp = player.GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
+            if (healthComp != null)
+                playerHealth = healthComp.Health.CurrentValue;
+
+            var staminaComp = player.GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
+            if (staminaComp != null)
+                playerStamina = staminaComp.Stamina.CurrentValue;
 
             var equipment = player.GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
             if (equipment != null && equipment.EquippedWeaponInstance != null)
@@ -59,17 +56,21 @@ namespace ProyectSecret.Combat.SceneManagement
                 equippedWeaponDurability = 0;
                 equippedWeaponHits = 0;
             }
-            // Guardar inventario
-            var playerInventory = player.GetComponent<ProyectSecret.Inventory.PlayerInventory>();
+            
+            var playerInventory = player.GetComponent<ProyectSecret.MonoBehaviours.Player.PlayerInventory>();
             if (playerInventory != null)
                 inventoryData = playerInventory.ExportInventoryData();
         }
 
         public void ApplyToPlayer(GameObject player, ItemDatabase itemDatabase)
         {
-            var health = player.GetComponent<Components.HealthComponent>();
-            if (health != null)
-                health.AffectValue(playerHealth - health.CurrentValue);
+            var healthComp = player.GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
+            if (healthComp != null)
+                healthComp.Health.SetValue(playerHealth);
+
+            var staminaComp = player.GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
+            if (staminaComp != null)
+                staminaComp.Stamina.SetValue(playerStamina);
 
             var equipment = player.GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
             if (equipment != null && !string.IsNullOrEmpty(equippedWeaponId))
@@ -83,8 +84,8 @@ namespace ProyectSecret.Combat.SceneManagement
                     equipment.EquipWeaponInstance(weaponInstance);
                 }
             }
-            // Restaurar inventario
-            var playerInventory = player.GetComponent<ProyectSecret.Inventory.PlayerInventory>();
+            
+            var playerInventory = player.GetComponent<ProyectSecret.MonoBehaviours.Player.PlayerInventory>();
             if (playerInventory != null)
                 playerInventory.ImportInventoryData(inventoryData, itemDatabase);
         }

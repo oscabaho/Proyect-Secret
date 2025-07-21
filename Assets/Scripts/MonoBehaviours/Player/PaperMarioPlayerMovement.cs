@@ -9,18 +9,15 @@ public class PaperMarioPlayerMovement : MonoBehaviour
     // Evento para notificar cambio de inversión de cámara
     public event System.Action<bool> OnCameraInvertedChanged;
     
-    [Header("Puntos de spawn de arma")]
-    [SerializeField] private Transform WeaponPoint;
-    [SerializeField] private Transform HitBoxPoint;
-
     // Estado de inversión de cámara
-    private bool isCameraInverted = false;
+    public bool isCameraInverted = false;
     
-// [Header("Configuración de Sprites")] // Ya no se usan sprites de prueba, solo animaciones
-private Animator animator;
+    private Animator animator;
 
+    private PlayerPointSwitcher pointSwitcher;
     [Header("Input System")]
-    [SerializeField] private InputActionAsset inputActions;
+    [field: SerializeField]
+    public InputActionAsset InputActions { get; private set; }
     [SerializeField] private string dayActionMap = "PlayerDay";
     [SerializeField] private string nightActionMap = "PlayerNight";
     [SerializeField] private string moveActionName = "Move";
@@ -49,32 +46,17 @@ private Animator animator;
         private set => _isMovingDown = value;
     }
 
-    // Llamado por el controlador de cámara para notificar el estado de inversión
+    /// <summary>
+    /// Llamado por el controlador de cámara para notificar el estado de inversión.
+    /// Sincroniza todos los puntos y objetos dependientes de la cámara.
+    /// </summary>
     public void SetCameraInverted(bool inverted)
     {
         isCameraInverted = inverted;
-        OnCameraInvertedChanged?.Invoke(inverted);
-        UpdateWeaponHolderDirection();
+        OnCameraInvertedChanged?.Invoke(inverted);        
+        // Usamos la referencia cacheada. El '?' evita un error si el componente no existe.
+        pointSwitcher?.UpdateActivePoints(isCameraInverted);
     }
-
-    private void UpdateWeaponHolderDirection()
-    {
-        var equipmentController = GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
-        if (equipmentController != null && equipmentController.EquipmentSlots != null)
-        {
-            System.Reflection.FieldInfo field = equipmentController.GetType().GetField("weaponHolder", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            if (field != null)
-            {
-                Transform weaponHolder = field.GetValue(equipmentController) as Transform;
-                if (weaponHolder != null)
-                    weaponHolder.forward = isCameraInverted ? -transform.forward : transform.forward;
-            }
-        }
-    }
-
-    // Método de sprites de prueba eliminado. Ahora se usan animaciones.
 
     public Vector2 GetMoveInput()
     {
@@ -115,6 +97,7 @@ private Animator animator;
         rb = GetComponent<Rigidbody>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        pointSwitcher = GetComponent<PlayerPointSwitcher>();
         #if UNITY_EDITOR
         if (spriteRenderer == null)
         {
@@ -124,7 +107,7 @@ private Animator animator;
 
         SubscribeToDayNightEvents();
 
-        if (inputActions != null)
+        if (InputActions != null)
         {
             SetDayInput();
         }
@@ -171,14 +154,14 @@ private Animator animator;
 
     private void SwitchActionMap(string actionMapName)
     {
-        if (inputActions == null) return;
+        if (InputActions == null) return;
         
         if (currentActionMap != null)
         {
             currentActionMap.Disable();
         }
         
-        currentActionMap = inputActions.FindActionMap(actionMapName);
+        currentActionMap = InputActions.FindActionMap(actionMapName);
         
         if (currentActionMap != null)
         {
@@ -216,15 +199,9 @@ private Animator animator;
             Vector2 input = moveAction.ReadValue<Vector2>();
             IsMovingDown = input.y < -0.1f;
 
-            // Detecta si la cámara activa es la trasera (Camera) y aplica inversión de input
-            var cameraController = GetComponent<PlayerCameraController>();
-            bool invertInput = false;
-            if (cameraController != null && cameraController.GetActiveCamera() != null)
-            {
-                invertInput = cameraController.GetActiveCamera().name == "Camera";
-                cameraController.DetectarAcercamiento(IsMovingDown);
-            }
-            if (invertInput)
+            // Si la cámara está invertida, el input de movimiento también se invierte.
+            // La lógica ya no depende de buscar el controlador de cámara.
+            if (isCameraInverted)
             {
                 input.x = -input.x;
                 input.y = -input.y;
@@ -240,10 +217,24 @@ private Animator animator;
             Vector3 moveDir = (camForward * input.y + camRight * input.x).normalized;
             rb.linearVelocity = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
 
-            if (WeaponPoint != null && moveDir.sqrMagnitude > 0.01f)
-                WeaponPoint.forward = moveDir;
-            if (HitBoxPoint != null && moveDir.sqrMagnitude > 0.01f)
-                HitBoxPoint.forward = moveDir;
+            // Usamos la referencia cacheada en lugar de buscar el componente cada frame.
+            if (pointSwitcher != null && moveDir.sqrMagnitude > 0.01f)
+            {
+                if (!isCameraInverted)
+                {
+                    if (pointSwitcher.WeaponPoint != null)
+                        pointSwitcher.WeaponPoint.forward = moveDir;
+                    if (pointSwitcher.HitBoxPoint != null)
+                        pointSwitcher.HitBoxPoint.forward = moveDir;
+                }
+                else
+                {
+                    if (pointSwitcher.WeaponPoint1 != null)
+                        pointSwitcher.WeaponPoint1.forward = moveDir;
+                    if (pointSwitcher.HitBoxPoint1 != null)
+                        pointSwitcher.HitBoxPoint1.forward = moveDir;
+                }
+            }
 
             // --- Animación ---
             if (animator != null)
@@ -268,8 +259,6 @@ private Animator animator;
             isGrounded = false;
         }
     }
-
-    // Método de sprites de prueba eliminado. Animación y flipX se controlan desde Animator y Update.
 
     void OnCollisionEnter(Collision collision)
     {

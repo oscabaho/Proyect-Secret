@@ -24,15 +24,24 @@ namespace ProyectSecret.Spawning
                 #endif
                 return;
             }
-            var selectedIndices = new HashSet<int>();
-            while (selectedIndices.Count < daggersToSpawn)
+
+            // Creamos una copia de la lista para poder modificarla sin afectar la original.
+            List<Transform> availablePoints = new List<Transform>(spawnPoints);
+
+            for (int i = 0; i < daggersToSpawn; i++)
             {
-                int idx = Random.Range(0, spawnPoints.Count);
-                selectedIndices.Add(idx);
-            }
-            foreach (int idx in selectedIndices)
-            {
-                Instantiate(daggerPrefab, spawnPoints[idx].position, spawnPoints[idx].rotation);
+                // Si por alguna razón nos quedamos sin puntos, salimos del bucle.
+                if (availablePoints.Count == 0) break;
+
+                // Elegimos un índice aleatorio de la lista de puntos *disponibles*.
+                int randomIndex = Random.Range(0, availablePoints.Count);
+                Transform spawnPoint = availablePoints[randomIndex];
+
+                // Instanciamos la daga en el punto elegido.
+                Instantiate(daggerPrefab, spawnPoint.position, spawnPoint.rotation);
+
+                // Eliminamos el punto de la lista para que no se pueda volver a elegir.
+                availablePoints.RemoveAt(randomIndex);
             }
         }
     }

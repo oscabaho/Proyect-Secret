@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using ProyectSecret.Characters;
 using ProyectSecret.Inventory;
+using ProyectSecret.Events;
 
 namespace ProyectSecret.UI
 {
@@ -24,50 +25,117 @@ namespace ProyectSecret.UI
 
         private PlayerHealthController playerHealth;
         private PlayerEquipmentController equipmentController;
+        private WeaponInstance subscribedWeaponInstance;
 
         // Delegados para guardar las suscripciones y poder desuscribirlas correctamente
         private System.Action<ProyectSecret.Stats.StatComponent> healthChangedHandler;
         private System.Action<ProyectSecret.Stats.StatComponent> staminaChangedHandler;
-
-        private void Start()
-        {
-            if (playerHealth == null)
-                playerHealth = FindFirstObjectByType<PlayerHealthController>();
-            if (equipmentController == null)
-                equipmentController = FindFirstObjectByType<PlayerEquipmentController>();
-
-            // Vida
-            if (playerHealth != null && playerHealth.Health != null)
-            {
-                UpdateHealthBar(playerHealth.Health.CurrentValue, playerHealth.Health.MaxValue);
-                healthChangedHandler = (stat) => UpdateHealthBar(stat.CurrentValue, stat.MaxValue);
-                playerHealth.Health.OnValueChanged += healthChangedHandler;
-            }
-            // Stamina
-            if (playerHealth != null && playerHealth.Stamina != null)
-            {
-                UpdateStaminaBar(playerHealth.Stamina.CurrentValue, playerHealth.Stamina.MaxValue);
-                staminaChangedHandler = (stat) => UpdateStaminaBar(stat.CurrentValue, stat.MaxValue);
-                playerHealth.Stamina.OnValueChanged += staminaChangedHandler;
-            }
-            // Durabilidad
-            if (equipmentController != null && equipmentController.EquippedWeaponInstance != null)
-            {
-                UpdateWeaponDurabilityRadial(equipmentController.EquippedWeaponInstance.CurrentDurability, equipmentController.EquippedWeaponInstance.WeaponData.MaxDurability);
-            }
-        }
+        private System.Action weaponStateChangedHandler;
 
         private void OnEnable()
         {
-            // Aquí podrías suscribirte a eventos globales de quest/guidance si tienes un sistema de quests
+            // Suscribirse a eventos globales para saber cuándo aparece el jugador y cuándo cambia el inventario.
+            GameEventBus.Instance.Subscribe<PlayerSpawnedEvent>(HandlePlayerSpawned);
+            GameEventBus.Instance.Subscribe<InventoryChangedEvent>(OnInventoryChanged);
         }
 
         private void OnDisable()
         {
-            if (playerHealth != null && playerHealth.Health != null && healthChangedHandler != null)
-                playerHealth.Health.OnValueChanged -= healthChangedHandler;
-            if (playerHealth != null && playerHealth.Stamina != null && staminaChangedHandler != null)
-                playerHealth.Stamina.OnValueChanged -= staminaChangedHandler;
+            if (GameEventBus.Instance != null)
+            {
+                GameEventBus.Instance.Unsubscribe<PlayerSpawnedEvent>(HandlePlayerSpawned);
+                GameEventBus.Instance.Unsubscribe<InventoryChangedEvent>(OnInventoryChanged);
+            }
+            
+            // Desuscribirse de todos los eventos del jugador si ya no estamos en la escena.
+            UnsubscribeFromPlayerEvents();
+        }
+
+        private void HandlePlayerSpawned(PlayerSpawnedEvent evt)
+        {
+            // Si ya estábamos suscritos a un jugador anterior, nos desuscribimos primero.
+            UnsubscribeFromPlayerEvents();
+
+            // Obtenemos los componentes del nuevo jugador que ha aparecido.
+            playerHealth = evt.PlayerObject.GetComponent<PlayerHealthController>();
+            equipmentController = evt.PlayerObject.GetComponent<PlayerEquipmentController>();
+
+            // Nos suscribimos a los eventos del nuevo jugador.
+            SubscribeToPlayerEvents();
+        }
+
+        private void SubscribeToPlayerEvents()
+        {
+            // Vida
+            if (playerHealth != null && playerHealth.Health != null)
+            {
+                healthChangedHandler = (stat) => UpdateHealthBar(stat.CurrentValue, stat.MaxValue);
+                playerHealth.Health.OnValueChanged += healthChangedHandler;
+                UpdateHealthBar(playerHealth.Health.CurrentValue, playerHealth.Health.MaxValue);
+            }
+            // Stamina
+            if (playerHealth != null && playerHealth.Stamina != null)
+            {
+                staminaChangedHandler = (stat) => UpdateStaminaBar(stat.CurrentValue, stat.MaxValue);
+                playerHealth.Stamina.OnValueChanged += staminaChangedHandler;
+                UpdateStaminaBar(playerHealth.Stamina.CurrentValue, playerHealth.Stamina.MaxValue);
+            }
+            // Arma (se gestiona a través de OnInventoryChanged)
+            OnInventoryChanged(null); // Llamada inicial para configurar el arma equipada al aparecer.
+        }
+
+        private void UnsubscribeFromPlayerEvents()
+        {
+            if (playerHealth != null)
+            {
+                if (playerHealth.Health != null && healthChangedHandler != null)
+                    playerHealth.Health.OnValueChanged -= healthChangedHandler;
+                if (playerHealth.Stamina != null && staminaChangedHandler != null)
+                    playerHealth.Stamina.OnValueChanged -= staminaChangedHandler;
+            }
+            if (subscribedWeaponInstance != null)
+            {
+                subscribedWeaponInstance.OnStateChanged -= weaponStateChangedHandler;
+                subscribedWeaponInstance = null;
+            }
+        }
+
+        private void OnInventoryChanged(InventoryChangedEvent evt)
+        {
+            // Desuscribirse del arma anterior para evitar memory leaks.
+            if (subscribedWeaponInstance != null)
+            {
+                subscribedWeaponInstance.OnStateChanged -= weaponStateChangedHandler;
+            }
+
+            // Suscribirse a la nueva arma equipada, si existe.
+            if (equipmentController != null)
+            {
+                subscribedWeaponInstance = equipmentController.EquippedWeaponInstance;
+                if (subscribedWeaponInstance != null)
+                {
+                    weaponStateChangedHandler = UpdateWeaponDurability;
+                    subscribedWeaponInstance.OnStateChanged += weaponStateChangedHandler;
+                }
+            }
+            
+            // Actualizar la UI inmediatamente.
+            UpdateWeaponDurability();
+        }
+
+        private void UpdateWeaponDurability()
+        {
+            if (subscribedWeaponInstance != null)
+            {
+                UpdateWeaponDurabilityRadial(
+                    subscribedWeaponInstance.CurrentDurability, 
+                    subscribedWeaponInstance.WeaponData.MaxDurability);
+            }
+            else if (weaponDurabilityRadial != null)
+            {
+                // Si no hay arma equipada, ocultamos la barra de durabilidad.
+                weaponDurabilityRadial.fillAmount = 0;
+            }
         }
 
         private void UpdateHealthBar(float current, float max)

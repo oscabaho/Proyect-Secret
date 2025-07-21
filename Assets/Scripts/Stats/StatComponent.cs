@@ -41,7 +41,15 @@ namespace ProyectSecret.Stats
 
         public virtual void AffectValue(int value)
         {
-            currentValue = Mathf.Clamp(currentValue + value, 0, maxValue);
+            SetValue(currentValue + value);
+        }
+
+        /// <summary>
+        /// Establece el valor de la estadística a un número específico, asegurándose de que esté dentro de los límites.
+        /// </summary>
+        public virtual void SetValue(int newValue)
+        {
+            currentValue = Mathf.Clamp(newValue, 0, maxValue);
             _onValueChanged?.Invoke(this);
         }
     }
