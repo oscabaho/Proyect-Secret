@@ -1,8 +1,8 @@
 using UnityEngine;
 using ProyectSecret.Inventory;
 using ProyectSecret.Interfaces;
-using ProyectSecret.Managers;
-using ProyectSecret.Inventory.Items;
+using ProyectSecret.VFX;
+using ProyectSecret.Events;
 
 namespace ProyectSecret.Combat.Behaviours
 {
@@ -38,24 +38,22 @@ namespace ProyectSecret.Combat.Behaviours
             {
                 Vector3 impactPoint = other.ClosestPoint(transform.position);
 
-                // --- Lógica de Efectos Separada ---
-                // 1. Llamar al SoundManager para el sonido.
-                if (SoundManager.Instancia != null && weaponInstance.WeaponData.ImpactSound != null)
-                {
-                    SoundManager.Instancia.ReproducirEfectoEnPunto(
-                        weaponInstance.WeaponData.ImpactSound, 
-                        impactPoint, 
-                        weaponInstance.WeaponData.SoundVolume);
-                }
-
-                // 2. Llamar al VFXManager para las partículas.
-                VFXManager.Instance?.PlayImpactEffect(impactPoint);
+                // Publicar un evento de impacto para que otros sistemas (audio, vfx) reaccionen.
+                GameEventBus.Instance?.Publish(new HitboxImpactEvent(weaponInstance.WeaponData, impactPoint, other.gameObject));
 
                 // --- Lógica de Juego ---
                 weaponInstance.WeaponData.ApplyDamage(owner, other.gameObject);
                 weaponInstance.AddHit();
-                weaponInstance.DecreaseDurability(1);
 
+                // La pérdida de durabilidad puede depender del objeto golpeado.
+                int durabilityLoss = 1; // Pérdida por defecto.
+                var weaponDamager = other.GetComponent<IWeaponDamager>();
+                if (weaponDamager != null)
+                {
+                    durabilityLoss = weaponDamager.GetDurabilityDamage();
+                }
+                weaponInstance.DecreaseDurability(durabilityLoss);
+                
                 DisableDamage();
             }
         }

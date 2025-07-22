@@ -5,20 +5,30 @@ using ProyectSecret.Inventory.Items;
 using ProyectSecret.Inventory;
 using ProyectSecret.Events;
 using ProyectSecret.Combat.SceneManagement;
+using ProyectSecret.Characters.Player;
 
 namespace ProyectSecret.MonoBehaviours.Player
 {
     [RequireComponent(typeof(PlayerEquipmentController))]
-    public class PlayerInventory : MonoBehaviour, IInventory
+    public class PlayerInventory : MonoBehaviour, IInventory, IPersistentData
     {
         private PlayerEquipmentController equipmentController;
-        [SerializeField] private int maxSlots = 5;
+        [Header("Configuración")]
+        [SerializeField] private InventoryConfig inventoryConfig;
         [SerializeField] private List<MysteryItem> initialItems = new List<MysteryItem>();
         private InventoryModel inventoryModel;
 
         private void Awake()
         {
-            inventoryModel = new InventoryModel(maxSlots);
+            if (inventoryConfig == null)
+            {
+                Debug.LogError("PlayerInventory: InventoryConfig no está asignado en el Inspector.", this);
+                inventoryModel = new InventoryModel(5); // Fallback a un valor por defecto
+            }
+            else
+            {
+                inventoryModel = new InventoryModel(inventoryConfig.maxSlots);
+            }
             equipmentController = GetComponent<PlayerEquipmentController>();
             foreach (var item in initialItems)
             {
@@ -66,8 +76,11 @@ namespace ProyectSecret.MonoBehaviours.Player
             if (item is IUsableItem usable)
             {
                 usable.Use(user);
-                inventoryModel.RemoveItem(item); // Eliminar después de usar
-                GameEventBus.Instance.Publish(new InventoryChangedEvent(this));
+                if (usable.IsConsumable)
+                {
+                    inventoryModel.RemoveItem(item); // Eliminar solo si es consumible
+                    GameEventBus.Instance.Publish(new InventoryChangedEvent(this));
+                }
                 return true;
             }
 
@@ -127,5 +140,19 @@ namespace ProyectSecret.MonoBehaviours.Player
                     AddItem(item);
             }
         }
+
+        #region IPersistentData Implementation
+
+        public void SaveData(PlayerPersistentData data)
+        {
+            data.inventoryData = ExportInventoryData();
+        }
+
+        public void LoadData(PlayerPersistentData data, ItemDatabase itemDatabase)
+        {
+            ImportInventoryData(data.inventoryData, itemDatabase);
+        }
+
+        #endregion
     }
 }

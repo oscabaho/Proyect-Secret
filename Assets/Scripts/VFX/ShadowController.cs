@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace ProyectSecret.Enemies
+namespace ProyectSecret.VFX
 {
     /// <summary>
     /// Controla el comportamiento de la sombra/indicador de ataque, incluyendo un efecto de fade-in.
@@ -12,47 +12,48 @@ namespace ProyectSecret.Enemies
         [Tooltip("Duración del efecto de aparición gradual (fade-in) en segundos.")]
         [SerializeField] private float fadeInDuration = 0.3f;
 
-        private Renderer shadowRenderer;
-        private MaterialPropertyBlock propBlock;
-        private int colorID;
-        private Color originalColor;
-        private Coroutine fadeInCoroutine;
+        private Renderer _shadowRenderer;
+        private MaterialPropertyBlock _propBlock;
+        private int _colorID;
+        private Color _originalColor;
+        private Coroutine _fadeInCoroutine;
 
         private void Awake()
         {
-            shadowRenderer = GetComponent<Renderer>();
-            propBlock = new MaterialPropertyBlock();
-            colorID = Shader.PropertyToID("_Color");
+            _shadowRenderer = GetComponent<Renderer>();
+            _propBlock = new MaterialPropertyBlock();
+            _colorID = Shader.PropertyToID("_Color");
 
             // Guardamos el color original del material para saber a qué nivel de alfa debemos llegar.
-            if (shadowRenderer.sharedMaterial.HasProperty(colorID))
+            if (_shadowRenderer.sharedMaterial.HasProperty(_colorID))
             {
-                originalColor = shadowRenderer.sharedMaterial.color;
+                _originalColor = _shadowRenderer.sharedMaterial.color;
             }
             else
             {
-                originalColor = Color.white; // Un valor por defecto si el material no tiene color.
+                _originalColor = Color.white; // Un valor por defecto si el material no tiene color.
+                Debug.LogWarning($"El material en {gameObject.name} no tiene una propiedad '_Color'. Se usará blanco por defecto.", this);
             }
         }
 
         private void OnEnable()
         {
             // Cada vez que la sombra se activa desde el pool, iniciamos el fade-in.
-            if (fadeInCoroutine != null)
-                StopCoroutine(fadeInCoroutine);
-            fadeInCoroutine = StartCoroutine(FadeInRoutine());
+            if (_fadeInCoroutine != null)
+                StopCoroutine(_fadeInCoroutine);
+            _fadeInCoroutine = StartCoroutine(FadeInRoutine());
         }
 
         private IEnumerator FadeInRoutine()
         {
             float timer = 0f;
-            float targetAlpha = originalColor.a;
+            float targetAlpha = _originalColor.a;
 
             // Empezamos con el alfa a cero para que sea invisible al inicio.
-            Color currentColor = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
-            shadowRenderer.GetPropertyBlock(propBlock);
-            propBlock.SetColor(colorID, currentColor);
-            shadowRenderer.SetPropertyBlock(propBlock);
+            Color currentColor = new Color(_originalColor.r, _originalColor.g, _originalColor.b, 0f);
+            _shadowRenderer.GetPropertyBlock(_propBlock);
+            _propBlock.SetColor(_colorID, currentColor);
+            _shadowRenderer.SetPropertyBlock(_propBlock);
             
             while (timer < fadeInDuration)
             {
@@ -61,17 +62,18 @@ namespace ProyectSecret.Enemies
                 currentColor.a = currentAlpha;
                 
                 // Aplicamos el nuevo color usando el MaterialPropertyBlock para un rendimiento óptimo.
-                shadowRenderer.GetPropertyBlock(propBlock);
-                propBlock.SetColor(colorID, currentColor);
-                shadowRenderer.SetPropertyBlock(propBlock);
+                _shadowRenderer.GetPropertyBlock(_propBlock);
+                _propBlock.SetColor(_colorID, currentColor);
+                _shadowRenderer.SetPropertyBlock(_propBlock);
 
                 timer += Time.deltaTime;
                 yield return null;
             }
 
             // Al final, nos aseguramos de que el alfa sea exactamente el valor deseado.
-            propBlock.SetColor(colorID, originalColor);
-            shadowRenderer.SetPropertyBlock(propBlock);
+            _propBlock.SetColor(_colorID, _originalColor);
+            _shadowRenderer.SetPropertyBlock(_propBlock);
+            _fadeInCoroutine = null;
         }
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.IO;
 using ProyectSecret.Combat.SceneManagement;
+using Newtonsoft.Json; // Usaremos la librería Newtonsoft.Json
 
 namespace ProyectSecret.Managers
 {
@@ -10,6 +11,15 @@ namespace ProyectSecret.Managers
     public static class SaveLoadManager
     {
         private static readonly string saveFileName = "savegame.json";
+
+        // Configuraciones para la serialización con Newtonsoft.Json.
+        // TypeNameHandling.Auto es crucial para que pueda manejar herencia (diferentes tipos de items en una lista).
+        // ReferenceLoopHandling.Ignore evita problemas con referencias circulares, comunes en Unity.
+        private static readonly JsonSerializerSettings jsonSettings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto,
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
 
         private static string GetSaveFilePath()
         {
@@ -30,8 +40,8 @@ namespace ProyectSecret.Managers
                 return;
             }
 
-            // Usamos JsonUtility de Unity para convertir el objeto a una cadena de texto JSON.
-            string json = JsonUtility.ToJson(data, true); // 'true' para formatear el JSON y que sea legible
+            // Usamos Newtonsoft.Json para convertir el objeto a una cadena de texto JSON.
+            string json = JsonConvert.SerializeObject(data, Formatting.Indented, jsonSettings);
             
             string filePath = GetSaveFilePath();
             File.WriteAllText(filePath, json);
@@ -58,8 +68,8 @@ namespace ProyectSecret.Managers
             if (File.Exists(filePath))
             {
                 string json = File.ReadAllText(filePath);
-                // Sobrescribimos los datos del ScriptableObject en memoria con los del archivo.
-                JsonUtility.FromJsonOverwrite(json, data);
+                // Sobrescribimos los datos del ScriptableObject en memoria con los del archivo usando Newtonsoft.
+                JsonConvert.PopulateObject(json, data, jsonSettings);
                 
                 // Después de cargar, marcamos que hay una posición guardada para que el inicializador la use.
                 data.HasSavedPosition = true;

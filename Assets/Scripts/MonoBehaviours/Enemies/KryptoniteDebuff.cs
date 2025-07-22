@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using ProyectSecret.Interfaces;
-using ProyectSecret.Enemies;
+using ProyectSecret.Characters.Enemies; // <-- AÑADIDO: Para encontrar EnemyHealthController
 
 namespace MonoBehaviours.Enemies
 {

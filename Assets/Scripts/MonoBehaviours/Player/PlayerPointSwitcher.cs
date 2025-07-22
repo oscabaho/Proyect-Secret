@@ -14,11 +14,17 @@ namespace ProyectSecret.MonoBehaviours.Player
         public Transform HitBoxPoint;
         public Transform HitBoxPoint1;
 
+        private bool m_IsCameraInverted;
+
+        public Transform ActiveWeaponPoint => m_IsCameraInverted ? WeaponPoint1 : WeaponPoint;
+        public Transform ActiveHitBoxPoint => m_IsCameraInverted ? HitBoxPoint1 : HitBoxPoint;
+
         /// <summary>
         /// Activa/desactiva los GameObjects de los puntos correctos según la cámara.
         /// </summary>
         public void UpdateActivePoints(bool isCameraInverted)
         {
+            m_IsCameraInverted = isCameraInverted;
             if (WeaponPoint != null) WeaponPoint.gameObject.SetActive(!isCameraInverted);
             if (HitBoxPoint != null) HitBoxPoint.gameObject.SetActive(!isCameraInverted);
             if (WeaponPoint1 != null) WeaponPoint1.gameObject.SetActive(isCameraInverted);

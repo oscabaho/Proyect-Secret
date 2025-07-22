@@ -60,13 +60,13 @@
         "*.asset": "yaml",
         "*.meta": "yaml",
         "*.prefab": "yaml",
-        "*.unity": "yaml",
+        "*.unity": "yaml"
     },
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
-        "*.sln": "*.csproj",
+        "*.sln": "*.csproj"
     },
-    "dotnet.defaultSolution": "Proyect-Secret.sln",
+    "dotnet.defaultSolution": "Github.sln",
     "github.copilot.nextEditSuggestions.enabled": true,
     "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }

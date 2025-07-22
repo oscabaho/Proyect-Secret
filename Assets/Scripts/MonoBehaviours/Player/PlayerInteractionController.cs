@@ -9,10 +9,6 @@ namespace ProyectSecret.MonoBehaviours.Player
     /// </summary>
     public class PlayerInteractionController : MonoBehaviour
     {
-        [Header("Configuración de Interacción")]
-        [SerializeField] private float interactionDistance = 5f;
-        [SerializeField] private LayerMask interactionLayer;
-
         [Header("Input")]
         [Tooltip("El asset de Input Actions que contiene la acción de interactuar.")]
         [SerializeField] private InputActionAsset inputActions;
@@ -20,12 +16,15 @@ namespace ProyectSecret.MonoBehaviours.Player
         [SerializeField] private string interactionActionName = "Interact";
         
         private Camera mainCamera;
+        private InteractionDetector interactionDetector;
         private InputAction interactAction;
         private IInteractable currentInteractable;
 
         private void Awake()
         {
             mainCamera = Camera.main;
+            interactionDetector = GetComponentInChildren<InteractionDetector>();
+
             if (inputActions != null)
             {
                 // Asumimos que la acción está en el mapa "PlayerDay"
@@ -34,6 +33,11 @@ namespace ProyectSecret.MonoBehaviours.Player
                 {
                     interactAction = actionMap.FindAction(interactionActionName);
                 }
+            }
+
+            if (interactionDetector == null)
+            {
+                Debug.LogError("PlayerInteractionController: No se encontró un InteractionDetector en los hijos. Este componente es necesario para detectar objetos interactuables.", this);
             }
         }
 
@@ -58,25 +62,12 @@ namespace ProyectSecret.MonoBehaviours.Player
         private void Update()
         {
             // Constantemente revisa si hay algo interactuable en frente.
-            CheckForInteractable();
-        }
-
-        private void CheckForInteractable()
-        {
-            if (mainCamera == null) return;
-
-            RaycastHit hit;
-            if (Physics.Raycast(mainCamera.transform.position, mainCamera.transform.forward, out hit, interactionDistance, interactionLayer))
+            if (interactionDetector != null)
             {
-                // Si encontramos algo, lo guardamos como el interactuable actual.
-                currentInteractable = hit.collider.GetComponent<IInteractable>();
-                // Aquí podrías mostrar un mensaje en la UI como "[E] Hablar"
-            }
-            else
-            {
-                // Si no hay nada, limpiamos la referencia.
-                currentInteractable = null;
-                // Aquí podrías ocultar el mensaje de la UI.
+                // El detector nos da el interactuable más cercano en el trigger.
+                // Podrías añadir lógica adicional para ver si está en el campo de visión.
+                currentInteractable = interactionDetector.GetClosestInteractable(transform);
+                // Aquí podrías mostrar/ocultar un mensaje en la UI si currentInteractable no es nulo.
             }
         }
 

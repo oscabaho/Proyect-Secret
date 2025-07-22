@@ -1,22 +1,27 @@
 using UnityEngine;
 using ProyectSecret.Interfaces;
-using System.Collections; // Necesario para la corutina
+using System.Collections;
+using ProyectSecret.Characters.Enemies;
+using ProyectSecret.Utils;
 
 namespace ProyectSecret.Enemies
 {
     public class VulnerablePartController : MonoBehaviour, IDamageable
     {
         [SerializeField] private float vulnerableTime = 3f;
+
         private bool isVulnerable = true;
         private EnemyHealthController enemyHealth;
+        private ObjectPool<VulnerablePartController> pool;
 
         /// <summary>
         /// Inicializa la parte vulnerable con una referencia a la salud del enemigo.
         /// Debe ser llamado por quien lo instancia.
         /// </summary>
-        public void Initialize(EnemyHealthController healthController)
+        public void Initialize(EnemyHealthController healthController, ObjectPool<VulnerablePartController> objectPool)
         {
             enemyHealth = healthController;
+            pool = objectPool;
         }
 
         private void Start()
@@ -32,8 +37,8 @@ namespace ProyectSecret.Enemies
 
             // Desactivar la vulnerabilidad y destruir el objeto.
             isVulnerable = false;
-            // Aquí puedes añadir una animación de desaparición antes de destruir.
-            Destroy(gameObject);
+            // En lugar de destruir, lo devolvemos al pool.
+            pool?.Return(gameObject);
         }
 
         public void TakeDamage(int amount)

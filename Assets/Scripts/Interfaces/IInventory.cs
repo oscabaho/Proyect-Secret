@@ -1,3 +1,5 @@
+using ProyectSecret.Inventory.Items;
+
 namespace ProyectSecret.Interfaces
 {
     /// <summary>
@@ -6,5 +8,6 @@ namespace ProyectSecret.Interfaces
     public interface IInventory
     {
         bool HasItem(string itemId);
+        bool AddItem(MysteryItem item);
     }
 }

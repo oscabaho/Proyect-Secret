@@ -14,6 +14,8 @@ namespace ProyectSecret.Inventory.Items
 
         public int HealAmount => healAmount;
 
+        public bool IsConsumable => true;
+
         public void Use(GameObject user)
         {
             var health = user.GetComponent<ProyectSecret.Characters.PlayerHealthController>();
@@ -31,7 +33,5 @@ namespace ProyectSecret.Inventory.Items
                 #endif
             }
         }
-
-        public string GetId() => Id; // Ahora usa el 'Id' heredado de MysteryItem
     }
 }

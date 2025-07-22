@@ -1,11 +1,9 @@
 using UnityEngine;
-using ProyectSecret.Utils;
-using ProyectSecret.Audio; // Importar el nuevo namespace
-using System.Collections;
+using ProyectSecret.Audio; // Corregido
 
 /// <summary>
-/// Gestiona la reproducción de música y efectos de sonido en todo el juego.
-/// Sigue el patrón Singleton para ser accesible desde cualquier script.
+/// Gestiona la reproducción de música y efectos de sonido de UI.
+/// Delega la reproducción de efectos de sonido dinámicos al AudioPoolManager.
 /// </summary>
 public class SoundManager : MonoBehaviour
 {
@@ -54,23 +52,14 @@ public class SoundManager : MonoBehaviour
                 _efectosSource = sources[1];
             }
         }
-        
-        // Inicializar el pool de AudioSource para sonidos espaciales
-        if (_oneShotPrefab != null)
-            _oneShotSourcePool = new ObjectPool<PooledAudioSource>(_oneShotPrefab, 10, transform);
     }
     #endregion
 
-    [Header("Fuentes de Audio")]
+    [Header("Fuentes de Audio Dedicadas")]
     [Tooltip("Fuente para la música de fondo. Debería tener 'Loop' activado.")]
     [SerializeField] private AudioSource _musicaSource;
-    [Tooltip("Fuente para efectos de sonido de UI y 2D.")]
+    [Tooltip("Fuente para efectos de sonido de UI y 2D no dinámicos.")]
     [SerializeField] private AudioSource _efectosSource;
-    
-    [Header("Pool para Sonidos 3D")]
-    [Tooltip("Prefab que solo contenga un componente AudioSource y un PooledAudioSource para usar en el pool.")]
-    [SerializeField] private GameObject _oneShotPrefab;
-    private ObjectPool<PooledAudioSource> _oneShotSourcePool;
 
     public void IniciarMusica(AudioClip clipMusica)
     {
@@ -82,40 +71,35 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void ReproducirEfecto(AudioClip clipEfecto, float volumen = 1.0f)
+    /// <summary>
+    /// Reproduce un efecto de sonido 2D (como un clic de UI) usando la fuente dedicada.
+    /// </summary>
+    public void ReproducirEfecto(AudioData audioData)
     {
-        if (clipEfecto != null)
+        if (audioData != null)
         {
-            _efectosSource.PlayOneShot(clipEfecto, volumen);
+            _efectosSource.PlayOneShot(audioData.GetClip(), audioData.GetVolume());
         }
     }
 
     /// <summary>
-    /// Reproduce un sonido en un punto del espacio 3D de forma eficiente usando un pool.
+    /// Reproduce un sonido en un punto del espacio 3D usando el AudioPoolManager.
     /// </summary>
-    public void ReproducirEfectoEnPunto(AudioClip clip, Vector3 position, float volume = 1.0f)
+    public void ReproducirEfectoEnPunto(AudioData audioData, Vector3 position)
     {
-        if (clip == null || _oneShotSourcePool == null) return;
-
-        GameObject sourceGO = _oneShotSourcePool.Get();
-        if (sourceGO != null)
+        // Delegamos la responsabilidad al AudioPoolManager.
+        if (AudioPoolManager.Instance != null)
         {
-            sourceGO.transform.position = position;
-            // Obtenemos el AudioSource del GameObject que nos da el pool.
-            AudioSource source = sourceGO.GetComponent<AudioSource>();
-            source.clip = clip;
-            source.volume = volume;
-            source.spatialBlend = 1.0f; // Asegurarse de que es 3D
-            source.Play();
-            StartCoroutine(ReturnSourceToPool(sourceGO, clip.length));
+            AudioPoolManager.Instance.PlayAtPoint(audioData, position);
         }
-    }
-
-    private IEnumerator ReturnSourceToPool(GameObject sourceGO, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (sourceGO != null)
-            _oneShotSourcePool.Return(sourceGO);
+        else
+        {
+            Debug.LogWarning("AudioPoolManager no encontrado. Usando AudioSource.PlayClipAtPoint como fallback.");
+            if (audioData != null)
+            {
+                AudioSource.PlayClipAtPoint(audioData.GetClip(), position, audioData.GetVolume());
+            }
+        }
     }
 
     public void IniciarEfectoEnLoop(AudioClip clipEfecto, AudioSource source)

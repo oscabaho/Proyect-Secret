@@ -223,6 +223,7 @@ GameObject:
   - component: {fileID: 8562002667087886825}
   - component: {fileID: 4228852871187075154}
   - component: {fileID: 8074268472188248438}
+  - component: {fileID: 188806576684075746}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -442,10 +443,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   healthBehaviour: {fileID: 4413563322621177867}
-  staminaRecoveryAmount: 5
-  staminaRecoveryInterval: 0.5
-  staminaRecoveryDelay: 2
-  PlayerDeathSound: {fileID: 8300000, guid: 43124e73252187a4aa78d53712f9b035, type: 3}
 --- !u!114 &7500067964294251843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -555,6 +552,21 @@ MonoBehaviour:
     m_Bits: 0
   inputActions: {fileID: -944628639613478452, guid: fcbddd531342fbb4dbfb0a3e85be621f, type: 3}
   interactionActionName: Interact
+--- !u!114 &188806576684075746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3169305069694853935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5bf997e528e19b41aa7824634937919, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  staminaRecoveryAmount: 5
+  staminaRecoveryInterval: 0.5
+  staminaRecoveryDelay: 2
 --- !u!1 &5736832273278645394
 GameObject:
   m_ObjectHideFlags: 0

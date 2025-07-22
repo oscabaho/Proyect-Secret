@@ -4,6 +4,7 @@ using TMPro;
 using ProyectSecret.Characters;
 using ProyectSecret.Inventory;
 using ProyectSecret.Events;
+using ProyectSecret.Characters.Player;
 
 namespace ProyectSecret.UI
 {
@@ -24,6 +25,7 @@ namespace ProyectSecret.UI
         [SerializeField] private TMP_Text guidanceText;
 
         private PlayerHealthController playerHealth;
+        private PlayerStaminaController playerStamina; // Añadido
         private PlayerEquipmentController equipmentController;
         private WeaponInstance subscribedWeaponInstance;
 
@@ -36,7 +38,9 @@ namespace ProyectSecret.UI
         {
             // Suscribirse a eventos globales para saber cuándo aparece el jugador y cuándo cambia el inventario.
             GameEventBus.Instance.Subscribe<PlayerSpawnedEvent>(HandlePlayerSpawned);
-            GameEventBus.Instance.Subscribe<InventoryChangedEvent>(OnInventoryChanged);
+            // Escuchar eventos específicos de equipamiento de armas es más directo y robusto.
+            GameEventBus.Instance.Subscribe<PlayerWeaponEquippedEvent>(OnWeaponEquipped);
+            GameEventBus.Instance.Subscribe<PlayerWeaponUnequippedEvent>(OnWeaponUnequipped);
         }
 
         private void OnDisable()
@@ -44,7 +48,8 @@ namespace ProyectSecret.UI
             if (GameEventBus.Instance != null)
             {
                 GameEventBus.Instance.Unsubscribe<PlayerSpawnedEvent>(HandlePlayerSpawned);
-                GameEventBus.Instance.Unsubscribe<InventoryChangedEvent>(OnInventoryChanged);
+                GameEventBus.Instance.Unsubscribe<PlayerWeaponEquippedEvent>(OnWeaponEquipped);
+                GameEventBus.Instance.Unsubscribe<PlayerWeaponUnequippedEvent>(OnWeaponUnequipped);
             }
             
             // Desuscribirse de todos los eventos del jugador si ya no estamos en la escena.
@@ -58,6 +63,7 @@ namespace ProyectSecret.UI
 
             // Obtenemos los componentes del nuevo jugador que ha aparecido.
             playerHealth = evt.PlayerObject.GetComponent<PlayerHealthController>();
+            playerStamina = evt.PlayerObject.GetComponent<PlayerStaminaController>(); // Añadido
             equipmentController = evt.PlayerObject.GetComponent<PlayerEquipmentController>();
 
             // Nos suscribimos a los eventos del nuevo jugador.
@@ -74,14 +80,19 @@ namespace ProyectSecret.UI
                 UpdateHealthBar(playerHealth.Health.CurrentValue, playerHealth.Health.MaxValue);
             }
             // Stamina
-            if (playerHealth != null && playerHealth.Stamina != null)
+            if (playerStamina != null && playerStamina.Stamina != null)
             {
                 staminaChangedHandler = (stat) => UpdateStaminaBar(stat.CurrentValue, stat.MaxValue);
-                playerHealth.Stamina.OnValueChanged += staminaChangedHandler;
-                UpdateStaminaBar(playerHealth.Stamina.CurrentValue, playerHealth.Stamina.MaxValue);
+                playerStamina.Stamina.OnValueChanged += staminaChangedHandler;
+                UpdateStaminaBar(playerStamina.Stamina.CurrentValue, playerStamina.Stamina.MaxValue);
             }
-            // Arma (se gestiona a través de OnInventoryChanged)
-            OnInventoryChanged(null); // Llamada inicial para configurar el arma equipada al aparecer.
+            
+            // Arma: Actualizar con el arma equipada al aparecer.
+            // Los eventos se encargarán de los cambios posteriores.
+            if (equipmentController != null)
+            {
+                HandleWeaponChange(equipmentController.EquippedWeaponInstance);
+            }
         }
 
         private void UnsubscribeFromPlayerEvents()
@@ -90,8 +101,8 @@ namespace ProyectSecret.UI
             {
                 if (playerHealth.Health != null && healthChangedHandler != null)
                     playerHealth.Health.OnValueChanged -= healthChangedHandler;
-                if (playerHealth.Stamina != null && staminaChangedHandler != null)
-                    playerHealth.Stamina.OnValueChanged -= staminaChangedHandler;
+                if (playerStamina != null && playerStamina.Stamina != null && staminaChangedHandler != null)
+                    playerStamina.Stamina.OnValueChanged -= staminaChangedHandler;
             }
             if (subscribedWeaponInstance != null)
             {
@@ -100,26 +111,39 @@ namespace ProyectSecret.UI
             }
         }
 
-        private void OnInventoryChanged(InventoryChangedEvent evt)
+        private void OnWeaponEquipped(PlayerWeaponEquippedEvent evt)
         {
-            // Desuscribirse del arma anterior para evitar memory leaks.
+            // Solo reaccionar si el evento es para el jugador que este HUD está siguiendo.
+            if (playerHealth != null && evt.Player == playerHealth.gameObject)
+            {
+                HandleWeaponChange(evt.Weapon);
+            }
+        }
+
+        private void OnWeaponUnequipped(PlayerWeaponUnequippedEvent evt)
+        {
+            if (playerHealth != null && evt.Player == playerHealth.gameObject)
+            {
+                HandleWeaponChange(null);
+            }
+        }
+
+        private void HandleWeaponChange(WeaponInstance newWeapon)
+        {
+            // Desuscribirse del arma anterior para evitar fugas de memoria.
             if (subscribedWeaponInstance != null)
             {
                 subscribedWeaponInstance.OnStateChanged -= weaponStateChangedHandler;
             }
 
-            // Suscribirse a la nueva arma equipada, si existe.
-            if (equipmentController != null)
+            subscribedWeaponInstance = newWeapon;
+
+            if (subscribedWeaponInstance != null)
             {
-                subscribedWeaponInstance = equipmentController.EquippedWeaponInstance;
-                if (subscribedWeaponInstance != null)
-                {
-                    weaponStateChangedHandler = UpdateWeaponDurability;
-                    subscribedWeaponInstance.OnStateChanged += weaponStateChangedHandler;
-                }
+                weaponStateChangedHandler = UpdateWeaponDurability;
+                subscribedWeaponInstance.OnStateChanged += weaponStateChangedHandler;
             }
-            
-            // Actualizar la UI inmediatamente.
+
             UpdateWeaponDurability();
         }
 

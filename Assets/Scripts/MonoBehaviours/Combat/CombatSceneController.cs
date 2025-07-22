@@ -2,6 +2,7 @@ using UnityEngine;
 using ProyectSecret.Events;
 using ProyectSecret.Managers;
 using System.Collections;
+using ProyectSecret.VFX;
 
 namespace ProyectSecret.Combat.SceneManagement
 {
@@ -21,6 +22,8 @@ namespace ProyectSecret.Combat.SceneManagement
         // Las referencias al jugador y al enemigo ahora se obtienen automáticamente.
         private GameObject playerInstance;
         private GameObject enemyInstance;
+        private bool defeatVFXCompleted = false;
+        private bool victoryVFXCompleted = false;
 
         private void Awake()
         {
@@ -40,6 +43,7 @@ namespace ProyectSecret.Combat.SceneManagement
             GameEventBus.Instance.Subscribe<PlayerSpawnedEvent>(OnPlayerSpawned);
             GameEventBus.Instance.Subscribe<PlayerDiedEvent>(HandlePlayerDeath);
             GameEventBus.Instance.Subscribe<CharacterDeathEvent>(HandleCharacterDeath);
+            GameEventBus.Instance.Subscribe<VFXCompletedEvent>(OnVFXCompleted);
         }
 
         private void OnDisable()
@@ -49,6 +53,7 @@ namespace ProyectSecret.Combat.SceneManagement
                 GameEventBus.Instance.Unsubscribe<PlayerSpawnedEvent>(OnPlayerSpawned);
                 GameEventBus.Instance.Unsubscribe<PlayerDiedEvent>(HandlePlayerDeath);
                 GameEventBus.Instance.Unsubscribe<CharacterDeathEvent>(HandleCharacterDeath);
+                GameEventBus.Instance.Unsubscribe<VFXCompletedEvent>(OnVFXCompleted);
             }
         }
 
@@ -56,6 +61,14 @@ namespace ProyectSecret.Combat.SceneManagement
         private void OnPlayerSpawned(PlayerSpawnedEvent evt)
         {
             playerInstance = evt.PlayerObject;
+        }
+
+        private void OnVFXCompleted(VFXCompletedEvent evt)
+        {
+            if (evt.TargetObject == enemyInstance)
+                victoryVFXCompleted = true;
+            else if (evt.TargetObject == playerInstance)
+                defeatVFXCompleted = true;
         }
 
         private void HandleCharacterDeath(CharacterDeathEvent evt)
@@ -79,8 +92,9 @@ namespace ProyectSecret.Combat.SceneManagement
             
             GameEventBus.Instance.Publish(new CombatVictoryEvent(enemyInstance));
 
-            // Esperar el delay usando la corutina
-            yield return new WaitForSeconds(delayAfterVictory);
+            // Esperar a que el efecto de muerte del enemigo termine en lugar de un delay fijo.
+            victoryVFXCompleted = false;
+            yield return new WaitUntil(() => victoryVFXCompleted);
 
             // Cargar la escena de exploración
             SceneTransitionManager.Instance?.LoadExplorationScene(playerInstance);
@@ -94,7 +108,9 @@ namespace ProyectSecret.Combat.SceneManagement
             #if UNITY_EDITOR
             Debug.Log("¡Jugador derrotado! Regresando a exploración, inicio de día, punto fijo.");
             #endif
-            
+
+            // Iniciar el efecto de "fade out" del jugador y esperar a que termine.
+            VFXManager.Instance?.PlayFadeAndDestroyEffect(playerInstance, delayAfterDefeat);
             StartCoroutine(DefeatSequence());
         }
 
@@ -109,8 +125,9 @@ namespace ProyectSecret.Combat.SceneManagement
             
             GameEventBus.Instance.Publish(new DayStartedEvent());
 
-            // Esperar el delay
-            yield return new WaitForSeconds(delayAfterDefeat);
+            // Esperar a que el efecto de "muerte" del jugador termine.
+            defeatVFXCompleted = false;
+            yield return new WaitUntil(() => defeatVFXCompleted);
 
             // Cargar la escena de exploración
             SceneTransitionManager.Instance?.LoadExplorationScene(playerInstance);

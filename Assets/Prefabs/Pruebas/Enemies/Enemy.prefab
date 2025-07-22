@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 979337658453597284}
   - component: {fileID: 3523320565264467112}
   - component: {fileID: 3871167729824150885}
-  - component: {fileID: 2354218243585999421}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -99,39 +98,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e5d872b750f14e45af5edcdff68ff3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentPhase: 0
+  _phase1Strategy: {fileID: 11400000, guid: 4d8e2f2e0e0d8b545bff8d93ca4ffd47, type: 2}
+  _phase2Strategy: {fileID: 11400000, guid: 85d09319a75782740a7ead3129d8aafe, type: 2}
+  _phase3Strategy: {fileID: 11400000, guid: ad8567624d14e8a41adb1d3299080ad2, type: 2}
   rockPrefab: {fileID: 6018644461485167398, guid: 23ce093df498a284bab3ef3faeb3cbf5, type: 3}
-  impactParticlePrefab: {fileID: 1982967112632939313, guid: 8e8bb55e6915abb448ea27494fecd2f2, type: 3}
   shadowPrefab: {fileID: 9198125988489550430, guid: bec4c592ef79e004d9db050391d10ce8, type: 3}
-  numberOfGroups: 3
-  rocksPerGroup: 5
-  intervalBetweenGroups: 2
-  spawnDelayWithinGroup: 0.1
-  rockSpawnHeight: 10
-  rockSpawnRadius: 5
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  rockPoolSize: 20
-  impactParticlePoolSize: 20
-  shadowPoolSize: 20
   vulnerablePartPrefab: {fileID: 0}
   vulnerableSpawnPoint: {fileID: 0}
-  chargeTime: 2
-  attackSpeed: 10
-  attackDuration: 1.5
---- !u!114 &2354218243585999421
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1281455627540334402}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bcbc4b8f7d020684ca6ee9dadd3365c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  rockPoolSize: 20
+  shadowPoolSize: 20
 --- !u!1 &7194818831569282296
 GameObject:
   m_ObjectHideFlags: 0

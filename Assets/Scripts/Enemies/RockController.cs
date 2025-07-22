@@ -1,7 +1,9 @@
 using UnityEngine;
-using ProyectSecret.Utils; // 1. Importar el namespace del ObjectPool
-using ProyectSecret.Managers; // Importar el nuevo manager
+using ProyectSecret.Utils;
+using ProyectSecret.Managers;
 using ProyectSecret.Interfaces;
+using ProyectSecret.Audio;
+using ProyectSecret.VFX;
 
 namespace ProyectSecret.Enemies
 {
@@ -12,8 +14,10 @@ namespace ProyectSecret.Enemies
         [SerializeField] private LayerMask groundLayer;
 
         [Header("Efectos de Impacto")]
-        [SerializeField] private AudioClip impactSound;
-        [SerializeField] [Range(0f, 1f)] private float soundVolume = 0.8f;
+        [SerializeField] private AudioData impactSoundData;
+
+        [Header("Gameplay")]
+        [SerializeField] private int damage = 10;
         
         private ObjectPool<RockController> rockPool;
         private GameObject shadowInstance;
@@ -68,8 +72,7 @@ namespace ProyectSecret.Enemies
                 var damageable = collision.gameObject.GetComponent<IDamageable>();
                 if (damageable != null)
                 {
-                    // TODO: Definir el daño de la roca, por ahora un valor fijo.
-                    damageable.TakeDamage(10);
+                    damageable.TakeDamage(damage);
                 }
                 rockPool?.Return(gameObject);
             }
@@ -79,13 +82,11 @@ namespace ProyectSecret.Enemies
         {
             // Le pedimos al manager central que reproduzca los efectos por nosotros.
             // 1. Efecto visual de impacto
-            VFXManager.Instance?.PlayImpactEffect(position);
+            VFXManager.Instance?.PlayEffect("ImpactEffect", position);
 
             // 2. Sonido de impacto
-            if (impactSound != null)
-            {
-                SoundManager.Instancia?.ReproducirEfectoEnPunto(impactSound, position, soundVolume);
-            }
+            // Reproducimos el sonido a través del AudioData.
+            impactSoundData?.PlayAtPoint(position);
         }
     }
 }

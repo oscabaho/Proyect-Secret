@@ -1,164 +1,166 @@
 using System.Collections;
 using UnityEngine;
-using ProyectSecret.Interfaces;
 using ProyectSecret.VFX;
-using ProyectSecret.Utils; // 1. Importar el namespace del ObjectPool
+using ProyectSecret.Utils;
+using ProyectSecret.Enemies.Strategies;
+using ProyectSecret.Characters.Enemies;
 
 namespace ProyectSecret.Enemies
 {
+    /// <summary>
+    /// Gestiona los ataques de un enemigo utilizando el patrón Strategy.
+    /// Delega la lógica de cada fase de ataque a un ScriptableObject de tipo AttackStrategy.
+    /// También gestiona los recursos necesarios para los ataques (prefabs, pools).
+    /// </summary>
+    [RequireComponent(typeof(EnemyHealthController))]
     public class EnemyAttackController : MonoBehaviour
     {
-        public AttackPhase CurrentPhase => currentPhase;
         public enum AttackPhase { Phase1, Phase2, Phase3 }
-        [Header("Fase actual")]
-        [SerializeField] private AttackPhase currentPhase = AttackPhase.Phase1;
 
-        [Header("Fase 1: Caída de piedras")]
+        [Header("Estrategias de Ataque (ScriptableObjects)")]
+        [SerializeField] private AttackStrategy _phase1Strategy;
+        [SerializeField] private AttackStrategy _phase2Strategy;
+        [SerializeField] private AttackStrategy _phase3Strategy;
+
+        [Header("Recursos para los Ataques")]
         [SerializeField] private GameObject rockPrefab;
-        [SerializeField] private GameObject shadowPrefab; // Prefab para la sombra/indicador
-        [SerializeField] private int numberOfGroups = 3;
-        [SerializeField] private int rocksPerGroup = 5;
-        [SerializeField] private float intervalBetweenGroups = 2f;
-        [SerializeField] private float spawnDelayWithinGroup = 0.1f;
-        [SerializeField] private float rockSpawnHeight = 10f;
-        [SerializeField] private float rockSpawnRadius = 5f; // Radio de caída alrededor del jugador
-        [SerializeField] private LayerMask groundLayer; // Capa del suelo para el Raycast
-        
-        [Header("Fase 1 - Pooling")]
-        [SerializeField] private int rockPoolSize = 20;
-        [SerializeField] private int shadowPoolSize = 20;
-
-        [Header("Fase 2: Parte vulnerable")]
+        [SerializeField] private GameObject shadowPrefab;
         [SerializeField] private GameObject vulnerablePartPrefab;
         [SerializeField] private Transform vulnerableSpawnPoint;
 
-        [Header("Fase 3: Carga y ataque recto")]
-        [SerializeField] private float chargeTime = 2f;
-        [SerializeField] private float attackSpeed = 10f;
-        [SerializeField] private float attackDuration = 1.5f;
-        private Vector3 attackDirection;
-        private Vector3 targetPosition;
+        [Header("Control del Ciclo de Ataque")]
+        [Tooltip("Tiempo de espera en segundos entre el final de un ataque y el inicio del siguiente.")]
+        [SerializeField] private float _timeBetweenPhases = 2.5f;
 
-        private Coroutine phaseRoutine;
-        private EnemyHealthController healthController;
-        private ObjectPool<RockController> rockPool;
-        private ObjectPool<ShadowController> shadowPool;
+        [Header("Configuración de Pools")]
+        [SerializeField] private int rockPoolSize = 20;
+        [SerializeField] private int shadowPoolSize = 20;
+        [SerializeField] private int vulnerablePartPoolSize = 5;
+
+        // Propiedades públicas para que las estrategias accedan a los recursos.
+        public ObjectPool<RockController> RockPool { get; private set; }
+        public ObjectPool<ShadowController> ShadowPool { get; private set; }
+        public EnemyHealthController HealthController { get; private set; }
+        public ObjectPool<VulnerablePartController> VulnerablePartPool { get; private set; }
+        public Transform VulnerableSpawnPoint => vulnerableSpawnPoint;
+
+        private AttackStrategy _currentStrategy;
+        private AttackPhase _currentPhase;
+        private Coroutine _currentAttackCoroutine;
 
         private void Awake()
         {
-            // Cacheamos la referencia a la salud del enemigo para pasarla a la parte vulnerable.
-            healthController = GetComponent<EnemyHealthController>();
+            HealthController = GetComponent<EnemyHealthController>();
 
-            // Inicializamos los pools de rocas y sombras
-            rockPool = new ObjectPool<RockController>(rockPrefab, rockPoolSize, transform);
+            // Inicializamos los pools de objetos que gestionará este controlador.
+            if (rockPrefab != null)
+                RockPool = new ObjectPool<RockController>(rockPrefab, rockPoolSize, transform);
+
             if (shadowPrefab != null)
-                shadowPool = new ObjectPool<ShadowController>(shadowPrefab, shadowPoolSize, transform);
+                ShadowPool = new ObjectPool<ShadowController>(shadowPrefab, shadowPoolSize, transform);
+
+            if (vulnerablePartPrefab != null)
+                VulnerablePartPool = new ObjectPool<VulnerablePartController>(vulnerablePartPrefab, vulnerablePartPoolSize, transform);
+
+            // Establecemos la estrategia inicial.
+            SetPhase(AttackPhase.Phase1);
         }
 
-        public void StartPhase1(Transform player)
+        private void Start()
         {
-            currentPhase = AttackPhase.Phase1;
-            if (phaseRoutine != null) StopCoroutine(phaseRoutine);
-            phaseRoutine = StartCoroutine(Phase1Routine(player));
+            // Al iniciar, comenzamos el ciclo de ataque automático.
+            StartCoroutine(AttackCycleRoutine());
         }
 
-        public void StartPhase2()
+        /// <summary>
+        /// Cambia la estrategia de ataque actual del enemigo.
+        /// </summary>
+        public void SetPhase(AttackPhase phase)
         {
-            currentPhase = AttackPhase.Phase2;
-            if (phaseRoutine != null) StopCoroutine(phaseRoutine);
-            phaseRoutine = StartCoroutine(Phase2Routine());
-        }
+            _currentPhase = phase; // Guardamos la fase actual para el ciclo.
 
-        public void StartPhase3(Transform player)
-        {
-            currentPhase = AttackPhase.Phase3;
-            if (phaseRoutine != null) StopCoroutine(phaseRoutine);
-            phaseRoutine = StartCoroutine(Phase3Routine(player));
-        }
-
-        private IEnumerator Phase1Routine(Transform player)
-        {
-            // Enemigo invulnerable, lanza grupos de piedras que caen cerca del jugador.
-            for (int g = 0; g < numberOfGroups; g++)
+            switch (phase)
             {
-                for (int r = 0; r < rocksPerGroup; r++)
-                {
-                    // 1. Calcular la posición de spawn de la roca en el cielo
-                    Vector3 spawnCenter = player.position;
-                    Vector3 spawnPos = spawnCenter + Vector3.up * rockSpawnHeight + Random.insideUnitSphere * rockSpawnRadius;
-
-                    // 2. Lanzar un Raycast hacia abajo para encontrar el punto de impacto en el suelo
-                    GameObject shadowInstance = null;
-                    if (shadowPool != null && Physics.Raycast(spawnPos, Vector3.down, out RaycastHit hit, 100f, groundLayer))
-                    {
-                        // 3. Obtener una sombra del pool y posicionarla en el punto de impacto
-                        shadowInstance = shadowPool.Get();
-                        if (shadowInstance != null)
-                        {
-                            // Posicionamos la sombra en el suelo y ligeramente elevada para evitar Z-fighting
-                            shadowInstance.transform.position = hit.point + new Vector3(0, 0.01f, 0);
-                            shadowInstance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                            shadowInstance.SetActive(true);
-                        }
-                    }
-
-                    // 4. Obtener una roca del pool, posicionarla y activarla
-                    GameObject rock = rockPool.Get();
-                    if (rock == null) continue;
-
-                    rock.transform.position = spawnPos;
-                    rock.transform.rotation = Quaternion.identity;
-                    rock.SetActive(true);
-                    rock.GetComponent<RockController>()?.Initialize(rockPool, shadowInstance);
-                    
-                    if (spawnDelayWithinGroup > 0)
-                        yield return new WaitForSeconds(spawnDelayWithinGroup);
-                }
-                // Intervalo entre grupos de rocas.
-                yield return new WaitForSeconds(intervalBetweenGroups);
+                case AttackPhase.Phase1:
+                    _currentStrategy = _phase1Strategy;
+                    break;
+                case AttackPhase.Phase2:
+                    _currentStrategy = _phase2Strategy;
+                    break;
+                case AttackPhase.Phase3:
+                    _currentStrategy = _phase3Strategy;
+                    break;
             }
         }
 
-        private IEnumerator Phase2Routine()
+        /// <summary>
+        /// Inicia el ataque usando la estrategia actual.
+        /// </summary>
+        public void StartAttack(Transform player)
         {
-            // Enemigo ataca con parte vulnerable. La parte vulnerable se autodestruirá.
-            GameObject partObject = Instantiate(vulnerablePartPrefab, vulnerableSpawnPoint.position, Quaternion.identity);
-            
-            // Inyectamos la dependencia de la salud del enemigo.
-            var vulnerableController = partObject.GetComponent<VulnerablePartController>();
-            if (vulnerableController != null)
+            if (_currentStrategy == null)
             {
-                vulnerableController.Initialize(healthController);
-            }
-            else
-            {
-                #if UNITY_EDITOR
-                Debug.LogWarning("El prefab de la parte vulnerable no tiene el componente VulnerablePartController.");
-                #endif
+                Debug.LogError("No se ha asignado una estrategia de ataque.", this);
+                return;
             }
 
-            // La corutina termina aquí. Ya no es responsable de destruir la parte vulnerable.
-            yield break;
+            if (_currentAttackCoroutine != null)
+            {
+                StopCoroutine(_currentAttackCoroutine);
+            }
+
+            _currentAttackCoroutine = _currentStrategy.Execute(this, player);
         }
 
-        private IEnumerator Phase3Routine(Transform player)
+        /// <summary>
+        /// Obtiene una parte vulnerable del pool y la posiciona.
+        /// </summary>
+        public GameObject GetVulnerablePartFromPool()
         {
-            // Enemigo carga ataque apuntando al jugador
-            float timer = 0f;
-            while (timer < chargeTime)
+            if (VulnerablePartPool == null || vulnerableSpawnPoint == null)
             {
-                targetPosition = player.position;
-                attackDirection = (targetPosition - transform.position).normalized;
-                timer += Time.deltaTime;
-                yield return null;
+                Debug.LogWarning("VulnerablePartPool o VulnerableSpawnPoint no están configurados en EnemyAttackController.", this);
+                return null;
             }
-            // Ataque en línea recta hacia la última posición del jugador
-            float attackTimer = 0f;
-            while (attackTimer < attackDuration)
+
+            var partInstance = VulnerablePartPool.Get();
+            partInstance.transform.position = vulnerableSpawnPoint.position;
+            partInstance.transform.rotation = vulnerableSpawnPoint.rotation;
+            partInstance.gameObject.SetActive(true);
+            return partInstance.gameObject;
+        }
+
+        /// <summary>
+        /// Corrutina que gestiona el ciclo de ataque del enemigo.
+        /// </summary>
+        private IEnumerator AttackCycleRoutine()
+        {
+            // Esperamos un frame para asegurar que todo esté inicializado.
+            yield return null;
+
+            // Buscamos al jugador una sola vez al inicio del combate.
+            var player = GameObject.FindGameObjectWithTag("Player")?.transform;
+            if (player == null)
             {
-                transform.position += attackDirection * attackSpeed * Time.deltaTime;
-                attackTimer += Time.deltaTime;
-                yield return null;
+                Debug.LogError("Player no encontrado. El ciclo de ataque no puede comenzar.", this);
+                yield break;
+            }
+
+            // El ciclo se repite mientras el enemigo esté vivo.
+            while (HealthController.Health.CurrentValue > 0)
+            {
+                // Ejecutamos el ataque de la estrategia actual.
+                StartAttack(player);
+
+                // Esperamos a que la corrutina del ataque actual termine.
+                if (_currentAttackCoroutine != null)
+                    yield return _currentAttackCoroutine;
+
+                // Esperamos un tiempo antes de pasar a la siguiente fase.
+                yield return new WaitForSeconds(_timeBetweenPhases);
+
+                // Pasamos a la siguiente fase en el ciclo.
+                SetPhase((AttackPhase)(((int)_currentPhase + 1) % System.Enum.GetValues(typeof(AttackPhase)).Length));
             }
         }
     }
