@@ -1,5 +1,5 @@
 using UnityEngine;
-using ProyectSecret.Utils;
+using UnityEngine.Pool;
 using ProyectSecret.Managers;
 using ProyectSecret.Interfaces;
 using ProyectSecret.Audio;
@@ -19,7 +19,7 @@ namespace ProyectSecret.Enemies
         [Header("Gameplay")]
         [SerializeField] private int damage = 10;
         
-        private ObjectPool<RockController> rockPool;
+        private IObjectPool<RockController> rockPool;
         private GameObject shadowInstance;
         private Rigidbody rb;
 
@@ -33,7 +33,7 @@ namespace ProyectSecret.Enemies
         /// Asigna el pool al que esta roca debe regresar.
         /// También recibe la instancia de la sombra que debe desactivar.
         /// </summary>
-        public void Initialize(ObjectPool<RockController> objectPool, GameObject shadow)
+        public void Initialize(IObjectPool<RockController> objectPool, GameObject shadow)
         {
             rockPool = objectPool;
             shadowInstance = shadow;
@@ -61,7 +61,7 @@ namespace ProyectSecret.Enemies
             if ((groundLayer.value & (1 << collision.gameObject.layer)) > 0)
             {
                 PlayImpactEffects(collision.contacts[0].point);
-                rockPool?.Return(gameObject);
+                rockPool?.Release(this);
             }
             // También nos devolvemos al pool si chocamos con el jugador.
             else if (collision.gameObject.CompareTag("Player"))
@@ -74,7 +74,7 @@ namespace ProyectSecret.Enemies
                 {
                     damageable.TakeDamage(damage);
                 }
-                rockPool?.Return(gameObject);
+                rockPool?.Release(this);
             }
         }
 

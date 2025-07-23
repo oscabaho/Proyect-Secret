@@ -38,19 +38,16 @@ namespace ProyectSecret.Enemies.Strategies
                     Vector3 spawnPos = spawnCenter + Vector3.up * config.rockSpawnHeight + Random.insideUnitSphere * config.rockSpawnRadius;
 
                     GameObject shadowInstance = null;
-                    if (controller.ShadowPool != null && Physics.Raycast(spawnPos, Vector3.down, out RaycastHit hit, 100f, config.groundLayer))
+                    if (controller.ShadowPool != null && Physics.Raycast(spawnPos, Vector3.down, out RaycastHit hit, 100f, config.groundLayer) && controller.ShadowPool.Get() is var shadowController && shadowController != null)
                     {
-                        shadowInstance = controller.ShadowPool.Get();
-                        if (shadowInstance != null)
-                        {
-                            shadowInstance.transform.position = hit.point + new Vector3(0, 0.01f, 0);
-                            shadowInstance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-                            shadowInstance.SetActive(true);
-                        }
+                        shadowInstance = shadowController.gameObject;
+                        shadowInstance.transform.position = hit.point + new Vector3(0, 0.01f, 0);
+                        shadowInstance.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
                     }
 
-                    GameObject rockGO = controller.RockPool.Get();
-                    if (rockGO == null) continue;
+                    var rock = controller.RockPool.Get();
+                    if (rock == null) continue;
+                    var rockGO = rock.gameObject;
 
                     rockGO.transform.position = spawnPos;
                     rockGO.transform.rotation = Quaternion.identity;

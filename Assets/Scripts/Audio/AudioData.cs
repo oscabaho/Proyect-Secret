@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Audio;
+using ProyectSecret.Managers; // Para el AudioManager
 
 namespace ProyectSecret.Audio
 {
@@ -44,7 +45,7 @@ namespace ProyectSecret.Audio
         /// </summary>
         public void Play()
         {
-            AudioPoolManager.Instance?.Play(this);
+            Managers.AudioManager.Instance?.PlaySound2D(this);
         }
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace ProyectSecret.Audio
         /// </summary>
         public void PlayAtPoint(Vector3 position)
         {
-            AudioPoolManager.Instance?.PlayAtPoint(this, position);
+            Managers.AudioManager.Instance?.PlaySound3D(this, position);
         }
 
         public AudioClip GetClip()

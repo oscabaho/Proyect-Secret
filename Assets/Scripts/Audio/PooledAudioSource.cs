@@ -35,31 +35,27 @@ namespace ProyectSecret.Audio
         /// <summary>
         /// Inicia la reproducción del clip de audio con una configuración específica.
         /// </summary>
-        /// <param name="clip">El clip de audio a reproducir.</param>
-        /// <param name="volume">El volumen del sonido (0.0 a 1.0).</param>
-        /// <param name="pitch">El pitch del sonido.</param>
-        /// <param name="loop">Indica si el sonido debe reproducirse en bucle.</param>
-        /// <param name="spatialBlend">Mezcla espacial del sonido (0.0 para 2D, 1.0 para 3D).</param>
-        public void Play(AudioClip clip, float volume = 1f, float pitch = 1f, bool loop = false, float spatialBlend = 0.0f)
+        public void Play(AudioData audioData, float spatialBlend = 1.0f, bool forceLoop = false)
         {
-            if (clip == null)
+            if (audioData == null || audioData.clips.Length == 0)
             {
                 Debug.LogWarning("Se intentó reproducir un AudioClip nulo. Devolviendo al pool de inmediato.");
                 ReturnToPool();
                 return;
             }
 
-            gameObject.name = $"Pooled Audio - {clip.name}";
+            gameObject.name = $"Pooled Audio - {audioData.name}";
 
-            _audioSource.clip = clip;
-            _audioSource.volume = volume;
-            _audioSource.pitch = pitch;
-            _audioSource.loop = loop;
+            _audioSource.clip = audioData.GetClip();
+            _audioSource.volume = audioData.GetVolume();
+            _audioSource.pitch = audioData.GetPitch();
+            _audioSource.loop = forceLoop || audioData.loop;
+            _audioSource.outputAudioMixerGroup = audioData.outputMixerGroup;
             _audioSource.spatialBlend = spatialBlend;
             
             _audioSource.Play();
 
-            if (!loop)
+            if (!_audioSource.loop)
             {
                 _returnToPoolCoroutine = StartCoroutine(ReturnToPoolWhenFinished());
             }

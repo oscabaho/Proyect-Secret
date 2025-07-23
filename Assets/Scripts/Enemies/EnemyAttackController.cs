@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using ProyectSecret.VFX;
-using ProyectSecret.Utils;
+using UnityEngine.Pool;
 using ProyectSecret.Enemies.Strategies;
 using ProyectSecret.Characters.Enemies;
 
@@ -38,10 +38,10 @@ namespace ProyectSecret.Enemies
         [SerializeField] private int vulnerablePartPoolSize = 5;
 
         // Propiedades públicas para que las estrategias accedan a los recursos.
-        public ObjectPool<RockController> RockPool { get; private set; }
-        public ObjectPool<ShadowController> ShadowPool { get; private set; }
+        public IObjectPool<RockController> RockPool { get; private set; }
+        public IObjectPool<ShadowController> ShadowPool { get; private set; }
         public EnemyHealthController HealthController { get; private set; }
-        public ObjectPool<VulnerablePartController> VulnerablePartPool { get; private set; }
+        public IObjectPool<VulnerablePartController> VulnerablePartPool { get; private set; }
         public Transform VulnerableSpawnPoint => vulnerableSpawnPoint;
 
         private AttackStrategy _currentStrategy;
@@ -53,14 +53,27 @@ namespace ProyectSecret.Enemies
             HealthController = GetComponent<EnemyHealthController>();
 
             // Inicializamos los pools de objetos que gestionará este controlador.
-            if (rockPrefab != null)
-                RockPool = new ObjectPool<RockController>(rockPrefab, rockPoolSize, transform);
+            if (rockPrefab != null) {
+                RockPool = new ObjectPool<RockController>(
+                    () => Instantiate(rockPrefab, transform).GetComponent<RockController>(),
+                    OnGetFromPool, OnReleaseToPool, OnDestroyPooledObject, true, rockPoolSize
+                );
+            }
 
-            if (shadowPrefab != null)
-                ShadowPool = new ObjectPool<ShadowController>(shadowPrefab, shadowPoolSize, transform);
+            if (shadowPrefab != null) {
+                ShadowPool = new ObjectPool<ShadowController>(
+                    () => Instantiate(shadowPrefab, transform).GetComponent<ShadowController>(),
+                    OnGetFromPool, OnReleaseToPool, OnDestroyPooledObject, true, shadowPoolSize
+                );
+            }
 
-            if (vulnerablePartPrefab != null)
-                VulnerablePartPool = new ObjectPool<VulnerablePartController>(vulnerablePartPrefab, vulnerablePartPoolSize, transform);
+            if (vulnerablePartPrefab != null) {
+                VulnerablePartPool = new ObjectPool<VulnerablePartController>(
+                    () => Instantiate(vulnerablePartPrefab, transform).GetComponent<VulnerablePartController>(),
+                    OnGetFromPool, OnReleaseToPool, OnDestroyPooledObject, true, vulnerablePartPoolSize
+                );
+            }
+
 
             // Establecemos la estrategia inicial.
             SetPhase(AttackPhase.Phase1);
@@ -123,11 +136,10 @@ namespace ProyectSecret.Enemies
                 return null;
             }
 
-            var partInstance = VulnerablePartPool.Get();
+            var partInstance = VulnerablePartPool.Get(); // Esto ahora devuelve el componente
             partInstance.transform.position = vulnerableSpawnPoint.position;
             partInstance.transform.rotation = vulnerableSpawnPoint.rotation;
-            partInstance.gameObject.SetActive(true);
-            return partInstance.gameObject;
+            return partInstance.gameObject; // El pool se encarga de activarlo
         }
 
         /// <summary>
@@ -163,5 +175,20 @@ namespace ProyectSecret.Enemies
                 SetPhase((AttackPhase)(((int)_currentPhase + 1) % System.Enum.GetValues(typeof(AttackPhase)).Length));
             }
         }
+        
+        #region Pool Management Methods
+        private void OnGetFromPool<T>(T obj) where T : MonoBehaviour
+        {
+            obj.gameObject.SetActive(true);
+        }
+        private void OnReleaseToPool<T>(T obj) where T : MonoBehaviour
+        {
+            obj.gameObject.SetActive(false);
+        }
+        private void OnDestroyPooledObject<T>(T obj) where T : MonoBehaviour
+        {
+            Destroy(obj.gameObject);
+        }
+        #endregion
     }
 }

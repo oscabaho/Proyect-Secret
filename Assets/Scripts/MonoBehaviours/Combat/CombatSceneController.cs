@@ -13,7 +13,6 @@ namespace ProyectSecret.Combat.SceneManagement
     public class CombatSceneController : MonoBehaviour
     {
         [Header("Configuración de Secuencia")]
-        [SerializeField] private float delayAfterVictory = 2f;
         [SerializeField] private float delayAfterDefeat = 1.5f;
 
         [Header("Datos Persistentes")]

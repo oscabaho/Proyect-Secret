@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using ProyectSecret.Utils;
+using UnityEngine.Pool; // <-- Cambiar
 
 namespace ProyectSecret.VFX
 {
@@ -16,7 +16,7 @@ namespace ProyectSecret.VFX
         /// <summary>
         /// El pool de objetos al que pertenece esta instancia.
         /// </summary>
-        public ObjectPool<PooledParticleSystem> Pool { get; set; }
+        public IObjectPool<PooledParticleSystem> Pool { get; set; } // <-- Cambiar tipo
 
         private void Awake()
         {
@@ -35,7 +35,7 @@ namespace ProyectSecret.VFX
             yield return new WaitWhile(() => _particleSystem.IsAlive(true));
 
             // Una vez terminado, nos devolvemos al pool.
-            Pool?.Return(gameObject);
+            Pool?.Release(this); // <-- Cambiar método
         }
     }
 }

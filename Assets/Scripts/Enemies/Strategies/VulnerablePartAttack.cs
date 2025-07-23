@@ -21,15 +21,10 @@ namespace ProyectSecret.Enemies.Strategies
             {
                 // La estrategia le pide al controlador una parte vulnerable del pool.
                 // El controlador gestiona el pool y la posiciona.
-                GameObject partObject = controller.GetVulnerablePartFromPool();
-                
-                if (partObject != null)
+                var partObject = controller.GetVulnerablePartFromPool();
+                if (partObject != null && partObject.TryGetComponent<VulnerablePartController>(out var vulnerableController))
                 {
-                    var vulnerableController = partObject.GetComponent<VulnerablePartController>();
-                    if (vulnerableController != null)
-                    {
-                        vulnerableController.Initialize(controller.HealthController, controller.VulnerablePartPool);
-                    }
+                    vulnerableController.Initialize(controller.HealthController, controller.VulnerablePartPool);
                 }
             }
             yield break; // La corrutina termina inmediatamente después de instanciar.

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using ProyectSecret.Interfaces;
 
 namespace ProyectSecret.MonoBehaviours.Player
@@ -7,56 +6,35 @@ namespace ProyectSecret.MonoBehaviours.Player
     /// <summary>
     /// Gestiona la interacción del jugador con el mundo (NPCs, objetos, etc.).
     /// </summary>
+    [RequireComponent(typeof(PlayerInputController))]
     public class PlayerInteractionController : MonoBehaviour
     {
-        [Header("Input")]
-        [Tooltip("El asset de Input Actions que contiene la acción de interactuar.")]
-        [SerializeField] private InputActionAsset inputActions;
-        [Tooltip("El nombre de la acción de interactuar definida en el Input Action Asset.")]
-        [SerializeField] private string interactionActionName = "Interact";
-        
-        private Camera mainCamera;
         private InteractionDetector interactionDetector;
-        private InputAction interactAction;
         private IInteractable currentInteractable;
+        private PlayerInputController inputController;
 
         private void Awake()
         {
-            mainCamera = Camera.main;
             interactionDetector = GetComponentInChildren<InteractionDetector>();
-
-            if (inputActions != null)
-            {
-                // Asumimos que la acción está en el mapa "PlayerDay"
-                var actionMap = inputActions.FindActionMap("PlayerDay");
-                if (actionMap != null)
-                {
-                    interactAction = actionMap.FindAction(interactionActionName);
-                }
-            }
+            inputController = GetComponent<PlayerInputController>();
 
             if (interactionDetector == null)
             {
                 Debug.LogError("PlayerInteractionController: No se encontró un InteractionDetector en los hijos. Este componente es necesario para detectar objetos interactuables.", this);
+                enabled = false;
             }
         }
 
         private void OnEnable()
         {
-            if (interactAction != null)
-            {
-                interactAction.Enable();
-                interactAction.performed += PerformInteraction;
-            }
+            if (inputController != null)
+                inputController.OnInteractPressed += PerformInteraction;
         }
 
         private void OnDisable()
         {
-            if (interactAction != null)
-            {
-                interactAction.performed -= PerformInteraction;
-                interactAction.Disable();
-            }
+            if (inputController != null)
+                inputController.OnInteractPressed -= PerformInteraction;
         }
 
         private void Update()
@@ -72,7 +50,7 @@ namespace ProyectSecret.MonoBehaviours.Player
         }
 
         // Este método solo se llama cuando se presiona el botón de interactuar.
-        private void PerformInteraction(InputAction.CallbackContext context)
+        private void PerformInteraction()
         {
             // Si tenemos un interactuable a la vista, llamamos a su método Interact.
             if (currentInteractable != null)

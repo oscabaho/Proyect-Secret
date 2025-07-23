@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using ProyectSecret.Utils;
+using UnityEngine.Pool; // <-- Añadir
 using ProyectSecret.Events;
 
 namespace ProyectSecret.VFX
@@ -21,7 +21,7 @@ namespace ProyectSecret.VFX
         [Header("Configuración de Pools de VFX")]
         [SerializeField] private List<VfxPoolConfig> _vfxPoolsConfig;
         
-        private Dictionary<string, ObjectPool<PooledParticleSystem>> _vfxPools;
+        private Dictionary<string, IObjectPool<PooledParticleSystem>> _vfxPools; // <-- Cambiar tipo
         
         private void Awake()
         {
@@ -42,7 +42,7 @@ namespace ProyectSecret.VFX
 
         private void InitializePools()
         {
-            _vfxPools = new Dictionary<string, ObjectPool<PooledParticleSystem>>();
+            _vfxPools = new Dictionary<string, IObjectPool<PooledParticleSystem>>(); // <-- Cambiar tipo
             foreach (var config in _vfxPoolsConfig)
             {
                 if (config.Prefab == null)
@@ -57,8 +57,16 @@ namespace ProyectSecret.VFX
                     continue;
                 }
 
-                var pool = new ObjectPool<PooledParticleSystem>(config.Prefab, config.InitialSize, transform);
-                _vfxPools[config.Key] = pool;
+                // Usar el ObjectPool de Unity
+                var pool = new ObjectPool<PooledParticleSystem>(
+                    () => CreatePooledVFX(config.Prefab),
+                    OnGetFromPool,
+                    OnReleaseToPool,
+                    OnDestroyPooledVFX,
+                    true,
+                    config.InitialSize
+                );
+                _vfxPools[config.Key] = pool; // <-- Asignar el nuevo pool
             }
         }
 
@@ -83,10 +91,11 @@ namespace ProyectSecret.VFX
                 return null;
             }
             
-            GameObject vfxObject = _vfxPools[key].Get();
+            var vfxInstance = _vfxPools[key].Get();
+            if (vfxInstance == null) return null;
+            var vfxObject = vfxInstance.gameObject;
             if (vfxObject == null) return null;
 
-            var vfxInstance = vfxObject.GetComponent<PooledParticleSystem>();
             if (vfxInstance == null)
             {
                 Debug.LogError($"VFXManager: El objeto del pool para la clave '{key}' no tiene el componente 'PooledParticleSystem'. El prefab está mal configurado.");
@@ -95,13 +104,42 @@ namespace ProyectSecret.VFX
                 return null;
             }
             
-            vfxInstance.Pool = _vfxPools[key]; // Asumo que PooledParticleSystem tiene esta propiedad.
-
             vfxInstance.transform.position = position;
             vfxInstance.transform.rotation = rotation ?? Quaternion.identity;
-            vfxObject.SetActive(true);
+            
             return vfxObject;
         }
+
+        #region Métodos de Gestión del Pool (Nuevos)
+
+        private PooledParticleSystem CreatePooledVFX(GameObject prefab)
+        {
+            var go = Instantiate(prefab, transform);
+            var pooledVfx = go.GetComponent<PooledParticleSystem>();
+            // La clave del diccionario es necesaria para saber a qué pool devolverlo
+            string key = _vfxPoolsConfig.Find(c => c.Prefab == prefab)?.Key;
+            if (key != null)
+            {
+                pooledVfx.Pool = _vfxPools[key];
+            }
+            return pooledVfx;
+        }
+
+        private void OnGetFromPool(PooledParticleSystem vfx)
+        {
+            vfx.gameObject.SetActive(true);
+        }
+
+        private void OnReleaseToPool(PooledParticleSystem vfx)
+        {
+            vfx.gameObject.SetActive(false);
+        }
+
+        private void OnDestroyPooledVFX(PooledParticleSystem vfx)
+        {
+            Destroy(vfx.gameObject);
+        }
+        #endregion
 
         private void OnPlayVFXRequest(PlayVFXRequest request)
         {

@@ -2,6 +2,7 @@ using UnityEngine;
 using ProyectSecret.Combat.SceneManagement;
 using ProyectSecret.Inventory;
 using MonoBehaviours.Enemies;
+using ProyectSecret.Managers; // Para el AudioManager
 using ProyectSecret.Events;
 
 namespace ProyectSecret.Combat.SceneManagement
@@ -39,7 +40,15 @@ namespace ProyectSecret.Combat.SceneManagement
                     kryptonite.CheckKryptonite(player);
                 }
             }
-            SoundManager.Instancia.IniciarMusica(Music);
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayMusic(Music);
+            }
+            else
+            {
+                Debug.LogWarning("CombatSceneInitializer: Instancia de AudioManager no encontrada. La música de fondo no se reproducirá.");
+            }
+
             transferData.Clear();
         }
     }

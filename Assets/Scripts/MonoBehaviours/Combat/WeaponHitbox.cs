@@ -1,13 +1,14 @@
 using UnityEngine;
 using ProyectSecret.Inventory;
 using ProyectSecret.Interfaces;
-using ProyectSecret.VFX;
 using ProyectSecret.Events;
+using UnityEngine.Pool;
 
 namespace ProyectSecret.Combat.Behaviours
 {
     /// <summary>
     /// Script para el GameObject de un arma (espada, hacha, daga). Detecta colisiones con enemigos y aplica daño usando el WeaponItem equipado.
+    /// Ahora es compatible con el sistema de Object Pooling.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class WeaponHitbox : MonoBehaviour
@@ -15,6 +16,9 @@ namespace ProyectSecret.Combat.Behaviours
         private WeaponInstance weaponInstance;
         private GameObject owner;
         private bool canDamage = false;
+
+        // AÑADIDO: Propiedad para guardar la referencia al pool del que salió.
+        public IObjectPool<WeaponHitbox> Pool { get; set; }
 
         public void Initialize(WeaponInstance instance, GameObject weaponOwner)
         {
@@ -24,6 +28,18 @@ namespace ProyectSecret.Combat.Behaviours
 
         public void EnableDamage() => canDamage = true;
         public void DisableDamage() => canDamage = false;
+
+        // AÑADIDO: Cuando el objeto se desactiva, se devuelve al pool.
+        private void OnDisable()
+        {
+            // Reseteamos el estado para la próxima vez que se use.
+            canDamage = false;
+            weaponInstance = null;
+            owner = null;
+            
+            // Si este objeto pertenece a un pool, lo devolvemos.
+            Pool?.Release(this);
+        }
 
         private void OnTriggerEnter(Collider other)
         {
@@ -54,6 +70,7 @@ namespace ProyectSecret.Combat.Behaviours
                 }
                 weaponInstance.DecreaseDurability(durabilityLoss);
                 
+                // Desactivamos el daño para evitar golpes múltiples en un solo ataque.
                 DisableDamage();
             }
         }

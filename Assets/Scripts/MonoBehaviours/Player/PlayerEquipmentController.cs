@@ -9,24 +9,19 @@ using ProyectSecret.MonoBehaviours.Player;
 using ProyectSecret.Combat.SceneManagement;
 using ProyectSecret.Managers; // Para el HitboxManager
 
-// Asumo que tu controlador está en un namespace similar a este.
 namespace ProyectSecret.Characters.Player
 {
     public class PlayerEquipmentController : MonoBehaviour, IPlayerEquipmentController, IPersistentData
     {
-        // El punto de anclaje del arma ahora se obtiene del PlayerPointSwitcher.
         private PlayerPointSwitcher pointSwitcher;
-
         private GameObject currentWeaponVisual;
         private GameObject currentHitboxInstance;
         
-        // Propiedades de la interfaz IPlayerEquipmentController
         public WeaponInstance EquippedWeaponInstance { get; private set; }
-        public EquipmentSlots EquipmentSlots { get; private set; } // Asumo que tienes esta clase
+        public EquipmentSlots EquipmentSlots { get; private set; }
 
         private void Awake()
         {
-            // Inicializar EquipmentSlots si es necesario
             EquipmentSlots = new EquipmentSlots();
             pointSwitcher = GetComponent<PlayerPointSwitcher>();
 
@@ -38,12 +33,8 @@ namespace ProyectSecret.Characters.Player
 
         public void EquipWeapon(WeaponItem weaponItem)
         {
-            // 1. Desequipar siempre el arma actual para asegurar un estado limpio.
             UnequipWeapon();
-
             if (weaponItem == null) return;
-
-            // 2. Crear la instancia lógica del arma (con su durabilidad, etc.).
             var weaponInstance = new WeaponInstance(weaponItem);
             EquipWeaponInstance(weaponInstance);
         }
@@ -54,22 +45,16 @@ namespace ProyectSecret.Characters.Player
 
             EquippedWeaponInstance = instance;
 
-            // 3. Instanciar el prefab visual del arma.
             if (instance.WeaponData.WeaponPrefab != null && pointSwitcher?.ActiveWeaponPoint != null)
             {
                 currentWeaponVisual = Instantiate(instance.WeaponData.WeaponPrefab, pointSwitcher.ActiveWeaponPoint);
-                // Es una buena práctica resetear la transformación local.
                 currentWeaponVisual.transform.localPosition = Vector3.zero;
                 currentWeaponVisual.transform.localRotation = Quaternion.identity;
                 currentWeaponVisual.transform.localScale = Vector3.one;
             }
 
-            // Notificar al item que ha sido equipado y publicar el evento
             instance.WeaponData?.OnEquip(gameObject);
             GameEventBus.Instance?.Publish(new PlayerWeaponEquippedEvent(gameObject, instance));
-
-            // Aquí podrías notificar a otros sistemas (ej. animador) que se ha equipado un arma.
-            // Por ejemplo: animator.SetInteger("WeaponType", (int)weaponItem.Type);
         }
 
         public void UnequipWeapon()
@@ -87,7 +72,6 @@ namespace ProyectSecret.Characters.Player
             }
 
             EquippedWeaponInstance = null;
-            // Notificar a otros sistemas que no hay arma equipada.
         }
 
         public bool Attack()
@@ -101,12 +85,19 @@ namespace ProyectSecret.Characters.Player
             if (weaponData.HitBoxPrefab == null || hitboxSpawnPoint == null)
                 return false;
 
-            // Obtener la hitbox del pool en lugar de instanciarla.
+            // 1. Obtener la hitbox del pool. Vendrá desactivada.
             var hitbox = HitboxManager.Instance?.Get(weaponData.HitBoxPrefab);
             if (hitbox == null) return false;
 
             currentHitboxInstance = hitbox.gameObject;
-            currentHitboxInstance.transform.SetParent(hitboxSpawnPoint, false); // false para no usar world position
+
+            // 2. Posicionar y emparentar la hitbox ANTES de activarla.
+            currentHitboxInstance.transform.SetParent(hitboxSpawnPoint, false);
+            currentHitboxInstance.transform.localPosition = Vector3.zero;
+            currentHitboxInstance.transform.localRotation = Quaternion.identity;
+            
+            // 3. Activar el GameObject.
+            currentHitboxInstance.SetActive(true);
 
             // Reproducir el VFX de ataque si está definido en el arma.
             if (!string.IsNullOrEmpty(weaponData.AttackVfxKey))
@@ -114,10 +105,9 @@ namespace ProyectSecret.Characters.Player
                 GameEventBus.Instance?.Publish(new PlayVFXRequest(weaponData.AttackVfxKey, hitboxSpawnPoint.position, hitboxSpawnPoint.rotation));
             }
 
+            // 4. Inicializar y empezar el ciclo de vida del ataque.
             hitbox.Initialize(EquippedWeaponInstance, gameObject);
             hitbox.EnableDamage();
-            // Usamos una corutina para desactivar la hitbox después de un tiempo.
-            // La hitbox se devolverá al pool automáticamente en su OnDisable.
             StartCoroutine(HitboxLifecycle(hitbox, weaponData.AttackDuration));
 
             return true;
@@ -126,18 +116,22 @@ namespace ProyectSecret.Characters.Player
         private IEnumerator HitboxLifecycle(WeaponHitbox hitbox, float duration)
         {
             yield return new WaitForSeconds(duration);
-            if (hitbox != null && hitbox.gameObject.activeSelf)
+            
+            // Comprobamos que la hitbox y su GameObject todavía existen antes de intentar desactivarlos.
+            if (hitbox != null && hitbox.gameObject != null && hitbox.gameObject.activeSelf)
             {
                 hitbox.DisableDamage();
-                hitbox.gameObject.SetActive(false); // Esto activará OnDisable y lo devolverá al pool.
-                currentHitboxInstance = null;
+                // Al desactivar el GameObject, se llamará a OnDisable() en WeaponHitbox,
+                // que lo devolverá al pool automáticamente.
+                hitbox.gameObject.SetActive(false); 
             }
+            // Nos aseguramos de limpiar la referencia para poder atacar de nuevo.
+            currentHitboxInstance = null;
         }
 
         public bool CanAttack()
         {
-            // Comprobar si se puede atacar (ej. no estar en cooldown).
-            return EquippedWeaponInstance != null;
+            return EquippedWeaponInstance != null && currentHitboxInstance == null;
         }
 
         #region IPersistentData Implementation

@@ -2,7 +2,7 @@ using UnityEngine;
 using ProyectSecret.Interfaces;
 using System.Collections;
 using ProyectSecret.Characters.Enemies;
-using ProyectSecret.Utils;
+using UnityEngine.Pool;
 
 namespace ProyectSecret.Enemies
 {
@@ -12,13 +12,13 @@ namespace ProyectSecret.Enemies
 
         private bool isVulnerable = true;
         private EnemyHealthController enemyHealth;
-        private ObjectPool<VulnerablePartController> pool;
+        private IObjectPool<VulnerablePartController> pool;
 
         /// <summary>
         /// Inicializa la parte vulnerable con una referencia a la salud del enemigo.
         /// Debe ser llamado por quien lo instancia.
         /// </summary>
-        public void Initialize(EnemyHealthController healthController, ObjectPool<VulnerablePartController> objectPool)
+        public void Initialize(EnemyHealthController healthController, IObjectPool<VulnerablePartController> objectPool)
         {
             enemyHealth = healthController;
             pool = objectPool;
@@ -38,7 +38,7 @@ namespace ProyectSecret.Enemies
             // Desactivar la vulnerabilidad y destruir el objeto.
             isVulnerable = false;
             // En lugar de destruir, lo devolvemos al pool.
-            pool?.Return(gameObject);
+            pool?.Release(this);
         }
 
         public void TakeDamage(int amount)
