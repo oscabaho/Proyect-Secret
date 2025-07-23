@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 1317727103616064570}
   - component: {fileID: 7296991844085750038}
   - component: {fileID: 979337658453597284}
-  - component: {fileID: 3523320565264467112}
   - component: {fileID: 3871167729824150885}
+  - component: {fileID: 7434334369984065274}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -72,20 +72,6 @@ MonoBehaviour:
   health:
     maxValue: 100
     currentValue: 0
---- !u!114 &3523320565264467112
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1281455627540334402}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 205e97bfbb7fbdf478910358da0dee3c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  healthBehaviour: {fileID: 0}
-  fadeDuration: 2
 --- !u!114 &3871167729824150885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105,8 +91,24 @@ MonoBehaviour:
   shadowPrefab: {fileID: 9198125988489550430, guid: bec4c592ef79e004d9db050391d10ce8, type: 3}
   vulnerablePartPrefab: {fileID: 0}
   vulnerableSpawnPoint: {fileID: 0}
+  _timeBetweenPhases: 2.5
   rockPoolSize: 20
   shadowPoolSize: 20
+  vulnerablePartPoolSize: 5
+--- !u!114 &7434334369984065274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1281455627540334402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 364efddc1128d034d9f42fb9163a0969, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthBehaviour: {fileID: 979337658453597284}
+  fadeDuration: 2
 --- !u!1 &7194818831569282296
 GameObject:
   m_ObjectHideFlags: 0

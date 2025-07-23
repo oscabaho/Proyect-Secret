@@ -22,13 +22,12 @@ namespace ProyectSecret.MonoBehaviours.Player
         {
             if (inventoryConfig == null)
             {
-                Debug.LogError("PlayerInventory: InventoryConfig no está asignado en el Inspector.", this);
-                inventoryModel = new InventoryModel(5); // Fallback a un valor por defecto
+                Debug.LogError("InventoryConfig no está asignado. El inventario no funcionará correctamente. Por favor, asigna un InventoryConfig en el Inspector.", this);
+                enabled = false; // Desactiva el componente si la configuración crítica falta.
+                return;
             }
-            else
-            {
-                inventoryModel = new InventoryModel(inventoryConfig.maxSlots);
-            }
+
+            inventoryModel = new InventoryModel(inventoryConfig.maxSlots);
             equipmentController = GetComponent<PlayerEquipmentController>();
             foreach (var item in initialItems)
             {
@@ -36,6 +35,17 @@ namespace ProyectSecret.MonoBehaviours.Player
                     AddItem(item); // Usar AddItem para publicar el evento
             }
         }
+
+#if UNITY_EDITOR
+        // Esta comprobación se ejecuta en el editor para advertir al desarrollador con antelación.
+        private void OnValidate()
+        {
+            if (inventoryConfig == null)
+            {
+                Debug.LogWarning("PlayerInventory: El campo InventoryConfig no está asignado. El componente no funcionará en tiempo de ejecución.", this);
+            }
+        }
+#endif
 
         public bool HasItem(string itemId)
         {

@@ -1,5 +1,6 @@
 using UnityEngine;
 using ProyectSecret.Interfaces;
+using ProyectSecret.Events;
 
 namespace ProyectSecret.MonoBehaviours.Player
 {
@@ -9,18 +10,21 @@ namespace ProyectSecret.MonoBehaviours.Player
     [RequireComponent(typeof(PlayerInputController))]
     public class PlayerInteractionController : MonoBehaviour
     {
-        private InteractionDetector interactionDetector;
+        [Header("Dependencias")]
+        [Tooltip("Referencia al componente InteractionDetector que está en un objeto hijo.")]
+        [SerializeField] private InteractionDetector interactionDetector;
+
         private IInteractable currentInteractable;
+        private IInteractable lastInteractable;
         private PlayerInputController inputController;
 
         private void Awake()
         {
-            interactionDetector = GetComponentInChildren<InteractionDetector>();
             inputController = GetComponent<PlayerInputController>();
 
             if (interactionDetector == null)
             {
-                Debug.LogError("PlayerInteractionController: No se encontró un InteractionDetector en los hijos. Este componente es necesario para detectar objetos interactuables.", this);
+                Debug.LogError("PlayerInteractionController: No se ha asignado un InteractionDetector en el Inspector. Este componente es necesario para detectar objetos interactuables.", this);
                 enabled = false;
             }
         }
@@ -42,10 +46,19 @@ namespace ProyectSecret.MonoBehaviours.Player
             // Constantemente revisa si hay algo interactuable en frente.
             if (interactionDetector != null)
             {
+                lastInteractable = currentInteractable;
                 // El detector nos da el interactuable más cercano en el trigger.
                 // Podrías añadir lógica adicional para ver si está en el campo de visión.
                 currentInteractable = interactionDetector.GetClosestInteractable(transform);
-                // Aquí podrías mostrar/ocultar un mensaje en la UI si currentInteractable no es nulo.
+
+                // Si el interactuable ha cambiado, publicamos eventos.
+                if (currentInteractable != lastInteractable)
+                {
+                    if (lastInteractable != null)
+                        GameEventBus.Instance.Publish(new InteractableOutOfRangeEvent(lastInteractable));
+                    if (currentInteractable != null)
+                        GameEventBus.Instance.Publish(new InteractableInRangeEvent(currentInteractable));
+                }
             }
         }
 

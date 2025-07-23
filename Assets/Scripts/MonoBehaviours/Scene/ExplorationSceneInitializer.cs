@@ -26,7 +26,6 @@ public class ExplorationSceneInitializer : MonoBehaviour
         var player = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
 
         InitializePlayerState(player);
-        InitializePlayerCamera(player);
         InitializeSceneAudio();
 
         // Publicar el evento al final, después de que todo esté listo.
@@ -84,26 +83,6 @@ public class ExplorationSceneInitializer : MonoBehaviour
         // Invalidar la posición guardada después de usarla, en todos los casos.
         playerPersistentData.HasSavedPosition = false;
     }
-
-    private void InitializePlayerCamera(GameObject player)
-    {
-        var playerMovement = player.GetComponent<PaperMarioPlayerMovement>();
-        if (playerMovement != null)
-        {
-            Camera cam = player.GetComponentInChildren<Camera>();
-            if (cam != null)
-            {
-                playerMovement.SetActiveCamera(cam);
-            }
-            else
-            {
-                #if UNITY_EDITOR
-                Debug.LogError("ExplorationSceneInitializer: No se encontró una cámara en los hijos del jugador instanciado.");
-                #endif
-            }
-        }
-    }
-
     private void InitializeSceneAudio()
     {
         if (AudioManager.Instance != null)

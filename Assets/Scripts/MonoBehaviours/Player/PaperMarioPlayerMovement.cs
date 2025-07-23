@@ -2,7 +2,7 @@ using UnityEngine;
 using ProyectSecret.MonoBehaviours.Player;
 
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(PlayerInputController))]
+[RequireComponent(typeof(PlayerInputController), typeof(PlayerCameraController))]
 public class PaperMarioPlayerMovement : MonoBehaviour
 {
     // Evento para notificar a otros componentes sobre el cambio de cámara
@@ -10,6 +10,7 @@ public class PaperMarioPlayerMovement : MonoBehaviour
 
     private PlayerPointSwitcher pointSwitcher;
     private PlayerInputController _input; // Referencia al nuevo InputController
+    private PlayerCameraController _cameraController; // Referencia al controlador de cámara
 
     [Header("Configuración de Movimiento")]
     [SerializeField] private float moveSpeed = 5f;
@@ -17,7 +18,6 @@ public class PaperMarioPlayerMovement : MonoBehaviour
 
     // Referencias a componentes
     private Rigidbody rb;
-    private Camera activeCamera;
 
     // Propiedades públicas de estado para que otros componentes puedan leerlas
     public bool IsGrounded { get; private set; } = true;
@@ -42,26 +42,12 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         pointSwitcher?.UpdateActivePoints(IsCameraInverted);
     }
 
-    public void SetActiveCamera(Camera cam)
-    {
-        activeCamera = cam;
-        if (activeCamera == null)
-        {
-            activeCamera = GetComponentInChildren<Camera>();
-        }
-    }
-
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         pointSwitcher = GetComponent<PlayerPointSwitcher>();
         _input = GetComponent<PlayerInputController>();
-
-        // La cámara activa es asignada por ExplorationSceneInitializer
-        if (activeCamera == null)
-        {
-            activeCamera = GetComponentInChildren<Camera>();
-        }
+        _cameraController = GetComponent<PlayerCameraController>();
     }
 
     void OnEnable()
@@ -91,7 +77,9 @@ public class PaperMarioPlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (_input != null && activeCamera != null)
+        Camera currentCam = _cameraController?.GetActiveCamera();
+
+        if (_input != null && currentCam != null)
         {
             Vector2 input = _input.MoveInput;
             
@@ -102,8 +90,8 @@ public class PaperMarioPlayerMovement : MonoBehaviour
                 input.y = -input.y;
             }
 
-            Vector3 camForward = activeCamera.transform.forward;
-            Vector3 camRight = activeCamera.transform.right;
+            Vector3 camForward = currentCam.transform.forward;
+            Vector3 camRight = currentCam.transform.right;
             camForward.y = 0f;
             camRight.y = 0f;
             camForward.Normalize();
@@ -131,7 +119,6 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         // Usamos un SphereCast para una detección de suelo más robusta que OnCollisionEnter.
         // Esto maneja mejor los bordes y las pendientes.
         float sphereRadius = 0.3f;
-        float checkDistance = 0.1f; // Distancia desde la base del jugador
         Vector3 spherePosition = transform.position + Vector3.up * (sphereRadius - 0.05f);
         IsGrounded = Physics.CheckSphere(spherePosition, sphereRadius, LayerMask.GetMask("Default"), QueryTriggerInteraction.Ignore);
     }
