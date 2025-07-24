@@ -1771,6 +1771,7 @@ GameObject:
   - component: {fileID: 760789967}
   - component: {fileID: 760789966}
   - component: {fileID: 760789968}
+  - component: {fileID: 760789969}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -1881,6 +1882,31 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!114 &760789969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760789965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5d56c7d3232cbb459eccee2247667c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  directionalLight: {fileID: 760789966}
+  dayDuration: 10
+  nightDuration: 10
+  dayLightColor: {r: 1, g: 1, b: 1, a: 1}
+  nightLightColor: {r: 0.2, g: 0.2, b: 0.5, a: 1}
+  dayIntensity: 1
+  nightIntensity: 0.2
+  daySkybox: {fileID: 0}
+  nightSkybox: {fileID: 0}
+  useProceduralSkybox: 0
+  daySkyTint: {r: 0.5, g: 0.7, b: 1, a: 1}
+  nightSkyTint: {r: 0.05, g: 0.05, b: 0.15, a: 1}
+  transitionSpeed: 0.5
 --- !u!4 &774155306 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4310125301536240, guid: 3126ca4c2d851514395844c0d42d1ca7, type: 3}
