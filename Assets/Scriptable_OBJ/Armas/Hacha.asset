@@ -17,7 +17,11 @@ MonoBehaviour:
   description: Fuerte, mortal, pesada
   icon: {fileID: 21300000, guid: d7c1b43348fab4b49bde159ec20bbead, type: 3}
   weaponDamage: 40
+  criticalHitChance: 0.05
+  criticalHitMultiplier: 2
+  staminaCost: 10
   attackSpeed: 0.75
+  attackDuration: 0.5
   maxDurability: 100
   durabilityCurve:
     serializedVersion: 2
@@ -87,4 +91,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxMasteryHits: 100
   hitBoxPrefab: {fileID: 2991063226198235580, guid: 32a7fcc137bffbd4b9e99b84cf8b330d, type: 3}
-  weaponPrefab: {fileID: 5448976339290444927, guid: aefd9f281b8e76047ae5bb618f5ef76a, type: 3}
+  weaponPrefab: {fileID: 5448976339290444927, guid: 7b64571b30c2312409b83d6b60c6199c, type: 3}
+  attackVfxKey: 
+  impactSoundData: {fileID: 0}
+  impactVFXKey: ImpactEffect

@@ -45,12 +45,23 @@ namespace ProyectSecret.Characters.Player
 
             EquippedWeaponInstance = instance;
 
+            // --- DEBUG LOGS ---
+            if (instance.WeaponData.WeaponPrefab == null)
+                Debug.LogError("[Equipment] El 'WeaponPrefab' en el WeaponItem es NULO. Revisa el ScriptableObject del arma.", instance.WeaponData);
+            
+            if (pointSwitcher == null)
+                Debug.LogError("[Equipment] La referencia a 'pointSwitcher' en PlayerEquipmentController es NULA. Arrástrala en el Inspector.");
+            else if (pointSwitcher.ActiveWeaponPoint == null)
+                Debug.LogError("[Equipment] 'ActiveWeaponPoint' en el pointSwitcher es NULO. Revisa las referencias a WeaponPoint y WeaponPoint1 en el PlayerPointSwitcher.");
+            // --- FIN DEBUG LOGS ---
+
             if (instance.WeaponData.WeaponPrefab != null && pointSwitcher?.ActiveWeaponPoint != null)
             {
                 currentWeaponVisual = Instantiate(instance.WeaponData.WeaponPrefab, pointSwitcher.ActiveWeaponPoint);
                 currentWeaponVisual.transform.localPosition = Vector3.zero;
                 currentWeaponVisual.transform.localRotation = Quaternion.identity;
                 currentWeaponVisual.transform.localScale = Vector3.one;
+                Debug.Log($"[Equipment] ¡Visual del arma '{currentWeaponVisual.name}' instanciado correctamente!", currentWeaponVisual);
             }
 
             instance.WeaponData?.OnEquip(gameObject);
