@@ -17,7 +17,7 @@ namespace ProyectSecret.Audio
         public AudioClip[] clips;
 
         [Header("Configuration")]
-        [Tooltip("El grupo de mezcla de audio al que se enviará el sonido (opcional).")]
+        [Tooltip("El grupo de mezcla de audio al que se enviará el sonido.")]
         public AudioMixerGroup outputMixerGroup;
 
         [Tooltip("Si el sonido debe reproducirse en bucle.")]

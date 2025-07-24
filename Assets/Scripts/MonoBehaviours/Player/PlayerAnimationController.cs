@@ -3,6 +3,8 @@ using UnityEngine;
 namespace ProyectSecret.MonoBehaviours.Player
 {
     /// <summary>
+    /// --- a/e:\osbah\Entregables\Proyect-Secret\Assets\Scripts\MonoBehaviours\Player\PlayerAnimationController.cs
+    /// +++ b/e:\osbah\Entregables\Proyect-Secret\Assets\Scripts\MonoBehaviours\Player\PlayerAnimationController.cs
     /// Responsabilidad Única: Controlar el Animator y el SpriteRenderer del jugador.
     /// Lee el estado de otros componentes (Input, Physics) para actualizar la vista.
     /// </summary>
@@ -21,7 +23,6 @@ namespace ProyectSecret.MonoBehaviours.Player
         private readonly int _moveYHash = Animator.StringToHash("MoveY");
         private readonly int _isMovingHash = Animator.StringToHash("IsMoving");
         private readonly int _isGroundedHash = Animator.StringToHash("IsGrounded");
-        private readonly int _jumpTriggerHash = Animator.StringToHash("Jump");
 
         private void Awake()
         {
@@ -29,16 +30,10 @@ namespace ProyectSecret.MonoBehaviours.Player
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _input = GetComponent<PlayerInputController>();
             _movement = GetComponent<PaperMarioPlayerMovement>();
-        }
 
-        private void OnEnable()
-        {
-            if (_input != null) _input.OnJumpPressed += TriggerJumpAnimation;
-        }
-
-        private void OnDisable()
-        {
-            if (_input != null) _input.OnJumpPressed -= TriggerJumpAnimation;
+#if UNITY_EDITOR
+            ValidateAnimatorParameters();
+#endif
         }
 
         private void Update()
@@ -57,9 +52,23 @@ namespace ProyectSecret.MonoBehaviours.Player
             }
         }
 
-        private void TriggerJumpAnimation()
+#if UNITY_EDITOR
+        // Este método se ejecuta solo en el editor para advertir sobre parámetros faltantes.
+        private void ValidateAnimatorParameters()
         {
-            if (_movement.IsGrounded) _animator.SetTrigger(_jumpTriggerHash);
+            if (_animator == null || _animator.runtimeAnimatorController == null) return;
+
+            var parameters = new System.Collections.Generic.HashSet<string>();
+            foreach (var param in _animator.parameters)
+            {
+                parameters.Add(param.name);
+            }
+
+            if (!parameters.Contains("MoveX")) Debug.LogWarning("PlayerAnimationController: Falta el parámetro 'MoveX' (Float) en el Animator.", this);
+            if (!parameters.Contains("MoveY")) Debug.LogWarning("PlayerAnimationController: Falta el parámetro 'MoveY' (Float) en el Animator.", this);
+            if (!parameters.Contains("IsMoving")) Debug.LogWarning("PlayerAnimationController: Falta el parámetro 'IsMoving' (Bool) en el Animator.", this);
+            if (!parameters.Contains("IsGrounded")) Debug.LogWarning("PlayerAnimationController: Falta el parámetro 'IsGrounded' (Bool) en el Animator.", this);
         }
+#endif
     }
 }

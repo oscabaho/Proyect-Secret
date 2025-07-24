@@ -12,7 +12,6 @@ namespace ProyectSecret.MonoBehaviours.Player
     {
         [Header("Audio Data")]
         [SerializeField] private AudioData moveSoundData;
-        [SerializeField] private AudioData jumpSoundData;
 
         private PaperMarioPlayerMovement _movement;
         private PlayerInputController _input;
@@ -24,31 +23,25 @@ namespace ProyectSecret.MonoBehaviours.Player
             _input = GetComponent<PlayerInputController>();
         }
 
-        private void OnEnable()
-        {
-            if (_input != null) _input.OnJumpPressed += PlayJumpSound;
-        }
-
-        private void OnDisable()
-        {
-            if (_input != null) _input.OnJumpPressed -= PlayJumpSound;
-        }
-
         private void Update()
         {
             bool isCurrentlyMoving = _movement.CurrentVelocity.sqrMagnitude > 0.01f;
 
             if (isCurrentlyMoving && !_wasMovingLastFrame)
-                AudioManager.Instance?.PlayLoopingSoundOnObject(moveSoundData, gameObject);
+            {
+                if (moveSoundData != null && moveSoundData.clips.Length > 0)
+                    AudioManager.Instance?.PlayLoopingSoundOnObject(moveSoundData, gameObject);
+                else
+                {
+                    #if UNITY_EDITOR
+                    Debug.LogWarning("PlayerAudioController: 'Move Sound Data' no está asignado o no tiene clips. No se reproducirá sonido de movimiento.", this);
+                    #endif
+                }
+            }
             else if (!isCurrentlyMoving && _wasMovingLastFrame)
                 AudioManager.Instance?.StopLoopingSoundOnObject(gameObject);
 
             _wasMovingLastFrame = isCurrentlyMoving;
-        }
-
-        private void PlayJumpSound()
-        {
-            if (_movement.IsGrounded) jumpSoundData?.Play();
         }
     }
 }

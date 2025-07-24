@@ -1,37 +1,40 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.Pool;
 using ProyectSecret.Audio;
-using System.Collections.Generic;
 
 namespace ProyectSecret.Managers
 {
     /// <summary>
-    /// Manager de audio unificado. Gestiona la música de fondo, los efectos de sonido
-    /// 2D (UI) y un pool de AudioSources para efectos 3D eficientes.
-    /// Es el único punto de entrada para todas las operaciones de audio.
+    /// Gestiona la reproducción de todos los sonidos y música del juego.
+    /// Utiliza un pool de objetos para los AudioSources para ser más eficiente.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
+        // Claves para PlayerPrefs, públicas para que otros scripts puedan usarlas.
+        public const string MusicVolumeKey = "MusicVolume";
+        public const string SfxVolumeKey = "SFXVolume";
+
         public static AudioManager Instance { get; private set; }
 
-        [Header("Fuentes de Audio Dedicadas")]
-        [Tooltip("Fuente para la música de fondo. Debería tener 'Loop' activado.")]
-        [SerializeField] private AudioSource musicSource;
-        [Tooltip("Fuente para efectos de sonido de UI y 2D no dinámicos.")]
-        [SerializeField] private AudioSource effectsSource2D;
-
-        [Header("Configuración del Pool de Audio 3D")]
-        [Tooltip("Capacidad inicial del pool de AudioSources.")]
-        [SerializeField] private int defaultPoolCapacity = 20;
-        [Tooltip("Tamaño máximo que puede alcanzar el pool.")]
+        [Header("Pool Configuration")]
+        [SerializeField] private PooledAudioSource audioSourcePrefab;
+        [SerializeField] private int defaultPoolSize = 20;
         [SerializeField] private int maxPoolSize = 50;
 
-        private IObjectPool<PooledAudioSource> _sfxPool3D;
-        private Dictionary<GameObject, PooledAudioSource> _loopedSources = new Dictionary<GameObject, PooledAudioSource>();
+        [Header("Mixer")]
+        [SerializeField] private AudioMixer mainMixer;
+
+        [Header("Music")]
+        [SerializeField] private AudioSource musicSource;
+
+        private ObjectPool<PooledAudioSource> _pool;
+        private readonly Dictionary<GameObject, PooledAudioSource> _loopingSources = new Dictionary<GameObject, PooledAudioSource>();
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (Instance != null)
             {
                 Destroy(gameObject);
                 return;
@@ -39,131 +42,156 @@ namespace ProyectSecret.Managers
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
+            if (audioSourcePrefab == null)
+            {
+                Debug.LogError("AudioManager: 'Audio Source Prefab' no está asignado en el Inspector. El sistema de audio no funcionará. Por favor, asigna el prefab de PooledAudioSource.", this);
+                enabled = false;
+                return;
+            }
+
             InitializePool();
+        }
+
+        private void Start()
+        {
+            // Al iniciar, cargamos los volúmenes guardados y los aplicamos.
+            LoadAndApplyInitialVolumes();
         }
 
         private void InitializePool()
         {
-            _sfxPool3D = new ObjectPool<PooledAudioSource>(
-                CreatePooledAudio,
-                OnGetFromPool,
-                OnReleaseToPool,
-                OnDestroyPooledAudio,
+            _pool = new ObjectPool<PooledAudioSource>(
+                CreatePooledObject,
+                OnTakeFromPool,
+                OnReturnedToPool,
+                OnDestroyObject,
                 true,
-                defaultPoolCapacity,
+                defaultPoolSize,
                 maxPoolSize
             );
         }
 
-        #region API Pública de Audio
-
-        /// <summary>
-        /// Inicia o cambia la música de fondo.
-        /// </summary>
-        public void PlayMusic(AudioClip musicClip)
-        {
-            if (musicClip != null && musicSource.clip != musicClip)
-            {
-                musicSource.clip = musicClip;
-                musicSource.loop = true;
-                musicSource.Play();
-            }
-        }
-
-        /// <summary>
-        /// Reproduce un sonido 2D, ideal para UI. Usa una fuente de audio dedicada.
-        /// </summary>
         public void PlaySound2D(AudioData audioData)
         {
-            if (audioData != null)
-            {
-                effectsSource2D.outputAudioMixerGroup = audioData.outputMixerGroup;
-                effectsSource2D.PlayOneShot(audioData.GetClip(), audioData.GetVolume());
-            }
+            var pooledSource = _pool.Get();
+            pooledSource.Play(audioData, 0f); // 2D sound
         }
 
-        /// <summary>
-        /// Reproduce un sonido 3D en un punto del espacio usando el pool.
-        /// </summary>
         public void PlaySound3D(AudioData audioData, Vector3 position)
         {
-            if (audioData == null || audioData.clips.Length == 0) return;
-
-            var pooledAudio = _sfxPool3D.Get();
-            if (pooledAudio == null) return;
-
-            pooledAudio.transform.position = position;
-            pooledAudio.Play(audioData, 1.0f); // 1.0f para spatialBlend 3D
+            var pooledSource = _pool.Get();
+            pooledSource.transform.position = position;
+            pooledSource.Play(audioData, 1f); // 3D sound
         }
 
-        /// <summary>
-        /// Reproduce un sonido en bucle asociado a un GameObject. Si ya hay un sonido en bucle, lo detiene.
-        /// </summary>
         public void PlayLoopingSoundOnObject(AudioData audioData, GameObject target)
         {
-            if (target == null || audioData == null) return;
+            if (_loopingSources.ContainsKey(target)) return;
 
-            // Si ya hay un sonido en bucle en este objeto, lo detenemos primero.
-            StopLoopingSoundOnObject(target);
+            var pooledSource = _pool.Get();
+            pooledSource.transform.SetParent(target.transform);
+            pooledSource.transform.localPosition = Vector3.zero;
 
-            var pooledAudio = _sfxPool3D.Get();
-            if (pooledAudio == null) return;
+            // --- LÓGICA CLAVE ---
+            // Intentamos reproducir el sonido. Si falla, el PooledAudioSource ya se ha devuelto al pool.
+            // No lo añadimos a nuestro diccionario para evitar un estado inconsistente.
+            bool success = pooledSource.Play(audioData, 1.0f, true);
+            if (success)
+            {
+                _loopingSources[target] = pooledSource;
+            }
+            else
+            {
+                // Si falló, nos aseguramos de quitarle el parentesco para que no se quede "pegado"
+                // al objeto target mientras está inactivo en el pool.
+                pooledSource.transform.SetParent(transform);
+            }
+        }
 
-            pooledAudio.transform.SetParent(target.transform);
-            pooledAudio.transform.localPosition = Vector3.zero;
-            pooledAudio.Play(audioData, 0.0f, true); // 0.0f para spatialBlend 2D (sonido no posicional), loop = true
+        public void StopLoopingSoundOnObject(GameObject target)
+        {
+            if (_loopingSources.TryGetValue(target, out var pooledSource))
+            {
+                pooledSource.Stop(); // Stop se encargará de devolverlo al pool
+                _loopingSources.Remove(target);
+            }
+        }
 
-            _loopedSources[target] = pooledAudio;
+        public void PlayMusic(AudioClip musicClip, bool loop = true)
+        {
+            if (musicSource == null || musicClip == null) return;
+            musicSource.clip = musicClip;
+            musicSource.loop = loop;
+            musicSource.Play();
         }
 
         /// <summary>
-        /// Detiene el sonido en bucle que se esté reproduciendo en un GameObject.
+        /// Establece el volumen de un parámetro expuesto en el AudioMixer.
         /// </summary>
-        public void StopLoopingSoundOnObject(GameObject target)
+        /// <param name="parameterName">El nombre del parámetro expuesto (ej. "MusicVolume").</param>
+        /// <param name="volume">El volumen en una escala lineal (0.0 a 1.0).</param>
+        public void SetVolume(string parameterName, float volume)
         {
-            if (target != null && _loopedSources.TryGetValue(target, out var pooledAudio))
+            if (mainMixer == null) return;
+
+            // Convertimos el volumen lineal (0-1) a decibelios (logarítmico).
+            // Un valor de 0.0001f es efectivamente silencio (-80dB).
+            float dbVolume = Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20;
+            mainMixer.SetFloat(parameterName, dbVolume);
+        }
+
+        /// <summary>
+        /// Obtiene el volumen de un parámetro expuesto en el AudioMixer.
+        /// </summary>
+        /// <param name="parameterName">El nombre del parámetro expuesto (ej. "MusicVolume").</param>
+        /// <returns>El volumen en una escala lineal (0.0 a 1.0).</returns>
+        public float GetVolume(string parameterName)
+        {
+            if (mainMixer != null && mainMixer.GetFloat(parameterName, out float dbVolume))
             {
-                pooledAudio.Stop(); // Esto lo devolverá al pool
-                _loopedSources.Remove(target);
+                // Convertimos los decibelios de vuelta a una escala lineal.
+                return Mathf.Pow(10, dbVolume / 20);
             }
+            // Si no se puede obtener, devolvemos 0 como valor seguro.
+            return 0f;
         }
 
-        #endregion
-
-        #region Métodos de Gestión del Pool
-
-        private PooledAudioSource CreatePooledAudio()
+        private void LoadAndApplyInitialVolumes()
         {
-            var go = new GameObject("PooledAudioSource");
-            var pooledAudio = go.AddComponent<PooledAudioSource>();
-            pooledAudio.Pool = _sfxPool3D;
-            go.transform.SetParent(this.transform);
-            return pooledAudio;
+            // Carga el volumen de la música o usa 0.75f si no hay nada guardado.
+            float musicVolume = PlayerPrefs.GetFloat(MusicVolumeKey, 0.75f);
+            SetVolume(MusicVolumeKey, musicVolume);
+
+            // Carga el volumen de los SFX o usa 1.0f si no hay nada guardado.
+            float sfxVolume = PlayerPrefs.GetFloat(SfxVolumeKey, 1.0f);
+            SetVolume(SfxVolumeKey, sfxVolume);
         }
 
-        private void OnGetFromPool(PooledAudioSource pooledAudio)
+        #region Pool Callbacks
+        private PooledAudioSource CreatePooledObject()
         {
-            pooledAudio.gameObject.SetActive(true);
+            var newSource = Instantiate(audioSourcePrefab, transform);
+            newSource.Pool = _pool;
+            return newSource;
         }
 
-        private void OnReleaseToPool(PooledAudioSource pooledAudio)
+        private void OnTakeFromPool(PooledAudioSource pooledSource)
         {
-            pooledAudio.Source.Stop();
-            pooledAudio.Source.clip = null;
-            pooledAudio.transform.SetParent(this.transform);
-            pooledAudio.transform.localPosition = Vector3.zero;
-            _loopedSources.Remove(pooledAudio.gameObject); // Asegurarse de limpiar la referencia si era un sonido en bucle
-            pooledAudio.gameObject.SetActive(false);
+            pooledSource.gameObject.SetActive(true);
         }
 
-        private void OnDestroyPooledAudio(PooledAudioSource pooledAudio)
+        private void OnReturnedToPool(PooledAudioSource pooledSource)
         {
-            if (pooledAudio != null)
-            {
-                Destroy(pooledAudio.gameObject);
-            }
+            // Limpiar el estado antes de devolverlo
+            pooledSource.transform.SetParent(transform);
+            pooledSource.Source.clip = null;
+            pooledSource.gameObject.SetActive(false);
         }
 
+        private void OnDestroyObject(PooledAudioSource pooledSource)
+        {
+            Destroy(pooledSource.gameObject);
+        }
         #endregion
     }
 }

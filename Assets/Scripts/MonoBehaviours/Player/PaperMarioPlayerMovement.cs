@@ -14,7 +14,6 @@ public class PaperMarioPlayerMovement : MonoBehaviour
 
     [Header("Configuración de Movimiento")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float jumpForce = 7f;
 
     // Referencias a componentes
     private Rigidbody rb;
@@ -48,16 +47,6 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         pointSwitcher = GetComponent<PlayerPointSwitcher>();
         _input = GetComponent<PlayerInputController>();
         _cameraController = GetComponent<PlayerCameraController>();
-    }
-
-    void OnEnable()
-    {
-        if (_input != null) _input.OnJumpPressed += HandleJump;
-    }
-
-    void OnDisable()
-    {
-        if (_input != null) _input.OnJumpPressed -= HandleJump;
     }
 
     void Update()
@@ -103,14 +92,6 @@ public class PaperMarioPlayerMovement : MonoBehaviour
             CurrentVelocity = rb.linearVelocity;
 
             UpdatePointSwitcherRotation(moveDir);
-        }
-    }
-
-    private void HandleJump()
-    {
-        if (IsGrounded)
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
 

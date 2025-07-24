@@ -32,6 +32,7 @@ namespace ProyectSecret.MonoBehaviours.Player
                 #if UNITY_EDITOR
                 Debug.LogError("PlayerCameraController: Faltan referencias a las cámaras. Por favor, asígnalas en el Inspector.");
                 #endif
+                enabled = false; // Desactivamos el componente para evitar más errores.
                 return;
             }
             

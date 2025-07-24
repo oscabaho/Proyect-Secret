@@ -35,13 +35,14 @@ namespace ProyectSecret.Audio
         /// <summary>
         /// Inicia la reproducción del clip de audio con una configuración específica.
         /// </summary>
-        public void Play(AudioData audioData, float spatialBlend = 1.0f, bool forceLoop = false)
+        /// <returns>True si la reproducción comenzó, false si falló (ej. clip nulo).</returns>
+        public bool Play(AudioData audioData, float spatialBlend = 1.0f, bool forceLoop = false)
         {
-            if (audioData == null || audioData.clips.Length == 0)
+            if (audioData == null || audioData.GetClip() == null) // Usar GetClip para validar que haya al menos un clip
             {
                 Debug.LogWarning("Se intentó reproducir un AudioClip nulo. Devolviendo al pool de inmediato.");
                 ReturnToPool();
-                return;
+                return false;
             }
 
             gameObject.name = $"Pooled Audio - {audioData.name}";
@@ -59,6 +60,8 @@ namespace ProyectSecret.Audio
             {
                 _returnToPoolCoroutine = StartCoroutine(ReturnToPoolWhenFinished());
             }
+
+            return true;
         }
 
         /// <summary>
