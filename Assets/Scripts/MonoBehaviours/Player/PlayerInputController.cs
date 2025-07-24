@@ -15,14 +15,17 @@ namespace ProyectSecret.MonoBehaviours.Player
         [field: SerializeField]
         public InputActionAsset InputActions { get; private set; }
 
-        [Header("Action Map Names")]
+        [Header("Gameplay Action Maps")]
         [SerializeField] private string dayActionMapName = "PlayerDay";
-        [SerializeField] private string nightActionMapName = "PlayerNight";
+        [SerializeField] private string dayMoveActionName = "Look"; // "Look" se mapea a movimiento
+        [SerializeField] private string dayInteractActionName = "Interact";
+        [SerializeField] private string dayPreviousActionName = "Previous";
+        [SerializeField] private string dayNextActionName = "Next";
 
-        [Header("Action Names")]
-        [SerializeField] private string moveActionName = "Move";
-        [SerializeField] private string attackActionName = "Attack";
-        [SerializeField] private string interactActionName = "Interact";
+        [SerializeField] private string nightActionMapName = "PlayerNight";
+        [SerializeField] private string nightMoveActionName = "Move";
+        [SerializeField] private string nightAttackActionName = "Attack";
+        [SerializeField] private string nightInteractActionName = "Interact";
 
         // Eventos públicos para acciones
         public event Action OnAttackPressed;
@@ -35,11 +38,17 @@ namespace ProyectSecret.MonoBehaviours.Player
         private InputAction _moveAction;
         private InputAction _attackAction;
         private InputAction _interactAction;
+        // Acciones adicionales para el día
+        private InputAction _previousAction;
+        private InputAction _nextAction;
 
         private void Awake()
         {
             // Inicializa con el mapa de día por defecto
-            SwitchActionMap(dayActionMapName);
+            // Los parámetros nulos indican que no hay acción de ataque, previous o next en el mapa de noche.
+            // Esto es un ejemplo, ajusta según tus necesidades.
+            // Empezamos con el mapa de día.
+            SwitchGameplayMap(dayActionMapName, dayMoveActionName, null, dayInteractActionName, dayPreviousActionName, dayNextActionName);
         }
 
         private void OnEnable()
@@ -65,36 +74,60 @@ namespace ProyectSecret.MonoBehaviours.Player
 
         private void HandleAttack(InputAction.CallbackContext context) => OnAttackPressed?.Invoke();
         private void HandleInteract(InputAction.CallbackContext context) => OnInteractPressed?.Invoke();
-        private void OnDayStarted(DayStartedEvent evt) => SwitchActionMap(dayActionMapName);
-        private void OnNightStarted(NightStartedEvent evt) => SwitchActionMap(nightActionMapName);
+        // Podrías añadir handlers para Previous/Next si es necesario
+        // private void HandlePrevious(InputAction.CallbackContext context) => OnPreviousPressed?.Invoke();
+        // private void HandleNext(InputAction.CallbackContext context) => OnNextPressed?.Invoke();
 
-        private void SwitchActionMap(string mapName)
+        private void OnDayStarted(DayStartedEvent evt) => SwitchGameplayMap(dayActionMapName, dayMoveActionName, null, dayInteractActionName, dayPreviousActionName, dayNextActionName);
+        private void OnNightStarted(NightStartedEvent evt) => SwitchGameplayMap(nightActionMapName, nightMoveActionName, nightAttackActionName, nightInteractActionName, null, null);
+
+        /// <summary>
+        /// Cambia el mapa de acción de gameplay y reasigna todas las acciones.
+        /// </summary>
+        private void SwitchGameplayMap(string mapName, string moveName, string attackName, string interactName, string previousName, string nextName)
         {
-            // 1. Desuscribirse de las acciones del mapa anterior para evitar listeners duplicados o huérfanos.
+            // 1. Desuscribirse de todas las acciones posibles del mapa anterior.
             if (_attackAction != null) _attackAction.performed -= HandleAttack;
             if (_interactAction != null) _interactAction.performed -= HandleInteract;
+            if (_previousAction != null) _previousAction.performed -= HandleInteract; // Reemplaza con HandlePrevious si lo creas
+            if (_nextAction != null) _nextAction.performed -= HandleInteract; // Reemplaza con HandleNext si lo creas
 
             // 2. Desactivar el mapa de acción actual.
             _currentActionMap?.Disable();
 
             // 3. Encontrar y asignar el nuevo mapa y sus acciones.
             _currentActionMap = InputActions.FindActionMap(mapName);
-            _moveAction = _currentActionMap.FindAction(moveActionName);
-            _attackAction = _currentActionMap.FindAction(attackActionName);
-            _interactAction = _currentActionMap.FindAction(interactActionName);
+            if (_currentActionMap == null) { Debug.LogError($"Action Map '{mapName}' no encontrado.", this); return; }
 
-            // 4. Suscribirse a los eventos de las NUEVAS acciones.
-            if (_attackAction != null)
-            {
-                _attackAction.performed += HandleAttack;
-            }
-            if (_interactAction != null)
-            {
-                _interactAction.performed += HandleInteract;
-            }
+            // Asignar cada acción, comprobando si el nombre es válido.
+            _moveAction = !string.IsNullOrEmpty(moveName) ? _currentActionMap.FindAction(moveName) : null;
+            _attackAction = !string.IsNullOrEmpty(attackName) ? _currentActionMap.FindAction(attackName) : null;
+            _interactAction = !string.IsNullOrEmpty(interactName) ? _currentActionMap.FindAction(interactName) : null;
+            _previousAction = !string.IsNullOrEmpty(previousName) ? _currentActionMap.FindAction(previousName) : null;
+            _nextAction = !string.IsNullOrEmpty(nextName) ? _currentActionMap.FindAction(nextName) : null;
+
+            // Validar que las acciones esenciales existan
+            if (_moveAction == null && !string.IsNullOrEmpty(moveName)) Debug.LogWarning($"Acción de movimiento '{moveName}' no encontrada en el mapa '{mapName}'.", this);
+
+            // 4. Suscribirse a los eventos de las NUEVAS acciones si existen.
+            if (_attackAction != null) _attackAction.performed += HandleAttack;
+            if (_interactAction != null) _interactAction.performed += HandleInteract;
+            // if (_previousAction != null) _previousAction.performed += HandlePrevious;
+            // if (_nextAction != null) _nextAction.performed += HandleNext;
 
             // 5. Activar el nuevo mapa.
-            _currentActionMap?.Enable();
+            _currentActionMap.Enable();
+        }
+
+        /// <summary>
+        /// Activa o desactiva el mapa de acciones de gameplay actual.
+        /// </summary>
+        public void EnableGameplayMap(bool enable)
+        {
+            if (enable)
+                _currentActionMap?.Enable();
+            else
+                _currentActionMap?.Disable();
         }
     }
 }
