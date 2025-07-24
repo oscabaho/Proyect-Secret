@@ -17,11 +17,7 @@ MonoBehaviour:
   description: Arma balanceada y equilibrada
   icon: {fileID: 21300000, guid: fdf98d059bc25284e820fcae0d873750, type: 3}
   weaponDamage: 30
-  criticalHitChance: 0.05
-  criticalHitMultiplier: 2
-  staminaCost: 10
   attackSpeed: 1
-  attackDuration: 0.5
   maxDurability: 100
   durabilityCurve:
     serializedVersion: 2
@@ -91,7 +87,4 @@ MonoBehaviour:
     m_RotationOrder: 4
   maxMasteryHits: 100
   hitBoxPrefab: {fileID: 7563340099367879958, guid: 6d3c909471819cb46b48d5b59a1a1c00, type: 3}
-  weaponPrefab: {fileID: 2036988242651982064, guid: 420214bccdf85d44eb5354b9fa471721, type: 3}
-  attackVfxKey: 
-  impactSoundData: {fileID: 0}
-  impactVFXKey: ImpactEffect
+  weaponPrefab: {fileID: 2036988242651982064, guid: 9dc3bb34732fdc24a803df1a262b6b8e, type: 3}
