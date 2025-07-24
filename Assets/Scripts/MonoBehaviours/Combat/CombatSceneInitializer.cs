@@ -2,7 +2,8 @@ using UnityEngine;
 using ProyectSecret.Combat.SceneManagement;
 using ProyectSecret.Inventory;
 using MonoBehaviours.Enemies;
-using ProyectSecret.Events; // Necesario para el GameEventBus
+using ProyectSecret.Managers; // Para el AudioManager
+using ProyectSecret.Events;
 
 namespace ProyectSecret.Combat.SceneManagement
 {
@@ -27,9 +28,8 @@ namespace ProyectSecret.Combat.SceneManagement
                 // Publicar el evento de que el jugador ha sido instanciado
                 GameEventBus.Instance.Publish(new PlayerSpawnedEvent(player));
 
-                // Restaurar estado del jugador
-                if (playerPersistentData != null && itemDatabase != null)
-                    playerPersistentData.ApplyToPlayer(player, itemDatabase);
+                // Solicitar la restauración del estado del jugador a través de un evento.
+                GameEventBus.Instance.Publish(new PlayerStateRestoreRequestEvent(player, playerPersistentData, itemDatabase));
                 
                 var enemy = Instantiate(transferData.enemyPrefab, enemySpawnPoint.position, Quaternion.identity);
 
@@ -40,7 +40,15 @@ namespace ProyectSecret.Combat.SceneManagement
                     kryptonite.CheckKryptonite(player);
                 }
             }
-            SoundManager.Instancia.IniciarMusica(Music);
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayMusic(Music);
+            }
+            else
+            {
+                Debug.LogWarning("CombatSceneInitializer: Instancia de AudioManager no encontrada. La música de fondo no se reproducirá.");
+            }
+
             transferData.Clear();
         }
     }

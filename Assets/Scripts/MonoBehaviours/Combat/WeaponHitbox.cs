@@ -1,13 +1,14 @@
 using UnityEngine;
 using ProyectSecret.Inventory;
 using ProyectSecret.Interfaces;
-using ProyectSecret.Managers;
-using ProyectSecret.Inventory.Items;
+using ProyectSecret.Events;
+using UnityEngine.Pool;
 
 namespace ProyectSecret.Combat.Behaviours
 {
     /// <summary>
     /// Script para el GameObject de un arma (espada, hacha, daga). Detecta colisiones con enemigos y aplica daño usando el WeaponItem equipado.
+    /// Ahora es compatible con el sistema de Object Pooling.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class WeaponHitbox : MonoBehaviour
@@ -15,6 +16,9 @@ namespace ProyectSecret.Combat.Behaviours
         private WeaponInstance weaponInstance;
         private GameObject owner;
         private bool canDamage = false;
+
+        // AÑADIDO: Propiedad para guardar la referencia al pool del que salió.
+        public IObjectPool<WeaponHitbox> Pool { get; set; }
 
         public void Initialize(WeaponInstance instance, GameObject weaponOwner)
         {
@@ -24,6 +28,18 @@ namespace ProyectSecret.Combat.Behaviours
 
         public void EnableDamage() => canDamage = true;
         public void DisableDamage() => canDamage = false;
+
+        // AÑADIDO: Cuando el objeto se desactiva, se devuelve al pool.
+        private void OnDisable()
+        {
+            // Reseteamos el estado para la próxima vez que se use.
+            canDamage = false;
+            weaponInstance = null;
+            owner = null;
+            
+            // Si este objeto pertenece a un pool, lo devolvemos.
+            Pool?.Release(this);
+        }
 
         private void OnTriggerEnter(Collider other)
         {
@@ -38,24 +54,23 @@ namespace ProyectSecret.Combat.Behaviours
             {
                 Vector3 impactPoint = other.ClosestPoint(transform.position);
 
-                // --- Lógica de Efectos Separada ---
-                // 1. Llamar al SoundManager para el sonido.
-                if (SoundManager.Instancia != null && weaponInstance.WeaponData.ImpactSound != null)
-                {
-                    SoundManager.Instancia.ReproducirEfectoEnPunto(
-                        weaponInstance.WeaponData.ImpactSound, 
-                        impactPoint, 
-                        weaponInstance.WeaponData.SoundVolume);
-                }
-
-                // 2. Llamar al VFXManager para las partículas.
-                VFXManager.Instance?.PlayImpactEffect(impactPoint);
+                // Publicar un evento de impacto para que otros sistemas (audio, vfx) reaccionen.
+                GameEventBus.Instance?.Publish(new HitboxImpactEvent(weaponInstance.WeaponData, impactPoint, other.gameObject));
 
                 // --- Lógica de Juego ---
                 weaponInstance.WeaponData.ApplyDamage(owner, other.gameObject);
                 weaponInstance.AddHit();
-                weaponInstance.DecreaseDurability(1);
 
+                // La pérdida de durabilidad puede depender del objeto golpeado.
+                int durabilityLoss = 1; // Pérdida por defecto.
+                var weaponDamager = other.GetComponent<IWeaponDamager>();
+                if (weaponDamager != null)
+                {
+                    durabilityLoss = weaponDamager.GetDurabilityDamage();
+                }
+                weaponInstance.DecreaseDurability(durabilityLoss);
+                
+                // Desactivamos el daño para evitar golpes múltiples en un solo ataque.
                 DisableDamage();
             }
         }

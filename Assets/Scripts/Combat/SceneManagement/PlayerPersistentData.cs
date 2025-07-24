@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using ProyectSecret.Inventory;
 using ProyectSecret.Inventory.Items;
+using ProyectSecret.Characters.Player;
+using ProyectSecret.Interfaces;
 
 namespace ProyectSecret.Combat.SceneManagement
 {
@@ -36,31 +38,10 @@ namespace ProyectSecret.Combat.SceneManagement
 
         public void SaveFromPlayer(GameObject player, bool savePosition = true)
         {
-            var healthComp = player.GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
-            if (healthComp != null)
-                playerHealth = healthComp.Health.CurrentValue;
-
-            var staminaComp = player.GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
-            if (staminaComp != null)
-                playerStamina = staminaComp.Stamina.CurrentValue;
-
-            var equipment = player.GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
-            if (equipment != null && equipment.EquippedWeaponInstance != null)
+            foreach (var persistentComponent in player.GetComponents<IPersistentData>())
             {
-                equippedWeaponId = equipment.EquippedWeaponInstance.WeaponData != null ? equipment.EquippedWeaponInstance.WeaponData.Id : null;
-                equippedWeaponDurability = equipment.EquippedWeaponInstance.CurrentDurability;
-                equippedWeaponHits = equipment.EquippedWeaponInstance.Hits;
+                persistentComponent.SaveData(this);
             }
-            else
-            {
-                equippedWeaponId = null;
-                equippedWeaponDurability = 0;
-                equippedWeaponHits = 0;
-            }
-            
-            var playerInventory = player.GetComponent<ProyectSecret.MonoBehaviours.Player.PlayerInventory>();
-            if (playerInventory != null)
-                inventoryData = playerInventory.ExportInventoryData();
 
             if (savePosition)
             {
@@ -71,30 +52,10 @@ namespace ProyectSecret.Combat.SceneManagement
 
         public void ApplyToPlayer(GameObject player, ItemDatabase itemDatabase)
         {
-            var healthComp = player.GetComponent<ProyectSecret.Components.HealthComponentBehaviour>();
-            if (healthComp != null)
-                healthComp.Health.SetValue(playerHealth);
-
-            var staminaComp = player.GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
-            if (staminaComp != null)
-                staminaComp.Stamina.SetValue(playerStamina);
-
-            var equipment = player.GetComponent<ProyectSecret.Inventory.PlayerEquipmentController>();
-            if (equipment != null && !string.IsNullOrEmpty(equippedWeaponId))
+            foreach (var persistentComponent in player.GetComponents<IPersistentData>())
             {
-                var weaponItem = itemDatabase.GetItem(equippedWeaponId) as WeaponItem;
-                if (weaponItem != null)
-                {
-                    var weaponInstance = new WeaponInstance(weaponItem);
-                    weaponInstance.SetDurability(equippedWeaponDurability);
-                    weaponInstance.SetHits(equippedWeaponHits);
-                    equipment.EquipWeaponInstance(weaponInstance);
-                }
+                persistentComponent.LoadData(this, itemDatabase);
             }
-            
-            var playerInventory = player.GetComponent<ProyectSecret.MonoBehaviours.Player.PlayerInventory>();
-            if (playerInventory != null)
-                playerInventory.ImportInventoryData(inventoryData, itemDatabase);
         }
 
         /// <summary>

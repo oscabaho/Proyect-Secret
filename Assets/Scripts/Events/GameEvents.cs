@@ -1,5 +1,6 @@
 using UnityEngine;
 using ProyectSecret.MonoBehaviours.Player;
+using ProyectSecret.Interfaces;
 
 namespace ProyectSecret.Events
 {
@@ -94,5 +95,27 @@ namespace ProyectSecret.Events
         public InventoryChangedEvent(PlayerInventory inventory) { Inventory = inventory; }
     }
 
-    // Puedes agrupar más eventos aquí según el dominio (misiones, UI, etc)
+    // Puedes agrupar más eventos aquí según el dominio (misiones, UI, etc)    
+
+    // =============================
+    //  EVENTOS DE INTERACCIÓN
+    // =============================
+
+    /// <summary>
+    /// Se publica cuando un objeto interactuable entra en el rango del jugador.
+    /// </summary>
+    public class InteractableInRangeEvent
+    {
+        public readonly IInteractable Interactable;
+        public InteractableInRangeEvent(IInteractable interactable) => Interactable = interactable;
+    }
+
+    /// <summary>
+    /// Se publica cuando el objeto interactuable que estaba en rango, ya no lo está.
+    /// </summary>
+    public class InteractableOutOfRangeEvent
+    {
+        public readonly IInteractable Interactable;
+        public InteractableOutOfRangeEvent(IInteractable interactable) => Interactable = interactable;
+    }
 }

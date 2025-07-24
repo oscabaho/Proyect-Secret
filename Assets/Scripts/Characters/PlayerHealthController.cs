@@ -1,79 +1,55 @@
-using System.Collections;
 using UnityEngine;
 using Characters;
 using ProyectSecret.Events;
+using ProyectSecret.Components;
 
+using ProyectSecret.Combat.SceneManagement;
 namespace ProyectSecret.Characters
 {
     /// <summary>
     /// Controlador de salud y muerte para el jugador. Hereda de HealthControllerBase.
+    /// Su única responsabilidad es gestionar la salud y la muerte del jugador.
     /// </summary>
-    [RequireComponent(typeof(ProyectSecret.Components.HealthComponentBehaviour))]
-    [RequireComponent(typeof(ProyectSecret.Components.StaminaComponentBehaviour))]
+    [RequireComponent(typeof(HealthComponentBehaviour))]
+    // Ya no requiere StaminaComponentBehaviour, esa es responsabilidad de PlayerStaminaController
     public class PlayerHealthController : HealthControllerBase
     {
-        private ProyectSecret.Components.StaminaComponentBehaviour staminaBehaviour;
-        public ProyectSecret.Components.StaminaComponent Stamina { get { return staminaBehaviour != null ? staminaBehaviour.Stamina : null; } }
-        // Usa la propiedad Health de la base (no se redefine para evitar warning)
-
-        [Header("Stamina Recovery")]
-        [SerializeField] private int staminaRecoveryAmount = 5;
-        [SerializeField] private float staminaRecoveryInterval = 0.5f;
-        [SerializeField] private float staminaRecoveryDelay = 2f;
-        private Coroutine staminaRecoveryCoroutine;
-        [Header("Sonido de muerte del jugador")]
-        [SerializeField] private AudioClip PlayerDeathSound;
-
-        protected override void Awake()
-        {
-            base.Awake();
-            if (healthBehaviour == null)
-                Debug.LogWarning("PlayerHealthController: No se encontró HealthComponentBehaviour.");
-            staminaBehaviour = GetComponent<ProyectSecret.Components.StaminaComponentBehaviour>();
-            if (staminaBehaviour == null)
-                Debug.LogWarning("PlayerHealthController: No se encontró StaminaComponentBehaviour.");
-        }
+        // --- Toda la lógica de Stamina ha sido movida a PlayerStaminaController ---
 
         private void OnEnable()
         {
-            // Suscribirse a un evento genérico de acción del jugador que consume stamina
-            GameEventBus.Instance.Subscribe<PlayerActionUsedStaminaEvent>(HandlePlayerAction);
+            GameEventBus.Instance.Subscribe<PlayerStateRestoreRequestEvent>(OnRestoreStateRequested);
         }
 
         private void OnDisable()
         {
+            // Es buena práctica comprobar si la instancia del bus aún existe,
+            // especialmente al cerrar la aplicación.
             if (GameEventBus.Instance != null)
-                GameEventBus.Instance.Unsubscribe<PlayerActionUsedStaminaEvent>(HandlePlayerAction);
+                GameEventBus.Instance.Unsubscribe<PlayerStateRestoreRequestEvent>(OnRestoreStateRequested);
         }
-
-        // Este método se llama cuando cualquier acción (ataque, esquivar, etc.) consume stamina
-        private void HandlePlayerAction(PlayerActionUsedStaminaEvent evt)
-        {
-            if (staminaRecoveryCoroutine != null)
-            {
-                StopCoroutine(staminaRecoveryCoroutine);
-            }
-            staminaRecoveryCoroutine = StartCoroutine(StaminaRecoveryRoutine());
-        }
-
-        private IEnumerator StaminaRecoveryRoutine()
-        {
-            yield return new WaitForSeconds(staminaRecoveryDelay);
-            while (Stamina != null && Stamina.CurrentValue < Stamina.MaxValue)
-            {
-                Stamina.AffectValue(staminaRecoveryAmount);
-                yield return new WaitForSeconds(staminaRecoveryInterval);
-            }
-            staminaRecoveryCoroutine = null;
-        }
-
         protected override void Death()
         {
+            // La clase base ya se encarga de reproducir el sonido de muerte.
+            // Aquí solo nos ocupamos de la lógica específica del jugador.
+            
             // Notificar a otros sistemas que el jugador ha muerto, en lugar de destruirlo aquí.
             // El CombatSceneController se encargará de la lógica de derrota y de la destrucción del objeto.
-            SoundManager.Instancia.ReproducirEfecto(PlayerDeathSound);
             GameEventBus.Instance.Publish(new PlayerDiedEvent(gameObject));
-            // Ya no se destruye aquí para permitir que otros sistemas reaccionen al evento.
+            
+            // Desactivamos el controlador para que no pueda recibir más daño.
+            // La destrucción del objeto la manejará otro sistema.
+            this.enabled = false;
+        }
+        private void OnRestoreStateRequested(PlayerStateRestoreRequestEvent evt)
+        {
+            // Asegurarse de que este evento es para esta instancia del jugador
+            if (evt.PlayerObject != this.gameObject) return;
+
+            // Restaurar la salud desde los datos persistentes
+            // El método 'SetCurrentValue' no existe. Usaremos un método más genérico 'SetValue'.
+            Health?.SetValue(evt.Data.playerHealth);
+            // También podrías restaurar la salud máxima, etc.
         }
     }
 }

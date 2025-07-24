@@ -1,9 +1,8 @@
-using System;
 using UnityEngine;
 using Characters;
-using ProyectSecret.Components;
-using ProyectSecret.Stats;
+using ProyectSecret.Managers;
 
+using ProyectSecret.VFX;
 namespace ProyectSecret.Characters.Enemies
 {
     /// <summary>
@@ -12,13 +11,18 @@ namespace ProyectSecret.Characters.Enemies
     [RequireComponent(typeof(Collider))]
     public class EnemyHealthController : HealthControllerBase
     {
-        [SerializeField]private AudioClip deathSound;
+        [Header("Fade Out Config")]
+        [SerializeField] private float fadeDuration = 2f;
 
         protected override void Death()
         {
-            // Aquí puedes agregar animaciones, efectos, recompensas, etc.
-            SoundManager.Instancia.ReproducirEfecto(deathSound);
-            Destroy(gameObject);
+            // Desactivar el collider para evitar más interacciones mientras muere.
+            var collider = GetComponent<Collider>();
+            if (collider != null) collider.enabled = false;
+
+            // El evento CharacterDeathEvent ya ha sido publicado por la clase base.
+            // Ahora delegamos el efecto visual de la muerte al VFXManager.
+            VFXManager.Instance?.PlayFadeAndDestroyEffect(gameObject, fadeDuration);
         }
     }
 }

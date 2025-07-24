@@ -26,6 +26,7 @@ namespace ProyectSecret.Managers
         [Header("Datos de Transferencia")]
         [SerializeField] private CombatTransferData transferData;
         [SerializeField] private PlayerPersistentData playerPersistentData;
+        [SerializeField] private GameObject playerPrefab; // Referencia al prefab del jugador
 
         private bool isTransitioning = false;
         private string currentActiveScene;
@@ -54,14 +55,14 @@ namespace ProyectSecret.Managers
             StartCoroutine(TransitionToScene(sceneName));
         }
 
-        public void LoadCombatScene(GameObject playerPrefab, GameObject enemyPrefab, GameObject playerInstance)
+        public void LoadCombatScene(GameObject enemyPrefab, GameObject playerInstance)
         {
             if (isTransitioning) return;
             
             if (playerPersistentData != null && playerInstance != null)
                 playerPersistentData.SaveFromPlayer(playerInstance);
 
-            transferData.playerPrefab = playerPrefab;
+            transferData.playerPrefab = this.playerPrefab; // Usar la referencia del manager
             transferData.enemyPrefab = enemyPrefab;
             
             StartCoroutine(TransitionToScene(combatSceneName));
