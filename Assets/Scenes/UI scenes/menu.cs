@@ -5,9 +5,15 @@ using UnityEngine.Video;
 
 public class menu : MonoBehaviour
 {
+    [Header("Inicio")]
     [SerializeField]private GameObject inicio;
+    [Header("Opciones")]
     [SerializeField]private GameObject opciones;
+    [SerializeField]private GameObject MusicOptions;
+    [SerializeField]private GameObject GraficSettings;
+    [Header("Creditos")]
     [SerializeField]private GameObject creditos;
+    [Header("Video inicio")]
     [SerializeField]private VideoPlayer video;
     void Awake()
     {
@@ -54,16 +60,22 @@ public class menu : MonoBehaviour
 
     public void Sound()
     {
-
+        MusicOptions.SetActive(true);
     }
 
     public void Quality()
     {
-
+        GraficSettings.SetActive(true);
     }
 
     public void Controls()
     {
 
+    }
+
+    public void Back()
+    {
+        MusicOptions.SetActive(false);
+        GraficSettings.SetActive(false);
     }
 }

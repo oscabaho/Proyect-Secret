@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8438596098140107821
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1218938786319700627}
+  - component: {fileID: 1975460318907937773}
+  - component: {fileID: 6061814059340300127}
+  - component: {fileID: 8009461680533858468}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1218938786319700627
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8438596098140107821}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 627.56836, y: 0, z: 4184.8115}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1975460318907937773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8438596098140107821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7caa8ef3b7b81c24eb1746bd3aa9ffda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  loadingBarSpeed: 1
+  loadingBar: {fileID: 0}
+  fadeCanvasGroup: {fileID: 0}
+  fadeDuration: 0.5
+  combatSceneName: CombatScene
+  explorationSceneName: Exploracion
+  transferData: {fileID: 11400000, guid: 5995ffa21610c6146a5013d179661f65, type: 2}
+  playerPersistentData: {fileID: 11400000, guid: 4b697eec965912c48a25849fa11c20c1, type: 2}
+  playerPrefab: {fileID: 3169305069694853935, guid: e9dcc673ebe940a4c833ed1cd68ca82f, type: 3}
+--- !u!114 &6061814059340300127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8438596098140107821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23e2986661aee8842a99605a3161f978, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _vfxPoolsConfig: []
+--- !u!114 &8009461680533858468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8438596098140107821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24507cb51af2fa64a8cab089e0c57772, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerPrefab: {fileID: 3169305069694853935, guid: e9dcc673ebe940a4c833ed1cd68ca82f, type: 3}
+  statueSpawnPoint: {fileID: 0}
+  playerPersistentData: {fileID: 11400000, guid: 4b697eec965912c48a25849fa11c20c1, type: 2}
+  itemDatabase: {fileID: 11400000, guid: d45caa0e04d97e346950e496eeb62245, type: 2}
+  backgroundMusic: {fileID: 8300000, guid: c8463c3dc7c12b249a0fb840b5d8d613, type: 3}
