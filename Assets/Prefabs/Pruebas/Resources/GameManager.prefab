@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1975460318907937773}
   - component: {fileID: 6061814059340300127}
   - component: {fileID: 8009461680533858468}
+  - component: {fileID: -3450940560892193515}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -85,3 +86,16 @@ MonoBehaviour:
   playerPersistentData: {fileID: 11400000, guid: 4b697eec965912c48a25849fa11c20c1, type: 2}
   itemDatabase: {fileID: 11400000, guid: d45caa0e04d97e346950e496eeb62245, type: 2}
   backgroundMusic: {fileID: 8300000, guid: c8463c3dc7c12b249a0fb840b5d8d613, type: 3}
+--- !u!114 &-3450940560892193515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8438596098140107821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15a8d4b7ba4b18d49aecfb6c2b6eeefb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerPersistentData: {fileID: 11400000, guid: 4b697eec965912c48a25849fa11c20c1, type: 2}

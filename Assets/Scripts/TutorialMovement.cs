@@ -19,16 +19,6 @@ public class TutorialMovement : MonoBehaviour
     public bool IsGrounded { get; private set; } = true;
     public Vector3 CurrentVelocity { get; private set; }
 
-    void OnEnable()
-    {
-        if (_input != null) _input.OnJumpPressed += HandleJump;
-    }
-
-    void OnDisable()
-    {
-        if (_input != null) _input.OnJumpPressed -= HandleJump;
-    }
-
     void Awake()
     {
         rb = GetComponent<Rigidbody>();

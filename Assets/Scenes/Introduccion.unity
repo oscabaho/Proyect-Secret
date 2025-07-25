@@ -6381,6 +6381,15 @@ MonoBehaviour:
   GraficSettings: {fileID: 1795881797}
   creditos: {fileID: 587068240}
   video: {fileID: 0}
+  skip:
+    m_Name: Skip
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 11fcb986-44c5-4f1b-bae7-f3bbfd35f4eb
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!4 &1418341405
 Transform:
   m_ObjectHideFlags: 0
