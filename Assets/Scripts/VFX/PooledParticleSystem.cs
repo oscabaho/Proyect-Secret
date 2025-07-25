@@ -1,34 +1,41 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.Pool; // <-- Cambiar
 
 namespace ProyectSecret.VFX
 {
     /// <summary>
-    /// Gestiona un sistema de partículas que pertenece a un pool.
-    /// Se reproduce al activarse y se desactiva solo al terminar.
+    /// Componente para un sistema de partículas gestionado por un ObjectPool.
+    /// Se encarga de devolverse al pool cuando termina su efecto.
     /// </summary>
     [RequireComponent(typeof(ParticleSystem))]
     public class PooledParticleSystem : MonoBehaviour
     {
-        private ParticleSystem ps;
+        private ParticleSystem _particleSystem;
+
+        /// <summary>
+        /// El pool de objetos al que pertenece esta instancia.
+        /// </summary>
+        public IObjectPool<PooledParticleSystem> Pool { get; set; } // <-- Cambiar tipo
 
         private void Awake()
         {
-            ps = GetComponent<ParticleSystem>();
+            _particleSystem = GetComponent<ParticleSystem>();
         }
 
         private void OnEnable()
         {
-            // Se asegura de que el sistema de partículas se reproduzca al ser activado.
-            ps.Play();
-            // Inicia una corrutina para devolverse al pool después de que termine la animación.
-            StartCoroutine(ReturnToPoolAfterDelay(ps.main.duration));
+            // Al activarse desde el pool, iniciamos la corrutina que lo devolverá.
+            StartCoroutine(ReturnToPoolWhenFinished());
         }
 
-        private IEnumerator ReturnToPoolAfterDelay(float delay)
+        private IEnumerator ReturnToPoolWhenFinished()
         {
-            yield return new WaitForSeconds(delay);
-            gameObject.SetActive(false);
+            // Esperamos hasta que el sistema de partículas (y todos sus hijos) haya terminado.
+            yield return new WaitWhile(() => _particleSystem.IsAlive(true));
+
+            // Una vez terminado, nos devolvemos al pool.
+            Pool?.Release(this); // <-- Cambiar método
         }
     }
 }

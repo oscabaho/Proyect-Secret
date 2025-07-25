@@ -1,87 +1,69 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using ProyectSecret.Interfaces;
+using ProyectSecret.Events;
 
 namespace ProyectSecret.MonoBehaviours.Player
 {
     /// <summary>
     /// Gestiona la interacción del jugador con el mundo (NPCs, objetos, etc.).
     /// </summary>
+    [RequireComponent(typeof(PlayerInputController))]
     public class PlayerInteractionController : MonoBehaviour
     {
-        [Header("Configuración de Interacción")]
-        [SerializeField] private float interactionDistance = 5f;
-        [SerializeField] private LayerMask interactionLayer;
+        [Header("Dependencias")]
+        [Tooltip("Referencia al componente InteractionDetector que está en un objeto hijo.")]
+        [SerializeField] private InteractionDetector interactionDetector;
 
-        [Header("Input")]
-        [Tooltip("El asset de Input Actions que contiene la acción de interactuar.")]
-        [SerializeField] private InputActionAsset inputActions;
-        [Tooltip("El nombre de la acción de interactuar definida en el Input Action Asset.")]
-        [SerializeField] private string interactionActionName = "Interact";
-        
-        private Camera mainCamera;
-        private InputAction interactAction;
         private IInteractable currentInteractable;
+        private IInteractable lastInteractable;
+        private PlayerInputController inputController;
 
         private void Awake()
         {
-            mainCamera = Camera.main;
-            if (inputActions != null)
+            inputController = GetComponent<PlayerInputController>();
+
+            if (interactionDetector == null)
             {
-                // Asumimos que la acción está en el mapa "PlayerDay"
-                var actionMap = inputActions.FindActionMap("PlayerDay");
-                if (actionMap != null)
-                {
-                    interactAction = actionMap.FindAction(interactionActionName);
-                }
+                Debug.LogError("PlayerInteractionController: No se ha asignado un InteractionDetector en el Inspector. Este componente es necesario para detectar objetos interactuables.", this);
+                enabled = false;
             }
         }
 
         private void OnEnable()
         {
-            if (interactAction != null)
-            {
-                interactAction.Enable();
-                interactAction.performed += PerformInteraction;
-            }
+            if (inputController != null)
+                inputController.OnInteractPressed += PerformInteraction;
         }
 
         private void OnDisable()
         {
-            if (interactAction != null)
-            {
-                interactAction.performed -= PerformInteraction;
-                interactAction.Disable();
-            }
+            if (inputController != null)
+                inputController.OnInteractPressed -= PerformInteraction;
         }
 
         private void Update()
         {
             // Constantemente revisa si hay algo interactuable en frente.
-            CheckForInteractable();
-        }
-
-        private void CheckForInteractable()
-        {
-            if (mainCamera == null) return;
-
-            RaycastHit hit;
-            if (Physics.Raycast(mainCamera.transform.position, mainCamera.transform.forward, out hit, interactionDistance, interactionLayer))
+            if (interactionDetector != null)
             {
-                // Si encontramos algo, lo guardamos como el interactuable actual.
-                currentInteractable = hit.collider.GetComponent<IInteractable>();
-                // Aquí podrías mostrar un mensaje en la UI como "[E] Hablar"
-            }
-            else
-            {
-                // Si no hay nada, limpiamos la referencia.
-                currentInteractable = null;
-                // Aquí podrías ocultar el mensaje de la UI.
+                lastInteractable = currentInteractable;
+                // El detector nos da el interactuable más cercano en el trigger.
+                // Podrías añadir lógica adicional para ver si está en el campo de visión.
+                currentInteractable = interactionDetector.GetClosestInteractable(transform);
+
+                // Si el interactuable ha cambiado, publicamos eventos.
+                if (currentInteractable != lastInteractable)
+                {
+                    if (lastInteractable != null)
+                        GameEventBus.Instance.Publish(new InteractableOutOfRangeEvent(lastInteractable));
+                    if (currentInteractable != null)
+                        GameEventBus.Instance.Publish(new InteractableInRangeEvent(currentInteractable));
+                }
             }
         }
 
         // Este método solo se llama cuando se presiona el botón de interactuar.
-        private void PerformInteraction(InputAction.CallbackContext context)
+        private void PerformInteraction()
         {
             // Si tenemos un interactuable a la vista, llamamos a su método Interact.
             if (currentInteractable != null)

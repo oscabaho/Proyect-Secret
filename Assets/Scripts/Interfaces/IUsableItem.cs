@@ -1,8 +1,13 @@
+using UnityEngine;
+
 namespace ProyectSecret.Interfaces
 {
+    /// <summary>
+    /// Interfaz para ítems que pueden ser "usados" desde el inventario.
+    /// </summary>
     public interface IUsableItem
     {
-        void Use(UnityEngine.GameObject user);
-        string GetId();
+        bool IsConsumable { get; }
+        void Use(GameObject user);
     }
 }

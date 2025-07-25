@@ -2,6 +2,7 @@ using UnityEngine;
 using ProyectSecret.Components;
 using ProyectSecret.Inventory;
 using ProyectSecret.Events;
+using ProyectSecret.Characters.Player;
 
 namespace ProyectSecret.Combat.Behaviours
 {
@@ -10,9 +11,7 @@ namespace ProyectSecret.Combat.Behaviours
     /// </summary>
     public class AttackComponent : MonoBehaviour
     {
-        [Header("Configuration")]
-        [SerializeField] private float attackCooldown = 1f;
-        [SerializeField] private int staminaCost = 10;
+        // El cooldown del ataque y el coste de estamina ahora se obtendrán del arma equipada.
 
         [Header("Dependencies")]
         [Tooltip("Componente de estamina del que se descontará el coste del ataque.")]
@@ -41,28 +40,33 @@ namespace ProyectSecret.Combat.Behaviours
         /// </summary>
         public void TryAttack()
         {
-            if (Time.time - lastAttackTime < attackCooldown)
+            var weaponInstance = equipmentController?.EquippedWeaponInstance;
+            if (weaponInstance == null || !equipmentController.CanAttack())
                 return;
 
-            if (equipmentController == null || !equipmentController.CanAttack())
+            // Obtener el cooldown del arma. Si attackSpeed es 0, evitamos división por cero.
+            float currentAttackCooldown = weaponInstance.WeaponData.AttackSpeed > 0 ? 1f / weaponInstance.WeaponData.AttackSpeed : float.MaxValue;
+            if (Time.time - lastAttackTime < currentAttackCooldown)
                 return;
 
-            if (staminaBehaviour == null || !staminaBehaviour.Stamina.HasEnough(staminaCost))
+            // Obtener el coste de estamina del arma actual. Asumo que WeaponItem tiene una propiedad StaminaCost.
+            int currentStaminaCost = weaponInstance.WeaponData.StaminaCost;
+
+            if (staminaBehaviour == null || !staminaBehaviour.Stamina.HasEnough(currentStaminaCost))
             {
                 #if UNITY_EDITOR
                 Debug.Log("No hay suficiente stamina para atacar.");
                 #endif
                 return;
             }
-
             if (equipmentController.Attack())
             {
-                staminaBehaviour.Stamina.UseStamina(staminaCost);
+                staminaBehaviour.Stamina.UseStamina(currentStaminaCost);
                 lastAttackTime = Time.time;
 
                 // Publicar un evento para notificar que se usó estamina.
                 // PlayerHealthController escuchará este evento para reiniciar su contador.
-                GameEventBus.Instance.Publish(new PlayerActionUsedStaminaEvent(gameObject, staminaCost));
+                GameEventBus.Instance.Publish(new PlayerActionUsedStaminaEvent(gameObject, currentStaminaCost));
             }
         }
     }

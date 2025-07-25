@@ -1,85 +1,180 @@
-using UnityEngine;
-using ProyectSecret.Utils;
-using ProyectSecret.VFX;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Pool; // <-- Añadir
+using ProyectSecret.Events;
 
-namespace ProyectSecret.Managers
+namespace ProyectSecret.VFX
 {
-    /// <summary>
-    /// Manager centralizado para gestionar efectos visuales (VFX).
-    /// Utiliza pools de objetos para un rendimiento óptimo.
-    /// </summary>
     public class VFXManager : MonoBehaviour
     {
         public static VFXManager Instance { get; private set; }
-
-        [Header("Pool de Partículas de Impacto")]
-        [SerializeField] private GameObject impactParticlePrefab;
-        [SerializeField] private int impactParticlePoolSize = 20;
-        private ObjectPool<PooledParticleSystem> impactParticlePool;
-
+        
+        [System.Serializable]
+        public class VfxPoolConfig
+        {
+            public string Key;
+            public GameObject Prefab;
+            public int InitialSize = 10;
+        }
+        
+        [Header("Configuración de Pools de VFX")]
+        [SerializeField] private List<VfxPoolConfig> _vfxPoolsConfig;
+        
+        private Dictionary<string, IObjectPool<PooledParticleSystem>> _vfxPools; // <-- Cambiar tipo
+        
         private void Awake()
         {
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
-                return;
             }
+            else
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+                InitializePools();
+                // Suscribirse al evento para reproducir VFX
+                GameEventBus.Instance?.Subscribe<HitboxImpactEvent>(OnHitboxImpact);
+                GameEventBus.Instance?.Subscribe<PlayVFXRequest>(OnPlayVFXRequest);
+            }
+        }
 
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
+        private void InitializePools()
+        {
+            _vfxPools = new Dictionary<string, IObjectPool<PooledParticleSystem>>(); // <-- Cambiar tipo
+            foreach (var config in _vfxPoolsConfig)
+            {
+                if (config.Prefab == null)
+                {
+                    Debug.LogWarning($"VFXManager: El prefab para la clave '{config.Key}' no está asignado.");
+                    continue;
+                }
+
+                if (config.Prefab.GetComponent<PooledParticleSystem>() == null)
+                {
+                    Debug.LogError($"VFXManager: El prefab para la clave '{config.Key}' no tiene el componente 'PooledParticleSystem'.");
+                    continue;
+                }
+
+                // Usar el ObjectPool de Unity
+                var pool = new ObjectPool<PooledParticleSystem>(
+                    () => CreatePooledVFX(config.Prefab),
+                    OnGetFromPool,
+                    OnReleaseToPool,
+                    OnDestroyPooledVFX,
+                    true,
+                    config.InitialSize
+                );
+                _vfxPools[config.Key] = pool; // <-- Asignar el nuevo pool
+            }
+        }
+
+        private void OnDestroy()
+        {
+            // Buena práctica: desuscribirse para evitar errores.
+            if (Instance == this && GameEventBus.Instance != null)
+            {
+                GameEventBus.Instance.Unsubscribe<HitboxImpactEvent>(OnHitboxImpact);
+                GameEventBus.Instance.Unsubscribe<PlayVFXRequest>(OnPlayVFXRequest);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene un efecto del pool y lo activa en la posición y rotación deseadas.
+        /// </summary>
+        public GameObject PlayEffect(string key, Vector3 position, Quaternion? rotation = null)
+        {
+            if (!_vfxPools.ContainsKey(key))
+            {
+                Debug.LogWarning($"VFXManager: No se encontró un pool para la clave '{key}'.");
+                return null;
+            }
             
-            if (impactParticlePrefab != null)
-                impactParticlePool = new ObjectPool<PooledParticleSystem>(impactParticlePrefab, impactParticlePoolSize, transform);
+            var vfxInstance = _vfxPools[key].Get();
+            if (vfxInstance == null) return null;
+            var vfxObject = vfxInstance.gameObject;
+            if (vfxObject == null) return null;
+
+            if (vfxInstance == null)
+            {
+                Debug.LogError($"VFXManager: El objeto del pool para la clave '{key}' no tiene el componente 'PooledParticleSystem'. El prefab está mal configurado.");
+                // Devolver el objeto al pool si es posible o simplemente desactivarlo.
+                vfxObject.SetActive(false); 
+                return null;
+            }
+            
+            vfxInstance.transform.position = position;
+            vfxInstance.transform.rotation = rotation ?? Quaternion.identity;
+            
+            return vfxObject;
         }
 
-        /// <summary>
-        /// Reproduce un efecto de partículas en una posición específica.
-        /// </summary>
-        /// <param name="position">El punto en el mundo donde se reproducirá el efecto.</param>
-        public void PlayImpactEffect(Vector3 position)
+        #region Métodos de Gestión del Pool (Nuevos)
+
+        private PooledParticleSystem CreatePooledVFX(GameObject prefab)
         {
-            // Obtener y activar una partícula del pool
-            if (impactParticlePool != null)
+            var go = Instantiate(prefab, transform);
+            var pooledVfx = go.GetComponent<PooledParticleSystem>();
+            // La clave del diccionario es necesaria para saber a qué pool devolverlo
+            string key = _vfxPoolsConfig.Find(c => c.Prefab == prefab)?.Key;
+            if (key != null)
             {
-                GameObject particleInstance = impactParticlePool.Get();
-                if (particleInstance != null)
-                {
-                    particleInstance.transform.position = position;
-                    particleInstance.SetActive(true);
-                }
+                pooledVfx.Pool = _vfxPools[key];
+            }
+            return pooledVfx;
+        }
+
+        private void OnGetFromPool(PooledParticleSystem vfx)
+        {
+            vfx.gameObject.SetActive(true);
+        }
+
+        private void OnReleaseToPool(PooledParticleSystem vfx)
+        {
+            vfx.gameObject.SetActive(false);
+        }
+
+        private void OnDestroyPooledVFX(PooledParticleSystem vfx)
+        {
+            Destroy(vfx.gameObject);
+        }
+        #endregion
+
+        private void OnPlayVFXRequest(PlayVFXRequest request)
+        {
+            PlayEffect(request.Key, request.Position, request.Rotation);
+        }
+
+        private void OnHitboxImpact(HitboxImpactEvent evt)
+        {
+            if (!string.IsNullOrEmpty(evt.WeaponData.ImpactVFXKey))
+            {
+                PlayEffect(evt.WeaponData.ImpactVFXKey, evt.ImpactPoint);
             }
         }
 
-        /// <summary>
-        /// Inicia un efecto de desvanecimiento y destrucción en un objeto.
-        /// </summary>
-        public void PlayFadeAndDestroyEffect(GameObject targetObject, float fadeDuration)
+        public void PlayFadeAndDestroyEffect(GameObject targetObject, float duration)
         {
-            if (targetObject == null) return;
-            StartCoroutine(FadeAndDestroyRoutine(targetObject, fadeDuration));
+            // Esta lógica es más específica y podría ir en su propio componente,
+            // pero por ahora la mantenemos aquí para simplicidad.
+            StartCoroutine(FadeRoutine(targetObject, duration));
         }
 
-        private IEnumerator FadeAndDestroyRoutine(GameObject targetObject, float fadeDuration)
+        private IEnumerator FadeRoutine(GameObject targetObject, float duration)
         {
-            Renderer[] renderers = targetObject.GetComponentsInChildren<Renderer>();
-            var propBlock = new MaterialPropertyBlock();
-            int colorID = Shader.PropertyToID("_Color");
-
-            float timer = 0f;
-            while (timer < fadeDuration)
+            // Aquí podrías añadir una lógica de fade más compleja si lo necesitas.
+            // Por ahora, simplemente desactivamos el objeto después de la duración.
+            yield return new WaitForSeconds(duration);
+            
+            // En lugar de destruir, lo desactivamos. Si es un objeto del pool,
+            // su propio componente PooledParticleSystem lo devolverá.
+            // Si no, simplemente se desactiva.
+            if (targetObject != null)
             {
-                float alpha = Mathf.Lerp(1f, 0f, timer / fadeDuration);
-                foreach (var rend in renderers)
-                {
-                    rend.GetPropertyBlock(propBlock);
-                    propBlock.SetColor(colorID, new Color(rend.material.color.r, rend.material.color.g, rend.material.color.b, alpha));
-                    rend.SetPropertyBlock(propBlock);
-                }
-                timer += Time.deltaTime;
-                yield return null;
+                GameEventBus.Instance.Publish(new VFXCompletedEvent(targetObject));
+                targetObject.SetActive(false);
             }
-            Destroy(targetObject);
         }
     }
 }

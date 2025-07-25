@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using ProyectSecret.Interfaces;
 
 namespace ProyectSecret.Stats
 {
@@ -7,7 +8,7 @@ namespace ProyectSecret.Stats
     /// Componente base para estadísticas (vida, stamina, etc). Solo serializable si es necesario.
     /// </summary>
     [Serializable]
-    public abstract class StatComponent
+    public abstract class StatComponent : IStatController
     {
         /// <summary>
         /// Establece el valor actual al máximo.
@@ -50,6 +51,18 @@ namespace ProyectSecret.Stats
         public virtual void SetValue(int newValue)
         {
             currentValue = Mathf.Clamp(newValue, 0, maxValue);
+            _onValueChanged?.Invoke(this);
+        }
+
+        /// <summary>
+        /// Modifica el valor máximo de la estadística y ajusta el valor actual si es necesario.
+        /// </summary>
+        /// <param name="amount">La cantidad a añadir (puede ser negativa).</param>
+        public virtual void ModifyMaxValue(int amount)
+        {
+            maxValue += amount;
+            // Asegura que el valor actual no supere el nuevo máximo.
+            currentValue = Mathf.Clamp(currentValue, 0, maxValue);
             _onValueChanged?.Invoke(this);
         }
     }
