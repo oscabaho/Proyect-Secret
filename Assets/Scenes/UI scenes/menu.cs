@@ -1,5 +1,7 @@
+using NUnit.Framework.Internal.Commands;
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
@@ -12,9 +14,10 @@ public class menu : MonoBehaviour
     [SerializeField]private GameObject MusicOptions;
     [SerializeField]private GameObject GraficSettings;
     [Header("Creditos")]
-    [SerializeField]private GameObject creditos;
+    public GameObject creditos;
     [Header("Video inicio")]
-    [SerializeField]private VideoPlayer video;
+    public VideoPlayer video;
+    public InputAction skip;
     void Awake()
     {
         video = GetComponent<VideoPlayer>();
@@ -22,6 +25,15 @@ public class menu : MonoBehaviour
         opciones.SetActive(false);
         creditos.SetActive(false);
         video.loopPointReached += Finalizado;
+        skip = InputSystem.actions.FindAction("Interact");
+    }
+
+    private void Update()
+    {
+        if (skip.WasPressedThisFrame())
+        {
+            SkipVideo();
+        }
     }
 
     private void Finalizado(VideoPlayer source)
@@ -77,5 +89,17 @@ public class menu : MonoBehaviour
     {
         MusicOptions.SetActive(false);
         GraficSettings.SetActive(false);
+    }
+
+    public void SkipVideo()
+    {
+        video.Stop();
+        Finalizado(video);
+    }
+
+    public void FromVictory()
+    {
+        video.Stop();
+        creditos.SetActive(true);
     }
 }
