@@ -71,13 +71,6 @@ public class PaperMarioPlayerMovement : MonoBehaviour
         if (_input != null && currentCam != null)
         {
             Vector2 input = _input.MoveInput;
-            
-            // Si la cámara está invertida, el input de movimiento también se invierte.
-            if (IsCameraInverted)
-            {
-                input.x = -input.x;
-                input.y = -input.y;
-            }
 
             Vector3 camForward = currentCam.transform.forward;
             Vector3 camRight = currentCam.transform.right;

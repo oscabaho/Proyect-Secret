@@ -8,8 +8,8 @@ namespace ProyectSecret.MonoBehaviours.Player
     /// Responsabilidad Única: Controlar el Animator y el SpriteRenderer del jugador.
     /// Lee el estado de otros componentes (Input, Physics) para actualizar la vista.
     /// </summary>
-    [RequireComponent(typeof(Animator), typeof(SpriteRenderer))]
-    [RequireComponent(typeof(PlayerInputController), typeof(PaperMarioPlayerMovement))]
+    [RequireComponent(typeof(Animator), typeof(SpriteRenderer), typeof(PlayerInputController))]
+    [RequireComponent(typeof(PaperMarioPlayerMovement), typeof(PlayerCameraController))]
     public class PlayerAnimationController : MonoBehaviour
     {
         // Referencias a componentes
@@ -17,6 +17,7 @@ namespace ProyectSecret.MonoBehaviours.Player
         private SpriteRenderer _spriteRenderer;
         private PlayerInputController _input;
         private PaperMarioPlayerMovement _movement;
+        private PlayerCameraController _cameraController;
 
         // Hashes de parámetros del Animator para optimización
         private readonly int _moveXHash = Animator.StringToHash("MoveX");
@@ -30,6 +31,7 @@ namespace ProyectSecret.MonoBehaviours.Player
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _input = GetComponent<PlayerInputController>();
             _movement = GetComponent<PaperMarioPlayerMovement>();
+            _cameraController = GetComponent<PlayerCameraController>();
 
 #if UNITY_EDITOR
             ValidateAnimatorParameters();
@@ -38,18 +40,33 @@ namespace ProyectSecret.MonoBehaviours.Player
 
         private void Update()
         {
-            Vector2 moveInput = _input.MoveInput;
-
-            _animator.SetFloat(_moveXHash, moveInput.x);
-            _animator.SetFloat(_moveYHash, moveInput.y);
-            _animator.SetBool(_isMovingHash, moveInput.sqrMagnitude > 0.01f);
-            _animator.SetBool(_isGroundedHash, _movement.IsGrounded);
-
-            // FlipX para mirar a la derecha/izquierda según el input
-            if (Mathf.Abs(moveInput.x) > 0.1f)
+            // Durante el día, el sprite debe mirar a la cámara (efecto billboard).
+            if (_input.CurrentActionMapName == "PlayerDay")
             {
-                _spriteRenderer.flipX = moveInput.x < 0f;
+                Camera activeCam = _cameraController.GetActiveCamera();
+                if (activeCam != null)
+                {
+                    // Hacemos que el sprite copie la rotación de la cámara.
+                    _spriteRenderer.transform.rotation = activeCam.transform.rotation;
+                }
             }
+            else // Durante la noche, el comportamiento es el normal.
+            {
+                Vector2 moveInput = _input.MoveInput;
+
+                _animator.SetFloat(_moveXHash, moveInput.x);
+                _animator.SetFloat(_moveYHash, moveInput.y);
+                _animator.SetBool(_isMovingHash, moveInput.sqrMagnitude > 0.01f);
+
+                // FlipX para mirar a la derecha/izquierda según el input
+                if (Mathf.Abs(moveInput.x) > 0.1f)
+                {
+                    _spriteRenderer.flipX = moveInput.x < 0f;
+                }
+            }
+
+            // La animación de IsGrounded es independiente del estado día/noche.
+            _animator.SetBool(_isGroundedHash, _movement.IsGrounded);
         }
 
 #if UNITY_EDITOR

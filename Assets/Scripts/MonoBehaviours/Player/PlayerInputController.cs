@@ -17,7 +17,7 @@ namespace ProyectSecret.MonoBehaviours.Player
 
         [Header("Gameplay Action Maps")]
         [SerializeField] private string dayActionMapName = "PlayerDay";
-        [SerializeField] private string dayMoveActionName = "Look"; // "Look" se mapea a movimiento
+        [SerializeField] private string dayLookActionName = "Look";
         [SerializeField] private string dayInteractActionName = "Interact";
         [SerializeField] private string dayPreviousActionName = "Previous";
         [SerializeField] private string dayNextActionName = "Next";
@@ -33,12 +33,15 @@ namespace ProyectSecret.MonoBehaviours.Player
 
         // Propiedades públicas para estados
         public Vector2 MoveInput { get; private set; }
+        public Vector2 LookInput { get; private set; }
+        public string CurrentActionMapName => _currentActionMap?.name;
 
         private InputActionMap _currentActionMap;
         private InputAction _moveAction;
         private InputAction _attackAction;
         private InputAction _interactAction;
-        // Acciones adicionales para el día
+        private InputAction _lookAction;
+        // Acciones adicionales que no son de movimiento/mirada
         private InputAction _previousAction;
         private InputAction _nextAction;
 
@@ -48,7 +51,7 @@ namespace ProyectSecret.MonoBehaviours.Player
             // Los parámetros nulos indican que no hay acción de ataque, previous o next en el mapa de noche.
             // Esto es un ejemplo, ajusta según tus necesidades.
             // Empezamos con el mapa de día.
-            SwitchGameplayMap(dayActionMapName, dayMoveActionName, null, dayInteractActionName, dayPreviousActionName, dayNextActionName);
+            SwitchGameplayMap(dayActionMapName, null, dayLookActionName, null, dayInteractActionName, dayPreviousActionName, dayNextActionName);
         }
 
         private void OnEnable()
@@ -70,6 +73,7 @@ namespace ProyectSecret.MonoBehaviours.Player
         private void Update()
         {
             MoveInput = _moveAction?.ReadValue<Vector2>() ?? Vector2.zero;
+            LookInput = _lookAction?.ReadValue<Vector2>() ?? Vector2.zero;
         }
 
         private void HandleAttack(InputAction.CallbackContext context) => OnAttackPressed?.Invoke();
@@ -78,13 +82,13 @@ namespace ProyectSecret.MonoBehaviours.Player
         // private void HandlePrevious(InputAction.CallbackContext context) => OnPreviousPressed?.Invoke();
         // private void HandleNext(InputAction.CallbackContext context) => OnNextPressed?.Invoke();
 
-        private void OnDayStarted(DayStartedEvent evt) => SwitchGameplayMap(dayActionMapName, dayMoveActionName, null, dayInteractActionName, dayPreviousActionName, dayNextActionName);
-        private void OnNightStarted(NightStartedEvent evt) => SwitchGameplayMap(nightActionMapName, nightMoveActionName, nightAttackActionName, nightInteractActionName, null, null);
+        private void OnDayStarted(DayStartedEvent evt) => SwitchGameplayMap(dayActionMapName, null, dayLookActionName, null, dayInteractActionName, dayPreviousActionName, dayNextActionName);
+        private void OnNightStarted(NightStartedEvent evt) => SwitchGameplayMap(nightActionMapName, nightMoveActionName, null, nightAttackActionName, nightInteractActionName, null, null);
 
         /// <summary>
         /// Cambia el mapa de acción de gameplay y reasigna todas las acciones.
         /// </summary>
-        private void SwitchGameplayMap(string mapName, string moveName, string attackName, string interactName, string previousName, string nextName)
+        private void SwitchGameplayMap(string mapName, string moveName, string lookName, string attackName, string interactName, string previousName, string nextName)
         {
             // 1. Desuscribirse de todas las acciones posibles del mapa anterior.
             if (_attackAction != null) _attackAction.performed -= HandleAttack;
@@ -100,14 +104,16 @@ namespace ProyectSecret.MonoBehaviours.Player
             if (_currentActionMap == null) { Debug.LogError($"Action Map '{mapName}' no encontrado.", this); return; }
 
             // Asignar cada acción, comprobando si el nombre es válido.
-            _moveAction = !string.IsNullOrEmpty(moveName) ? _currentActionMap.FindAction(moveName) : null;
+            _moveAction = !string.IsNullOrEmpty(moveName) ? _currentActionMap.FindAction(moveName) : null; // Durante el día, será null
+            _lookAction = !string.IsNullOrEmpty(lookName) ? _currentActionMap.FindAction(lookName) : null; // Durante el día, será "Look"
             _attackAction = !string.IsNullOrEmpty(attackName) ? _currentActionMap.FindAction(attackName) : null;
             _interactAction = !string.IsNullOrEmpty(interactName) ? _currentActionMap.FindAction(interactName) : null;
             _previousAction = !string.IsNullOrEmpty(previousName) ? _currentActionMap.FindAction(previousName) : null;
             _nextAction = !string.IsNullOrEmpty(nextName) ? _currentActionMap.FindAction(nextName) : null;
 
             // Validar que las acciones esenciales existan
-            if (_moveAction == null && !string.IsNullOrEmpty(moveName)) Debug.LogWarning($"Acción de movimiento '{moveName}' no encontrada en el mapa '{mapName}'.", this);
+            if (_moveAction == null && !string.IsNullOrEmpty(moveName)) Debug.LogWarning($"Acción de movimiento '{moveName}' no encontrada en el mapa '{mapName}'. El movimiento no funcionará.", this);
+            if (_lookAction == null && !string.IsNullOrEmpty(lookName)) Debug.LogWarning($"Acción de mirada '{lookName}' no encontrada en el mapa '{mapName}'. La cámara no rotará.", this);
 
             // 4. Suscribirse a los eventos de las NUEVAS acciones si existen.
             if (_attackAction != null) _attackAction.performed += HandleAttack;

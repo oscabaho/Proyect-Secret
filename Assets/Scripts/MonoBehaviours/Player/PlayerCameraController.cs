@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace ProyectSecret.MonoBehaviours.Player
 {
+    [RequireComponent(typeof(PaperMarioPlayerMovement), typeof(PlayerInputController))]
     public class PlayerCameraController : MonoBehaviour
     {
         [Header("Configuración de inversión")]
@@ -13,9 +14,16 @@ namespace ProyectSecret.MonoBehaviours.Player
         [SerializeField] private Camera camaraTrasera;
         [Tooltip("Arrastra aquí el GameObject de la cámara frontal.")]
         [SerializeField] private Camera camaraFrontal;
+
+        [Header("Configuración de Rotación (Día)")]
+        [Tooltip("El objeto vacío que actúa como pivote para la rotación orbital de la cámara.")]
+        [SerializeField] private Transform cameraPivot;
+        [SerializeField] private float lookSensitivity = 100f;
         
         private Camera activeCamera;
         private PaperMarioPlayerMovement playerMovement;
+        private Quaternion _initialPivotRotation;
+        private PlayerInputController _input;
 
         /// <summary>
         /// Evento que se dispara cuando la cámara activa cambia.
@@ -25,16 +33,20 @@ namespace ProyectSecret.MonoBehaviours.Player
         void Awake()
         {
             playerMovement = GetComponent<PaperMarioPlayerMovement>();
+            _input = GetComponent<PlayerInputController>();
 
             // Validar que las cámaras han sido asignadas en el Inspector.
-            if (camaraTrasera == null || camaraFrontal == null)
+            if (camaraTrasera == null || camaraFrontal == null || cameraPivot == null)
             {
                 #if UNITY_EDITOR
-                Debug.LogError("PlayerCameraController: Faltan referencias a las cámaras. Por favor, asígnalas en el Inspector.");
+                Debug.LogError("PlayerCameraController: Faltan referencias a las cámaras o al pivote. Por favor, asígnalas en el Inspector.");
                 #endif
                 enabled = false; // Desactivamos el componente para evitar más errores.
                 return;
             }
+
+            // Guardamos la rotación inicial del pivote para poder resetearla.
+            _initialPivotRotation = cameraPivot.rotation;
             
             // Por defecto activa la trasera.
             SetActiveCamera(camaraTrasera);
@@ -42,9 +54,24 @@ namespace ProyectSecret.MonoBehaviours.Player
 
         private void Update()
         {
-            if (playerMovement == null || activeCamera == null) return;
+            if (playerMovement == null || activeCamera == null || _input == null) return;
 
-            // La lógica de 'DetectarAcercamiento' ahora vive aquí, haciendo este componente autocontenido.
+            // Lógica de rotación de cámara durante el día
+            if (_input.CurrentActionMapName == "PlayerDay")
+            {
+                float lookX = _input.LookInput.x * lookSensitivity * Time.deltaTime;
+                // Rotamos el pivote en el eje Y (vertical) para conseguir el movimiento circular horizontal.
+                cameraPivot.Rotate(Vector3.up, lookX);
+            }
+            else
+            {
+                // Si no es de día, reseteamos la rotación del pivote a su estado original.
+                cameraPivot.rotation = _initialPivotRotation;
+            }
+
+            // Lógica de inversión de cámara al acercarse (funciona en ambos modos)
+            // Nota: Si no quieres que esto pase durante el día, puedes añadir un `if (_input.CurrentActionMapName == "PlayerNight")`
+            // alrededor de este bloque.
             if (playerMovement.IsMovingDown)
             {
                 tiempoAcercandoseALaCamara += Time.deltaTime;

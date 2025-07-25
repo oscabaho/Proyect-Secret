@@ -27,12 +27,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 488046045897666166}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.08715578, y: 0, z: 0, w: 0.9961947}
+  m_LocalRotation: {x: 0.08715578, y: -0, z: -0, w: 0.9961947}
   m_LocalPosition: {x: 0, y: 10, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 7959420949094829934}
+  m_Father: {fileID: 5431434402539250173}
   m_LocalEulerAnglesHint: {x: 10, y: 0, z: 0}
 --- !u!20 &2067498467732985624
 Camera:
@@ -246,12 +246,11 @@ Transform:
   m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5431434402539250173}
   - {fileID: 1873185031702502268}
   - {fileID: 4891382524184911303}
   - {fileID: 3048763232443632849}
   - {fileID: 2293744280824456786}
-  - {fileID: 7860072965856352344}
-  - {fileID: 7010324408305143991}
   - {fileID: 731074790353968}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -396,10 +395,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <InputActions>k__BackingField: {fileID: -944628639613478452, guid: fcbddd531342fbb4dbfb0a3e85be621f, type: 3}
   dayActionMapName: PlayerDay
+  dayLookActionName: Look
+  dayInteractActionName: Interact
+  dayPreviousActionName: Previous
+  dayNextActionName: Next
   nightActionMapName: PlayerNight
-  moveActionName: Move
-  attackActionName: Attack
-  interactActionName: Interact
+  nightMoveActionName: Move
+  nightAttackActionName: Attack
+  nightInteractActionName: Interact
 --- !u!114 &8824371992143943561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -415,6 +418,8 @@ MonoBehaviour:
   tiempoParaInvertirCamara: 1
   camaraTrasera: {fileID: 2067498467732985624}
   camaraFrontal: {fileID: 7721679005674906231}
+  cameraPivot: {fileID: 5431434402539250173}
+  lookSensitivity: 100
 --- !u!114 &627035793469452225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -669,12 +674,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5736832273278645394}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.9961947, z: -0.08715578, w: 0}
+  m_LocalRotation: {x: -0, y: 0.9961947, z: -0.08715578, w: 0}
   m_LocalPosition: {x: 0, y: 10, z: 20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 7959420949094829934}
+  m_Father: {fileID: 5431434402539250173}
   m_LocalEulerAnglesHint: {x: 10, y: 180, z: 0}
 --- !u!20 &7721679005674906231
 Camera:
@@ -808,6 +813,39 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
+  m_Father: {fileID: 7959420949094829934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8412711138331306314
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5431434402539250173}
+  m_Layer: 0
+  m_Name: CameraPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5431434402539250173
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8412711138331306314}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7860072965856352344}
+  - {fileID: 7010324408305143991}
   m_Father: {fileID: 7959420949094829934}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9078680235971364037
