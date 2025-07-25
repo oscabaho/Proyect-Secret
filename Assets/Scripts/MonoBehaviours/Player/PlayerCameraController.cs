@@ -19,6 +19,8 @@ namespace ProyectSecret.MonoBehaviours.Player
         [Tooltip("El objeto vacío que actúa como pivote para la rotación orbital de la cámara.")]
         [SerializeField] private Transform cameraPivot;
         [SerializeField] private float lookSensitivity = 100f;
+        [Tooltip("Velocidad con la que la cámara vuelve a su posición inicial al llegar la noche.")]
+        [SerializeField] private float resetSpeed = 15f;
         
         private Camera activeCamera;
         private PaperMarioPlayerMovement playerMovement;
@@ -65,8 +67,9 @@ namespace ProyectSecret.MonoBehaviours.Player
             }
             else
             {
-                // Si no es de día, reseteamos la rotación del pivote a su estado original.
-                cameraPivot.rotation = _initialPivotRotation;
+                // Si no es de día, hacemos una transición suave de la rotación del pivote a su estado original.
+                // Slerp (Spherical Linear Interpolation) es ideal para rotaciones.
+                cameraPivot.rotation = Quaternion.Slerp(cameraPivot.rotation, _initialPivotRotation, Time.deltaTime * resetSpeed);
             }
 
             // Lógica de inversión de cámara al acercarse (funciona en ambos modos)
@@ -126,5 +129,14 @@ namespace ProyectSecret.MonoBehaviours.Player
         /// Permite obtener la cámara activa actual.
         /// </summary>
         public Camera GetActiveCamera() => activeCamera;
+
+        /// <summary>
+        /// Comprueba si el pivote de la cámara es hijo de un transform específico.
+        /// Útil para evitar bucles de retroalimentación con el billboard del sprite.
+        /// </summary>
+        public bool IsCameraPivotChildOf(Transform potentialParent)
+        {
+            return cameraPivot != null && cameraPivot.IsChildOf(potentialParent);
+        }
     }
 }

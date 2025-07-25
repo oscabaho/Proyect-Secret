@@ -12,8 +12,6 @@ namespace ProyectSecret.MonoBehaviours.Player
     /// para forzar la adición de todos los scripts esenciales en el editor de Unity.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    [RequireComponent(typeof(Animator))]
-    [RequireComponent(typeof(SpriteRenderer))]
     [RequireComponent(typeof(PlayerInputController))]
     [RequireComponent(typeof(PaperMarioPlayerMovement))]
     [RequireComponent(typeof(PlayerCameraController))]
@@ -24,8 +22,8 @@ namespace ProyectSecret.MonoBehaviours.Player
     [RequireComponent(typeof(PlayerEquipmentController))]
     [RequireComponent(typeof(PlayerInventory))]
     [RequireComponent(typeof(PlayerPointSwitcher))]
-    [RequireComponent(typeof(AttackComponent))]
     [RequireComponent(typeof(HealthComponentBehaviour))]
     [RequireComponent(typeof(StaminaComponentBehaviour))]
+    [RequireComponent(typeof(FuegoFatuoActivationController))]
     public class PlayerValidator : MonoBehaviour { }
 }

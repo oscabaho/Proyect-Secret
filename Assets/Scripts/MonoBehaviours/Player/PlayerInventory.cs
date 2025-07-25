@@ -56,7 +56,16 @@ namespace ProyectSecret.MonoBehaviours.Player
         {
             bool success = inventoryModel.AddItem(item);
             if (success)
+            {
+                // Publicar el evento de que el inventario ha cambiado.
                 GameEventBus.Instance.Publish(new InventoryChangedEvent(this));
+
+                // Lógica de auto-equipado: si es un arma y no hay nada equipado, la equipa.
+                if (item is WeaponItem && equipmentController.EquippedWeaponInstance == null)
+                {
+                    EquipItem(item, gameObject);
+                }
+            }
             return success;
         }
 

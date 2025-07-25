@@ -59,7 +59,7 @@ namespace ProyectSecret.Combat.Behaviours
                 #endif
                 return;
             }
-            if (equipmentController.Attack())
+            if (equipmentController.PerformAttack())
             {
                 staminaBehaviour.Stamina.UseStamina(currentStaminaCost);
                 lastAttackTime = Time.time;

@@ -1359,8 +1359,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directionalLight: {fileID: 1988614166}
-  dayDuration: 30
-  nightDuration: 120
+  dayDuration: 1
+  nightDuration: 300
   dayLightColor: {r: 1, g: 1, b: 1, a: 1}
   nightLightColor: {r: 0.2, g: 0.2, b: 0.5, a: 1}
   dayIntensity: 1

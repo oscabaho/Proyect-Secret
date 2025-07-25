@@ -31,6 +31,19 @@ namespace ProyectSecret.Characters.Player
             }
         }
 
+        private void OnEnable()
+        {
+            if (pointSwitcher != null)
+                pointSwitcher.OnActiveWeaponPointChanged += HandleActivePointChange;
+        }
+
+        private void OnDisable()
+        {
+            // Es crucial desuscribirse para evitar errores y fugas de memoria.
+            if (pointSwitcher != null)
+                pointSwitcher.OnActiveWeaponPointChanged -= HandleActivePointChange;
+        }
+
         public void EquipWeapon(WeaponItem weaponItem)
         {
             UnequipWeapon();
@@ -74,7 +87,7 @@ namespace ProyectSecret.Characters.Player
             EquippedWeaponInstance = null;
         }
 
-        public bool Attack()
+        public bool PerformAttack()
         {
             if (EquippedWeaponInstance == null || currentHitboxInstance != null)
                 return false;
@@ -113,6 +126,19 @@ namespace ProyectSecret.Characters.Player
             return true;
         }
 
+        /// <summary>
+        /// Se ejecuta cuando el punto de anclaje del arma cambia (por inversión de cámara).
+        /// Mueve el arma visual al nuevo punto activo.
+        /// </summary>
+        private void HandleActivePointChange(Transform newActivePoint)
+        {
+            if (currentWeaponVisual != null && newActivePoint != null)
+            {
+                currentWeaponVisual.transform.SetParent(newActivePoint, false);
+                currentWeaponVisual.transform.localPosition = Vector3.zero;
+                currentWeaponVisual.transform.localRotation = Quaternion.identity;
+            }
+        }
         private IEnumerator HitboxLifecycle(WeaponHitbox hitbox, float duration)
         {
             yield return new WaitForSeconds(duration);

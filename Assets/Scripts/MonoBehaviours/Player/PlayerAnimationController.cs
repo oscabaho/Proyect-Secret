@@ -8,13 +8,17 @@ namespace ProyectSecret.MonoBehaviours.Player
     /// Responsabilidad Única: Controlar el Animator y el SpriteRenderer del jugador.
     /// Lee el estado de otros componentes (Input, Physics) para actualizar la vista.
     /// </summary>
-    [RequireComponent(typeof(Animator), typeof(SpriteRenderer), typeof(PlayerInputController))]
+    [RequireComponent(typeof(PlayerInputController))]
     [RequireComponent(typeof(PaperMarioPlayerMovement), typeof(PlayerCameraController))]
     public class PlayerAnimationController : MonoBehaviour
     {
-        // Referencias a componentes
-        private Animator _animator;
-        private SpriteRenderer _spriteRenderer;
+        [Header("Componentes Visuales (Hijos)")]
+        [Tooltip("Referencia al Animator que está en el objeto hijo de los visuales.")]
+        [SerializeField] private Animator _animator;
+        [Tooltip("Referencia al SpriteRenderer que está en el objeto hijo de los visuales.")]
+        [SerializeField] private SpriteRenderer _spriteRenderer;
+
+        // Referencias a componentes del objeto raíz
         private PlayerInputController _input;
         private PaperMarioPlayerMovement _movement;
         private PlayerCameraController _cameraController;
@@ -27,21 +31,36 @@ namespace ProyectSecret.MonoBehaviours.Player
 
         private void Awake()
         {
-            _animator = GetComponent<Animator>();
-            _spriteRenderer = GetComponent<SpriteRenderer>();
             _input = GetComponent<PlayerInputController>();
             _movement = GetComponent<PaperMarioPlayerMovement>();
             _cameraController = GetComponent<PlayerCameraController>();
 
+            if (_animator == null || _spriteRenderer == null)
+            {
+                Debug.LogError("PlayerAnimationController: El Animator o el SpriteRenderer no están asignados en el Inspector. Por favor, arrastra el objeto hijo que los contiene a las ranuras correspondientes.", this);
+                enabled = false;
+                return;
+            }
+
 #if UNITY_EDITOR
             ValidateAnimatorParameters();
+
+            // Salvaguarda para evitar bucles de retroalimentación.
+            if (_cameraController.IsCameraPivotChildOf(_spriteRenderer.transform))
+            {
+                Debug.LogError(
+                    "PlayerAnimationController: ¡Configuración de jerarquía peligrosa detectada! " +
+                    "El 'CameraPivot' no puede ser hijo del objeto que contiene el SpriteRenderer, ya que esto crea un bucle de rotación. " +
+                    "El efecto billboard será desactivado.", this);
+            }
 #endif
         }
 
         private void Update()
         {
             // Durante el día, el sprite debe mirar a la cámara (efecto billboard).
-            if (_input.CurrentActionMapName == "PlayerDay")
+            // Solo aplicamos el billboard si la jerarquía es segura.
+            if (_input.CurrentActionMapName == "PlayerDay" && !_cameraController.IsCameraPivotChildOf(_spriteRenderer.transform))
             {
                 Camera activeCam = _cameraController.GetActiveCamera();
                 if (activeCam != null)
@@ -52,6 +71,11 @@ namespace ProyectSecret.MonoBehaviours.Player
             }
             else // Durante la noche, el comportamiento es el normal.
             {
+                // ¡IMPORTANTE! Reseteamos la rotación del sprite a su estado por defecto.
+                // Sin esto, el sprite se queda "atascado" con la última rotación del modo día,
+                // rompiendo el efecto billboard y haciendo que el movimiento parezca incorrecto.
+                _spriteRenderer.transform.localRotation = Quaternion.identity;
+
                 Vector2 moveInput = _input.MoveInput;
 
                 _animator.SetFloat(_moveXHash, moveInput.x);
@@ -59,9 +83,11 @@ namespace ProyectSecret.MonoBehaviours.Player
                 _animator.SetBool(_isMovingHash, moveInput.sqrMagnitude > 0.01f);
 
                 // FlipX para mirar a la derecha/izquierda según el input
-                if (Mathf.Abs(moveInput.x) > 0.1f)
+                if (Mathf.Abs(moveInput.x) > 0.01f) // Usar un umbral más pequeño para mayor respuesta
                 {
-                    _spriteRenderer.flipX = moveInput.x < 0f;
+                    // La lógica de flip debe tener en cuenta la inversión de la cámara.
+                    bool shouldFlip = _movement.IsCameraInverted ? moveInput.x > 0f : moveInput.x < 0f;
+                    _spriteRenderer.flipX = shouldFlip;
                 }
             }
 

@@ -1,19 +1,20 @@
 using UnityEngine;
 using ProyectSecret.Combat.Behaviours;
+using ProyectSecret.Characters.Player;
 using ProyectSecret.MonoBehaviours.Player;
 
 /// <summary>
 /// Controlador de input de ataque para el jugador. Escucha los eventos de input y los traduce en ataques usando AttackComponent.
 /// </summary>
-[RequireComponent(typeof(AttackComponent), typeof(PlayerInputController))]
+[RequireComponent(typeof(PlayerEquipmentController), typeof(PlayerInputController))]
 public class PlayerAttackInput : MonoBehaviour
 {
-    private AttackComponent attackComponent;
+    private PlayerEquipmentController equipmentController;
     private PlayerInputController inputController;
 
     private void Awake()
     {
-        attackComponent = GetComponent<AttackComponent>();
+        equipmentController = GetComponent<PlayerEquipmentController>();
         inputController = GetComponent<PlayerInputController>();
     }
 
@@ -32,9 +33,9 @@ public class PlayerAttackInput : MonoBehaviour
     // Este método se llama automáticamente solo cuando se presiona el botón de ataque.
     private void OnAttack()
     {
-        if (attackComponent != null)
+        if (equipmentController != null && equipmentController.CanAttack())
         {
-            attackComponent.TryAttack();
+            equipmentController.PerformAttack();
         }
     }
 }
