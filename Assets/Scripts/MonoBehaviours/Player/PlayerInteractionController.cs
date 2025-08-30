@@ -65,11 +65,17 @@ namespace ProyectSecret.MonoBehaviours.Player
         // Este método solo se llama cuando se presiona el botón de interactuar.
         private void PerformInteraction()
         {
+            // DEBUG: ¿Se está pulsando el botón de interactuar?
+            Debug.Log("[Interaction] Botón de interactuar pulsado.");
+
             // Si tenemos un interactuable a la vista, llamamos a su método Interact.
             if (currentInteractable != null)
             {
+                // DEBUG: ¿Con qué estamos intentando interactuar?
+                Debug.Log($"[Interaction] Interactuando con {(currentInteractable as MonoBehaviour).name}", (currentInteractable as MonoBehaviour).gameObject);
                 currentInteractable.Interact(gameObject);
             }
+            else { Debug.LogWarning("[Interaction] Se pulsó interactuar, pero no había ningún 'currentInteractable'."); }
         }
     }
 }

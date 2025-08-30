@@ -3,6 +3,8 @@ using Characters;
 using ProyectSecret.Managers;
 
 using ProyectSecret.VFX;
+using UnityEngine.SceneManagement;
+using System.Collections;
 namespace ProyectSecret.Characters.Enemies
 {
     /// <summary>
@@ -13,6 +15,8 @@ namespace ProyectSecret.Characters.Enemies
     {
         [Header("Fade Out Config")]
         [SerializeField] private float fadeDuration = 2f;
+        [SerializeField] private bool finalBoss = false;
+
 
         protected override void Death()
         {
@@ -23,6 +27,16 @@ namespace ProyectSecret.Characters.Enemies
             // El evento CharacterDeathEvent ya ha sido publicado por la clase base.
             // Ahora delegamos el efecto visual de la muerte al VFXManager.
             VFXManager.Instance?.PlayFadeAndDestroyEffect(gameObject, fadeDuration);
+            if (finalBoss)
+            {
+                LoadVictory();
+            }
+        }
+
+        private IEnumerator LoadVictory()
+        {
+            yield return new WaitForSeconds(fadeDuration);
+            SceneManager.LoadScene("Victory");
         }
     }
 }

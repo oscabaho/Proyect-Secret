@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 4889230133085321876}
   - component: {fileID: 4194089237182439103}
   - component: {fileID: 5475275002925233918}
-  - component: {fileID: 4542471504951634170}
   m_Layer: 0
   m_Name: Hacha
   m_TagString: Untagged
@@ -30,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 5448976339290444927}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 82.06, y: 0.84, z: 34.28}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -104,7 +103,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -124,15 +123,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponItem: {fileID: 11400000, guid: 3da71101017da8a42aaaea86451ef13a, type: 2}
   pickupSoundData: {fileID: 11400000, guid: 4f1a1a3f9737562429b64d5fedab5910, type: 2}
---- !u!114 &4542471504951634170
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5448976339290444927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac8cd7b50f79fb441a94466d84d545df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

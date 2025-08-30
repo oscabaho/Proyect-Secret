@@ -78,6 +78,29 @@ namespace ProyectSecret.Managers
             StartCoroutine(TransitionToScene(explorationSceneName));
         }
 
+        /// <summary>
+        /// Carga el último punto de guardado y regresa a la escena de exploración.
+        /// Ideal para usar en un botón de "Reintentar" tras una derrota.
+        /// </summary>
+        public void ReturnToExplorationAfterDefeat()
+        {
+            if (isTransitioning) return;
+
+            // Intentamos cargar los datos del archivo de guardado.
+            if (SaveLoadManager.SaveFileExists())
+            {
+                SaveLoadManager.LoadGame(playerPersistentData);
+            }
+            else
+            {
+                // Si no hay archivo de guardado, marcamos que venimos de una derrota
+                // para que el spawner en la escena de exploración sepa qué hacer (ej: ir al inicio).
+                playerPersistentData.CameFromDefeat = true;
+            }
+
+            StartCoroutine(TransitionToScene(explorationSceneName));
+        }
+
         private IEnumerator TransitionToScene(string sceneName)
         {
             isTransitioning = true;
